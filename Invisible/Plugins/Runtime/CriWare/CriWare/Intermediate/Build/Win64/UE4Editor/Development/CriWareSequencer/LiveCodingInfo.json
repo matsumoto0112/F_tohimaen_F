@@ -1,0 +1,10 @@
+{
+	"RemapUnityFiles": 
+	{
+		"Module.CriWareSequencer.cpp.obj": [
+			"AtomThumbnail.cpp.obj",
+			"AtomTrackEditor.cpp.obj",
+			"CriWareSequencerModule.cpp.obj"
+		]
+	}
+}

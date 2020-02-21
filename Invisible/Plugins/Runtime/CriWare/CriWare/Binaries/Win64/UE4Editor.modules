@@ -1,0 +1,9 @@
+{
+	"BuildId": "10570792",
+	"Modules": 
+	{
+		"CriWareEditor": "UE4Editor-CriWareEditor.dll",
+		"CriWareRuntime": "UE4Editor-CriWareRuntime.dll",
+		"CriWareSequencer": "UE4Editor-CriWareSequencer.dll"
+	}
+}

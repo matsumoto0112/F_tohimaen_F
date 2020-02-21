@@ -1,0 +1,14 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UE4Editor-CriWareEditor.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"C:\Projects\F_toshimaen_F\Invisible\Plugins\Runtime\CriWare\CriWare\Intermediate\Build\Win64\UE4Editor\Development\CriWareEditor\PCH.CriWareEditor.h.obj"
+"C:\Projects\F_toshimaen_F\Invisible\Plugins\Runtime\CriWare\CriWare\Intermediate\Build\Win64\UE4Editor\Development\CriWareEditor\Module.CriWareEditor.cpp.obj"
+"C:\Projects\F_toshimaen_F\Invisible\Plugins\Runtime\CriWare\CriWare\Intermediate\Build\Win64\UE4Editor\Development\CriWareEditor\Module.CriWareEditor.gen.cpp.obj"
+"C:\Projects\F_toshimaen_F\Invisible\Plugins\Runtime\CriWare\CriWare\Intermediate\Build\Win64\UE4Editor\Development\CriWareEditor\Default.rc2.res"
+/OUT:"C:\Projects\F_toshimaen_F\Invisible\Plugins\Runtime\CriWare\CriWare\Intermediate\Build\Win64\UE4Editor\Development\CriWareEditor\UE4Editor-CriWareEditor.lib"
+/INCLUDE:IMPLEMENT_MODULE_CriWareEditor
