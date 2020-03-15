@@ -6,19 +6,18 @@
 #include "GameFramework/Actor.h"
 #include "Invisible/ActionableObject/Actionable.h"
 
-#include "Sprinkler.generated.h"
+#include "Valve.generated.h"
 
-/**
-* スプリンクラーオブジェクト
-*/
+class USphereComponent;
+
 UCLASS()
-class INVISIBLE_API ASprinkler : public AActor,public IActionable
+class INVISIBLE_API AValve : public AActor, public IActionable
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
-	ASprinkler();
+	AValve(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	// Called when the game starts or when spawned
@@ -27,9 +26,16 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-    /**
+	/**
     * スプリンクラーを動作させる
     */
-    virtual void action_Implementation() override;
+	virtual void action_Implementation() override;
+
+private:
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* meshComponent;
+	UStaticMesh* mesh;
+
+	UPROPERTY(VisibleAnywhere)
+	USphereComponent* actionableArea;
 };

@@ -18,6 +18,12 @@ APlayerCharacter::APlayerCharacter()
 	cameraComponent->SetupAttachment(GetCapsuleComponent());
 	//ポーンがカメラの回転を制御できるように
 	cameraComponent->bUsePawnControlRotation = true;
+
+	actionArea = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
+	actionArea->InitSphereRadius(100.0f);
+	actionArea->SetSimulatePhysics(false);
+	actionArea->SetCollisionProfileName("OverlapAllDynamic");
+	actionArea->SetupAttachment(GetCapsuleComponent());
 }
 
 // Called when the game starts or when spawned
@@ -78,12 +84,13 @@ void APlayerCharacter::lookup(float amount)
 void APlayerCharacter::playerAction()
 {
 	//条件を満たしたオブジェクトが存在したらその対象にアクションを実行する
-	//レベル上に存在するオブジェクトすべてを動作させる
-	TArray<AActor*> outActors;
-	UGameplayStatics::GetAllActorsWithInterface(this->GetWorld(), UActionable::StaticClass(), outActors);
-
-	for (AActor* actor : outActors)
+	TArray<AActor*> actors;
+	actionArea->GetOverlappingActors(actors);
+	for (AActor* actor : actors)
 	{
-		IActionable::Execute_action(actor);
+        if (actor->GetClass()->ImplementsInterface(UActionable::StaticClass()))
+        {
+            IActionable::Execute_action(actor);
+        }
 	}
 }

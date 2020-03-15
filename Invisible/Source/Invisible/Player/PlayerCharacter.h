@@ -8,6 +8,7 @@
 #include "PlayerCharacter.generated.h"
 
 class UCameraComponent;
+class USphereComponent;
 
 UCLASS()
 class INVISIBLE_API APlayerCharacter : public ACharacter
@@ -63,4 +64,6 @@ private:
 	float mouseSensitivity = 100.0f; //!< マウス感度
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* cameraComponent; //!< プレイヤーカメラ
+    UPROPERTY(VisibleAnywhere)
+	USphereComponent* actionArea;
 };
