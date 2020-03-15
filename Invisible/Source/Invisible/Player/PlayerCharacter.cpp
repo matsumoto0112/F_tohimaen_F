@@ -40,6 +40,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::moveRight);
 	PlayerInputComponent->BindAxis("Turn", this, &APlayerCharacter::turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &APlayerCharacter::lookup);
+	PlayerInputComponent->BindAction("PlayerAction", EInputEvent::IE_Pressed, this, &APlayerCharacter::playerAction);
 }
 
 //前方向への移動
@@ -68,4 +69,10 @@ void APlayerCharacter::lookup(float amount)
 {
 	const float pitchValue = mouseSensitivity * amount * GetWorld()->GetDeltaSeconds();
 	AddControllerPitchInput(pitchValue);
+}
+
+//プレイヤーのアクションを実行する
+void APlayerCharacter::playerAction()
+{
+    //条件を満たしたオブジェクトが存在したらその対象にアクションを実行する
 }

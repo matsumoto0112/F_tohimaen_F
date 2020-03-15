@@ -49,6 +49,11 @@ private:
     */
 	UFUNCTION()
 	void lookup(float amount);
+	/**
+    * プレイヤーのアクションを実行する
+    */
+	UFUNCTION()
+	void playerAction();
 
 private:
 	UPROPERTY(EditAnywhere)
