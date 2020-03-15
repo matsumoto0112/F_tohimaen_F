@@ -1,8 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "PlayerCharacter.h"
+
 #include "Camera/CameraComponent.h"
 #include "Engine.h"
+#include "Invisible/ActionableObject/Actionable.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -74,5 +77,13 @@ void APlayerCharacter::lookup(float amount)
 //プレイヤーのアクションを実行する
 void APlayerCharacter::playerAction()
 {
-    //条件を満たしたオブジェクトが存在したらその対象にアクションを実行する
+	//条件を満たしたオブジェクトが存在したらその対象にアクションを実行する
+	//レベル上に存在するオブジェクトすべてを動作させる
+	TArray<AActor*> outActors;
+	UGameplayStatics::GetAllActorsWithInterface(this->GetWorld(), UActionable::StaticClass(), outActors);
+
+	for (AActor* actor : outActors)
+	{
+		IActionable::Execute_action(actor);
+	}
 }
