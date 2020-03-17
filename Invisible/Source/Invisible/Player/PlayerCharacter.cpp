@@ -98,7 +98,7 @@ void APlayerCharacter::playerAction()
 		return;
 
     //対象との距離でソートし、一番近いオブジェクトを対象とする
-    //NOTE:ソートアルゴリズムはクイックソートでO(log(N))より、対象オブジェクト数が少ないので全探索と同程度の速度になると予想しソートを使用
+    //NOTE:ソートアルゴリズムはクイックソートで、平均O(Nlog(N))より、対象オブジェクト数が少ないので全探索と同程度の速度になると予想しソートを使用
     //NOTE:ほんの少し、全探索より配列の再構築のオーバーヘッドがあるので改善の余地あり。
 	actors.Sort([this](auto& a, auto& b) {
 		const FVector myLocation = GetActorLocation();
