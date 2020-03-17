@@ -33,9 +33,9 @@ public:
 
 private:
 	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* meshComponent;
+	UStaticMeshComponent* meshComponent; //!< バルブのメッシュ
 	UStaticMesh* mesh;
 
 	UPROPERTY(VisibleAnywhere)
-	USphereComponent* actionableArea;
+	USphereComponent* actionableArea; //!< バルブを対象としたアクション実行可能エリア
 };

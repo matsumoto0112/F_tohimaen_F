@@ -6,7 +6,7 @@
 
 // Sets default values
 AValve::AValve(const FObjectInitializer& ObjectInitializer)
-    :Super(ObjectInitializer)
+    : Super(ObjectInitializer)
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -38,13 +38,13 @@ void AValve::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-
 //スプリンクラーを動作させる
 void AValve::action_Implementation()
 {
-    //とりあえずメッセージを出す
-    if (GEngine)
-    {
-        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, "turn valve");
-    }
+	//とりあえずメッセージを出す
+	if (GEngine)
+	{
+		FString s = FString::Format(TEXT("turn valve {0}"), {GetName()});
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, s);
+	}
 }

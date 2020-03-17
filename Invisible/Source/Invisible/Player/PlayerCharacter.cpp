@@ -3,6 +3,7 @@
 #include "PlayerCharacter.h"
 
 #include "Camera/CameraComponent.h"
+#include "Components/BoxComponent.h"
 #include "Engine.h"
 #include "Invisible/ActionableObject/Actionable.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,11 +17,14 @@ APlayerCharacter::APlayerCharacter()
 	//カメラを追加する
 	cameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FPSCamera"));
 	cameraComponent->SetupAttachment(GetCapsuleComponent());
+	cameraComponent->SetRelativeLocation(FVector(30.0f, 0.0f, 80.0f));
 	//ポーンがカメラの回転を制御できるように
 	cameraComponent->bUsePawnControlRotation = true;
 
-	actionArea = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
-	actionArea->InitSphereRadius(100.0f);
+    //アクション実行可能エリアを作成
+	actionArea = CreateDefaultSubobject<UBoxComponent>(TEXT("ActionArea"));
+	actionArea->InitBoxExtent(FVector(32.0f, 32.0f, 64.0f));
+	actionArea->SetRelativeLocation(FVector(32.0f, 0.0f, 0.0f));
 	actionArea->SetSimulatePhysics(false);
 	actionArea->SetCollisionProfileName("OverlapAllDynamic");
 	actionArea->SetupAttachment(GetCapsuleComponent());
@@ -83,14 +87,23 @@ void APlayerCharacter::lookup(float amount)
 //プレイヤーのアクションを実行する
 void APlayerCharacter::playerAction()
 {
-	//条件を満たしたオブジェクトが存在したらその対象にアクションを実行する
+	//条件を満たしたオブジェクトの中で一番近いオブジェクトを対象とし、アクションを実行する
 	TArray<AActor*> actors;
 	actionArea->GetOverlappingActors(actors);
-	for (AActor* actor : actors)
-	{
-        if (actor->GetClass()->ImplementsInterface(UActionable::StaticClass()))
-        {
-            IActionable::Execute_action(actor);
-        }
-	}
+
+    //対象以外のオブジェクトを削除する
+	actors.RemoveAllSwap([](AActor* a) { return !a->GetClass()->ImplementsInterface(UActionable::StaticClass()); });
+
+	if (actors.Num() == 0)
+		return;
+
+    //対象との距離でソートし、一番近いオブジェクトを対象とする
+    //NOTE:ソートアルゴリズムはクイックソートでO(log(N))より、対象オブジェクト数が少ないので全探索と同程度の速度になると予想しソートを使用
+    //NOTE:ほんの少し、全探索より配列の再構築のオーバーヘッドがあるので改善の余地あり。
+	actors.Sort([this](auto& a, auto& b) {
+		const FVector myLocation = GetActorLocation();
+		return FVector::Dist2D(myLocation, a.GetActorLocation()) < FVector::Dist2D(myLocation, b.GetActorLocation());
+	});
+
+	IActionable::Execute_action(actors[0]);
 }
