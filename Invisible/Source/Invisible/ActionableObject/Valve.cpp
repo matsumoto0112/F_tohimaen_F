@@ -3,6 +3,7 @@
 #include "Valve.h"
 
 #include "Engine.h"
+#include "Sprinkler.h"
 
 // Sets default values
 AValve::AValve(const FObjectInitializer& ObjectInitializer)
@@ -30,6 +31,18 @@ AValve::AValve(const FObjectInitializer& ObjectInitializer)
 void AValve::BeginPlay()
 {
 	Super::BeginPlay();
+
+    //連携しているスプリンクラーを探す
+	TArray<AActor*> sprinklers;
+	UGameplayStatics::GetAllActorsOfClass(this->GetWorld(), ASprinkler::StaticClass(), sprinklers);
+	for (auto&& aSprinker : sprinklers)
+	{
+		ASprinkler* sprinkler = Cast<ASprinkler>(aSprinker);
+		if (sprinkler->GetSprinklerID() == sprinklerID)
+		{
+			chainSprinklers.Add(sprinkler);
+		}
+	}
 }
 
 // Called every frame
@@ -41,10 +54,11 @@ void AValve::Tick(float DeltaTime)
 //スプリンクラーを動作させる
 void AValve::action_Implementation()
 {
-	//とりあえずメッセージを出す
 	if (GEngine)
 	{
-		FString s = FString::Format(TEXT("turn valve {0}"), {GetName()});
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, s);
+        for (auto&& sp : chainSprinklers)
+        {
+            IActionable::Execute_action(sp);
+        }
 	}
 }

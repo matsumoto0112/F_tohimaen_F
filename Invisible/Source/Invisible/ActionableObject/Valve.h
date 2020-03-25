@@ -8,6 +8,7 @@
 
 #include "Valve.generated.h"
 
+class ASprinkler;
 class USphereComponent;
 
 UCLASS()
@@ -33,9 +34,14 @@ public:
 
 private:
 	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* meshComponent; //!< バルブのメッシュ
-	UStaticMesh* mesh;
+	UStaticMeshComponent* meshComponent; //!< バルブのメッシュコンポーネント
+	UStaticMesh* mesh; //!< バルブのメッシュ
 
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* actionableArea; //!< バルブを対象としたアクション実行可能エリア
+	TArray<ASprinkler*> chainSprinklers; //!< 連携しているスプリンクラー
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Parameter)
+	int32 sprinklerID; //!< 連携するスプリンクラーID
 };
