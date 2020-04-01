@@ -8,6 +8,7 @@
 
 #include "Sprinkler.generated.h"
 
+class ATargetPoint;
 class UParticleSystemComponent;
 class UParticleSystem;
 
@@ -57,4 +58,8 @@ private:
 	FTimerHandle timerHandle; //!< スプリンクラーの稼働タイマーハンドル
 	UPROPERTY(EditAnywhere, Category = Parameter)
 	int32 sprinklerID; //!< 連携するバルブID
+
+	UPROPERTY(EditAnywhere)
+	TArray<ATargetPoint*> puddlePoints;
+	bool puddleSpawned;
 };

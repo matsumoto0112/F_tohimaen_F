@@ -5,6 +5,13 @@
 #include "Engine.h"
 #include "Particles/ParticleSystemComponent.h"
 
+namespace
+{
+	const FString path = "/Game/ActionableObject/Blueprint/Puddle_BP.Puddle_BP_C";
+	static TSubclassOf<AActor> puddleOrigin;
+	constexpr float FLOOR_Z = 50.0f;
+}
+
 // Sets default values
 ASprinkler::ASprinkler()
 {
@@ -29,6 +36,11 @@ ASprinkler::ASprinkler()
 		        EAttachmentRule::KeepRelative,
 		        false));
 	}
+
+	if (puddleOrigin == nullptr)
+	{
+		puddleOrigin = TSoftClassPtr<AActor>(FSoftObjectPath(*path)).LoadSynchronous();
+	}
 }
 
 // Called when the game starts or when spawned
@@ -51,20 +63,28 @@ void ASprinkler::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ASprinkler::action_Implementation()
 {
-	if (GEngine)
-	{
-		particleComponent->SetEmitterEnable(particleEmitterName, true);
+	particleComponent->SetEmitterEnable(particleEmitterName, true);
 
-        //タイマーが稼働中なら上書きする
-		if (timerHandle.IsValid())
+	//タイマーが稼働中なら上書きする
+	if (timerHandle.IsValid())
+	{
+		GetWorldTimerManager().ClearTimer(timerHandle);
+	}
+	//一定時間後にパーティクルを無効にする
+	GetWorldTimerManager().SetTimer(timerHandle, [&]() {
+		particleComponent->SetEmitterEnable(particleEmitterName, false);
+	},
+	    activeTime, false);
+
+	if (puddleOrigin != nullptr)
+	{
+		for (auto& point : puddlePoints)
 		{
-			GetWorldTimerManager().ClearTimer(timerHandle);
+			AActor* a = GetWorld()->SpawnActor<AActor>(puddleOrigin);
+			FVector pos = GetActorLocation();
+			pos.Z = FLOOR_Z;
+			a->SetActorLocation(point->GetActorLocation());
 		}
-        //一定時間後にパーティクルを無効にする
-		GetWorldTimerManager().SetTimer(timerHandle, [&]() {
-			particleComponent->SetEmitterEnable(particleEmitterName, false);
-		},
-		    activeTime, false);
 	}
 }
 
