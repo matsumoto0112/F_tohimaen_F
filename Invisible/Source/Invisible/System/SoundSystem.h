@@ -2,12 +2,36 @@
 
 #pragma once
 
+#include "Components/AudioComponent.h"
 #include "CoreMinimal.h"
+#include "Engine/DataAsset.h"
+#include "Engine/DataTable.h"
 #include "GameFramework/Actor.h"
 
 #include "SoundSystem.generated.h"
 
 class USoundAttenuation;
+
+UENUM(BlueprintType)
+enum class ESoundType : uint8
+{
+	Valve,
+	Sprinkler,
+	Player_Walk,
+	Enemy_Walk,
+	Walk_On_Puddle,
+};
+
+USTRUCT(BlueprintType)
+struct INVISIBLE_API FSoundData : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere)
+	ESoundType soundType;
+	UPROPERTY(EditAnywhere)
+	USoundBase* sound;
+};
 
 UCLASS()
 class INVISIBLE_API ASoundSystem : public AActor
@@ -27,9 +51,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	UPROPERTY(EditAnywhere)
-	USoundBase* doorOpen;
+	TSubclassOf<AActor> soundObjectOrigin;
 	UPROPERTY(EditDefaultsOnly)
 	USoundAttenuation* soundAttenuation;
-	TSubclassOf<AActor> soundObjectOrigin;
+	UPROPERTY(EditAnywhere)
+	UDataTable* dataTable;
 };

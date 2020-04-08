@@ -27,6 +27,12 @@ void ASoundSystem::BeginPlay()
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SoundObject_BP can't find"));
 		return;
 	}
+
+	auto dt = dataTable->FindRow<FSoundData>(TEXT("0"), FString());
+	if (dt != nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("find"));
+	}
 }
 
 // Called every frame
@@ -57,7 +63,17 @@ void ASoundSystem::Tick(float DeltaTime)
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cast SoundObject component is failed"));
 			return;
 		}
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Spawn SoundObject is completed"));
-		soundObject->playSound(doorOpen, soundAttenuation);
+		//soundObject->playSound(doorOpen, soundAttenuation);
+
+		const TArray<FName> names = dataTable->GetRowNames();
+		for (auto name : names)
+		{
+			FSoundData* data = dataTable->FindRow<FSoundData>(name, FString());
+			if (data->soundType == ESoundType::Valve)
+			{
+				soundObject->playSound(data->sound, soundAttenuation);
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Spawn SoundObject is completed"));
+			}
+		}
 	}
 }
