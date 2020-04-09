@@ -41,8 +41,8 @@ struct INVISIBLE_API FSoundData : public FTableRowBase
 	USoundBase* sound;
 
 	//!< 音の減衰パラメータ
-    UPROPERTY(EditAnywhere)
-    USoundAttenuation* soundAttenuation;
+	UPROPERTY(EditAnywhere)
+	USoundAttenuation* soundAttenuation;
 };
 
 /**
@@ -59,16 +59,27 @@ public:
 	USoundSystem();
 	void init(UDataTable* soundData);
 
+	/**
+    * 3D音源を再生する
+    */
 	UFUNCTION()
 	void play3DSound(ESoundType sound, const FVector& location);
 
 private:
+	/**
+    * 音データを探す
+    */
 	FSoundData* findSoundData(ESoundType sound) const;
+	/**
+    * 音が有効かどうか調べる
+    */
 	bool isValid(ESoundType sound) const;
 
 private:
+	//!< 元となる音オブジェクト
 	TSubclassOf<AActor> soundObjectOrigin;
+	//音データのテーブル
 	UDataTable* dataTable;
-
+	//音データのテーブル行名
 	TArray<FName> soundTableRowNames;
 };

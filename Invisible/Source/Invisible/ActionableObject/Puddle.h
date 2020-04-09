@@ -7,25 +7,31 @@
 
 #include "Puddle.generated.h"
 
+/**
+* 水たまりオブジェクト
+*/
 UCLASS()
 class INVISIBLE_API APuddle : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
+	/**
+    * コンストラクタ
+    */
 	APuddle();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	//!< バルブのメッシュコンポーネント
 	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* meshComponent; //!< バルブのメッシュコンポーネント
-	UStaticMesh* mesh; //!< バルブのメッシュ
+	UStaticMeshComponent* meshComponent;
+
+	//!< バルブのメッシュ
+	UStaticMesh* mesh;
 };

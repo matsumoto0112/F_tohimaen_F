@@ -5,10 +5,12 @@
 #include "Engine.h"
 #include "Invisible/System/SoundSystem.h"
 
+//コンストラクタ
 UMyGameInstance::UMyGameInstance()
 {
 }
 
+//インスタンスの取得
 UMyGameInstance* UMyGameInstance::GetInstance()
 {
 	if (GEngine)
@@ -21,11 +23,13 @@ UMyGameInstance* UMyGameInstance::GetInstance()
 	return nullptr;
 }
 
+//初期化
 void UMyGameInstance::Init()
 {
 	if (soundSystem == nullptr)
 	{
 		soundSystem = NewObject<USoundSystem>();
+		//サウンドシステムのワールドを再設定するのに必要
 		soundSystem->Rename(nullptr, this);
 	}
 	soundSystem->init(soundData);

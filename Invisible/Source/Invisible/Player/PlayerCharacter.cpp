@@ -9,7 +9,7 @@
 #include "Invisible/System/SoundSystem.h"
 #include "Kismet/GameplayStatics.h"
 
-// Sets default values
+//コンストラクタ
 APlayerCharacter::APlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -21,8 +21,6 @@ APlayerCharacter::APlayerCharacter()
 	//ポーンがカメラの回転を制御できるように
 	cameraComponent->bUsePawnControlRotation = true;
 
-	this->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::onComponentBeginOverlap);
-
 	//アクション実行可能エリアを作成
 	actionArea = CreateDefaultSubobject<UBoxComponent>(TEXT("ActionArea"));
 	actionArea->InitBoxExtent(FVector(32.0f, 32.0f, 64.0f));
@@ -30,22 +28,22 @@ APlayerCharacter::APlayerCharacter()
 	actionArea->SetSimulatePhysics(false);
 	actionArea->SetCollisionProfileName("OverlapAllDynamic");
 	actionArea->SetupAttachment(GetCapsuleComponent());
+
+	//コンポーネントの衝突時イベントを追加
+	this->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::onComponentBeginOverlap);
 }
 
-// Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	GetCharacterMovement()->MaxWalkSpeed = maxMoveSpeed;
 }
 
-// Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
-// Called to bind functionality to input
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -89,16 +87,6 @@ void APlayerCharacter::lookup(float amount)
 //プレイヤーのアクションを実行する
 void APlayerCharacter::playerAction()
 {
-	USoundSystem* sound = UMyGameInstance::GetInstance()->getSoundSystem();
-	if (sound)
-	{
-		sound->play3DSound(ESoundType::Valve, GetActorLocation());
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("sound off"));
-	}
-
 	//条件を満たしたオブジェクトの中で一番近いオブジェクトを対象とし、アクションを実行する
 	TArray<AActor*> actors;
 	actionArea->GetOverlappingActors(actors);
@@ -116,13 +104,14 @@ void APlayerCharacter::playerAction()
 		const FVector myLocation = GetActorLocation();
 		return FVector::Dist2D(myLocation, a.GetActorLocation()) < FVector::Dist2D(myLocation, b.GetActorLocation());
 	});
-
 	IActionable::Execute_action(actors[0]);
 }
 
+//衝突開始時に呼ばれる
 void APlayerCharacter::onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	//音オブジェクトなら音が聞こえる範囲内に入ったことを表す
 	if (Cast<ASoundObject>(OtherActor))
 	{
 		heardSound(Cast<ASoundObject>(OtherActor));
@@ -130,13 +119,19 @@ void APlayerCharacter::onComponentBeginOverlap(UPrimitiveComponent* HitComp, AAc
 	}
 }
 
+//音が聞こえる範囲内に入った
 void APlayerCharacter::heardSound(ASoundObject* soundObject)
 {
 	switch (soundObject->getSoundType())
 	{
+		//バルブの音が聞こえた
 	case ESoundType::Valve:
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red,TEXT("heard valve sound"));
-        break;
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard valve sound"));
+		break;
+		//スプリンクラーの音が聞こえた
+	case ESoundType::Sprinkler:
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard sprinkler sound"));
+		break;
 	default:
 		break;
 	}

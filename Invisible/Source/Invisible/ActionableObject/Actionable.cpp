@@ -4,6 +4,7 @@
 
 // Add default functionality here for any IActionable functions that are not pure virtual.
 
+//コンストラクタ
 UActionable::UActionable(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer)
 {}

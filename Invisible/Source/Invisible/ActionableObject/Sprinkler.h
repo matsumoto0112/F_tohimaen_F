@@ -3,28 +3,35 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine.h"
 #include "GameFramework/Actor.h"
 #include "Invisible/ActionableObject/Actionable.h"
+#include "Particles/ParticleSystemComponent.h"
 
 #include "Sprinkler.generated.h"
 
-class ATargetPoint;
-class UParticleSystemComponent;
-class UParticleSystem;
-
+/**
+* スプリンクラーオブジェクト
+*/
 UCLASS()
 class INVISIBLE_API ASprinkler : public AActor, public IActionable
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
+	/**
+    * コンストラクタ
+    */
 	ASprinkler();
 
 protected:
-	// Called when the game starts or when spawned
+	/**
+    * ゲーム開始時に呼ばれる
+    */
 	virtual void BeginPlay() override;
-
+	/**
+    * ゲーム終了時に呼ばれる
+    */
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	/**
     * スプリンクラーを動作させる
@@ -32,12 +39,14 @@ protected:
 	virtual void action_Implementation() override;
 
 public:
-	// Called every frame
+	/**
+    * 毎フレーム呼ばれる
+    */
 	virtual void Tick(float DeltaTime) override;
 
 public:
 	/**
-    * @brief スプリンクラーIDを取得する
+    * スプリンクラーIDを取得する
     */
 	inline int32 GetSprinklerID() const
 	{
@@ -45,21 +54,31 @@ public:
 	}
 
 private:
+	//!< スプリンクラーのメッシュコンポーネント
 	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* meshComponent; //!< スプリンクラーのメッシュコンポーネント
-	UStaticMesh* mesh; //!< スプリンクラーのメッシュ
+	UStaticMeshComponent* meshComponent;
+	//!< スプリンクラーのメッシュ
+	UStaticMesh* mesh;
 
+	//!< スプリンクラーの水のパーティクル
 	UPROPERTY(VisibleAnywhere)
-	UParticleSystemComponent* particleComponent; //!< スプリンクラーの水のパーティクル
-	const FName particleEmitterName = TEXT("Main"); //!< パーティクルのエミッタ名
+	UParticleSystemComponent* particleComponent;
+	//!< パーティクルのエミッタ名
+	//NOTE: パーティクルのエミッタ名をベタ打ちなので改善対象
+	const FName particleEmitterName = TEXT("Main");
 
+	//!< スプリンクラーの稼働時間
 	UPROPERTY(EditDefaultsOnly, Category = Parameter)
-	float activeTime = 5.0f; //!< スプリンクラーの稼働時間
-	FTimerHandle timerHandle; //!< スプリンクラーの稼働タイマーハンドル
+	float activeTime = 5.0f;
+	//!< スプリンクラーの稼働タイマーハンドル
+	FTimerHandle timerHandle;
+	//!< 連携するバルブID
 	UPROPERTY(EditAnywhere, Category = Parameter)
-	int32 sprinklerID; //!< 連携するバルブID
+	int32 sprinklerID;
 
+	//!< 水たまりの設置場所
 	UPROPERTY(EditAnywhere)
 	TArray<ATargetPoint*> puddlePoints;
+	//!< 水たまりがすでに生成されたかどうか
 	bool puddleSpawned;
 };

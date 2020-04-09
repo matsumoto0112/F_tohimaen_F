@@ -3,6 +3,8 @@
 #include "Valve.h"
 
 #include "Engine.h"
+#include "Invisible/System/MyGameInstance.h"
+#include "Invisible/System/SoundSystem.h"
 #include "Sprinkler.h"
 
 // Sets default values
@@ -32,7 +34,7 @@ void AValve::BeginPlay()
 {
 	Super::BeginPlay();
 
-    //連携しているスプリンクラーを探す
+	//連携しているスプリンクラーを探す
 	TArray<AActor*> sprinklers;
 	UGameplayStatics::GetAllActorsOfClass(this->GetWorld(), ASprinkler::StaticClass(), sprinklers);
 	for (auto&& aSprinker : sprinklers)
@@ -54,11 +56,12 @@ void AValve::Tick(float DeltaTime)
 //スプリンクラーを動作させる
 void AValve::action_Implementation()
 {
-	if (GEngine)
+    //対応するすべてのスプリンクラーを作動させる
+	for (auto&& sp : chainSprinklers)
 	{
-        for (auto&& sp : chainSprinklers)
-        {
-            IActionable::Execute_action(sp);
-        }
+		IActionable::Execute_action(sp);
 	}
+
+	//バルブ音再生
+	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Valve, GetActorLocation());
 }

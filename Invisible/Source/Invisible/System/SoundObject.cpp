@@ -10,12 +10,11 @@ namespace
 	const FString PATH = "/Game/System/SoundAttenuation.SoundAttenuation_C";
 }
 
-// Sets default values
 ASoundObject::ASoundObject()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	//音の聞こえる範囲用のコリジョンを作成する
 	soundHeardArea = CreateDefaultSubobject<USphereComponent>(TEXT("SoundHeardArea"));
 	soundHeardArea->InitSphereRadius(100.0f);
 	soundHeardArea->SetupAttachment(this->RootComponent);
@@ -23,7 +22,6 @@ ASoundObject::ASoundObject()
 	soundHeardArea->SetCollisionProfileName("OverlapOnlyPawn");
 }
 
-// Called when the game starts or when spawned
 void ASoundObject::BeginPlay()
 {
 	Super::BeginPlay();
@@ -32,20 +30,17 @@ void ASoundObject::BeginPlay()
 void ASoundObject::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-	if (audio != nullptr)
-	{
-		audio->Stop();
-	}
 }
 
-// Called every frame
 void ASoundObject::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
+//音を再生する
 void ASoundObject::playSound(FSoundData* sound)
 {
+	//音があるかどうかチェックする
 	if (!sound)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Sound data is null!"));
@@ -53,8 +48,20 @@ void ASoundObject::playSound(FSoundData* sound)
 	}
 	this->soundType = sound->soundType;
 
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), sound->sound, GetActorLocation(), 1.0f, 1.0f, 0.0f, sound->soundAttenuation);
-	const USoundAttenuation* atte = sound->soundAttenuation;
-	float radius = (atte->Attenuation.FalloffDistance + atte->Attenuation.AttenuationShapeExtents.Size());
+    //音を再生する
+    UAudioComponent* audioComponent = UGameplayStatics::SpawnSoundAttached(sound->sound, this->RootComponent,
+        NAME_None, FVector::ZeroVector, EAttachLocation::Type::KeepRelativeOffset, false, 1.0f, 1.0f, 0.0f, sound->soundAttenuation);
+    //再生終了時のイベントをセットする
+    audioComponent->OnAudioFinished.AddDynamic(this, &ASoundObject::onAudioFinished);
+
+    //コリジョンの半径を音の聞こえる範囲と同じようにセットする
+	const USoundAttenuation* attenuation = sound->soundAttenuation;
+	float radius = (attenuation->Attenuation.FalloffDistance + attenuation->Attenuation.AttenuationShapeExtents.Size());
 	soundHeardArea->SetSphereRadius(radius);
+}
+
+//音の再生が終了したときのイベント
+void ASoundObject::onAudioFinished()
+{
+	this->Destroy();
 }

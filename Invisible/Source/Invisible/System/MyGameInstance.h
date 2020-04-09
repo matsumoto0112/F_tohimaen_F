@@ -11,7 +11,7 @@
 class USoundSystem;
 
 /**
- *
+ * ゲームインスタンス
  */
 UCLASS()
 class INVISIBLE_API UMyGameInstance : public UGameInstance
@@ -20,16 +20,27 @@ class INVISIBLE_API UMyGameInstance : public UGameInstance
 	UMyGameInstance();
 
 public:
-    virtual void Init() override;
-
-    UFUNCTION()
+    /**
+    * 初期化
+    */
+	virtual void Init() override;
+    /**
+    * インスタンスの取得
+    */
+	UFUNCTION()
 	static UMyGameInstance* GetInstance();
-    UFUNCTION()
-    USoundSystem* getSoundSystem() const { return soundSystem; }
+    /**
+    * サウンドシステムを取得する
+    */
+	UFUNCTION()
+	USoundSystem* getSoundSystem() const { return soundSystem; }
+
 private:
+    //!< サウンドデータテーブル
 	UPROPERTY(EditDefaultsOnly, Category = "Params")
 	UDataTable* soundData;
 
 private:
+    //!< サウンドシステム
 	USoundSystem* soundSystem;
 };

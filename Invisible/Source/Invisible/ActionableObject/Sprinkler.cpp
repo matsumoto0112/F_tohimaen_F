@@ -2,8 +2,8 @@
 
 #include "Sprinkler.h"
 
-#include "Engine.h"
-#include "Particles/ParticleSystemComponent.h"
+#include "Invisible/System/MyGameInstance.h"
+#include "Invisible/System/SoundSystem.h"
 
 namespace
 {
@@ -12,12 +12,12 @@ namespace
 	constexpr float FLOOR_Z = 50.0f;
 }
 
-// Sets default values
+//コンストラクタ
 ASprinkler::ASprinkler()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	//メッシュコンポーネントを作成する
 	mesh = CreateDefaultSubobject<UStaticMesh>(TEXT("Mesh"));
 	meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
 	if (meshComponent)
@@ -26,6 +26,7 @@ ASprinkler::ASprinkler()
 		meshComponent->SetStaticMesh(mesh);
 	}
 
+	//パーティクルを作成する
 	particleComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleComponent"));
 	if (particleComponent)
 	{
@@ -37,16 +38,18 @@ ASprinkler::ASprinkler()
 		        false));
 	}
 
+	//水たまりの元オブジェクトがまだ読み込めていなければ読み込む
 	if (puddleOrigin == nullptr)
 	{
+		//NOTE:パスをコードにベタ打ちなので改善対象
 		puddleOrigin = TSoftClassPtr<AActor>(FSoftObjectPath(*path)).LoadSynchronous();
 	}
 }
 
-// Called when the game starts or when spawned
 void ASprinkler::BeginPlay()
 {
 	Super::BeginPlay();
+	puddleSpawned = false;
 
 	//パーティクルをゲーム開始時に停止させる
 	if (particleComponent)
@@ -58,9 +61,12 @@ void ASprinkler::BeginPlay()
 void ASprinkler::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
+
+	//パーティクルの終了タイマーを消去する
 	GetWorldTimerManager().ClearAllTimersForObject(this);
 }
 
+//アクションの実装
 void ASprinkler::action_Implementation()
 {
 	particleComponent->SetEmitterEnable(particleEmitterName, true);
@@ -76,19 +82,28 @@ void ASprinkler::action_Implementation()
 	},
 	    activeTime, false);
 
-	if (puddleOrigin != nullptr)
+	//スプリンクラーの音を再生する
+	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Sprinkler, GetActorLocation());
+
+	//水たまりの元がなければ何もしない
+	if (puddleOrigin == nullptr)
+		return;
+	//水たまりがすでにあるなら何もしない
+	if (puddleSpawned)
+		return;
+	//水たまりの発生ポイントすべてに水たまりを配置する
+	for (auto& point : puddlePoints)
 	{
-		for (auto& point : puddlePoints)
-		{
-			AActor* a = GetWorld()->SpawnActor<AActor>(puddleOrigin);
-			FVector pos = GetActorLocation();
-			pos.Z = FLOOR_Z;
-			a->SetActorLocation(point->GetActorLocation());
-		}
+		AActor* a = GetWorld()->SpawnActor<AActor>(puddleOrigin);
+		FVector pos = GetActorLocation();
+		//床の高さに合わせる
+		//NOTE:床の高さはベタ打ちなので改善対象
+		pos.Z = FLOOR_Z;
+		a->SetActorLocation(point->GetActorLocation());
 	}
+	puddleSpawned = true;
 }
 
-// Called every frame
 void ASprinkler::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
