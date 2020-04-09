@@ -20,8 +20,11 @@ class INVISIBLE_API UMyGameInstance : public UGameInstance
 	UMyGameInstance();
 
 public:
-	static UMyGameInstance* GetInstance();
     virtual void Init() override;
+
+    UFUNCTION()
+	static UMyGameInstance* GetInstance();
+    UFUNCTION()
     USoundSystem* getSoundSystem() const { return soundSystem; }
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Params")

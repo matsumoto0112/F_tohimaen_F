@@ -2,8 +2,8 @@
 
 #include "SoundObject.h"
 
-#include "Components/AudioComponent.h"
 #include "Engine.h"
+#include "Invisible/System/SoundSystem.h"
 
 namespace
 {
@@ -15,6 +15,12 @@ ASoundObject::ASoundObject()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	soundHeardArea = CreateDefaultSubobject<USphereComponent>(TEXT("SoundHeardArea"));
+	soundHeardArea->InitSphereRadius(100.0f);
+	soundHeardArea->SetupAttachment(this->RootComponent);
+	soundHeardArea->SetSimulatePhysics(false);
+	soundHeardArea->SetCollisionProfileName("OverlapOnlyPawn");
 }
 
 // Called when the game starts or when spawned
@@ -38,13 +44,16 @@ void ASoundObject::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ASoundObject::playSound(USoundBase* sound, USoundAttenuation* attenuation)
+void ASoundObject::playSound(FSoundData* sound, USoundAttenuation* attenuation)
 {
 	if (!sound)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Sound wave/cue is null!"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Sound data is null!"));
 		return;
 	}
+	this->soundType = sound->soundType;
 
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), sound, GetActorLocation(), 1.0f, 1.0f, 0.0f, attenuation);
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), sound->sound, GetActorLocation(), sound->reachRate, 1.0f, 0.0f, attenuation);
+	float radius = (attenuation->Attenuation.FalloffDistance + attenuation->Attenuation.AttenuationShapeExtents.Size());
+	soundHeardArea->SetSphereRadius(radius);
 }

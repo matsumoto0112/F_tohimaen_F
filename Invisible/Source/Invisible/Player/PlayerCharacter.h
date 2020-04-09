@@ -2,13 +2,14 @@
 
 #pragma once
 
+#include "Camera/CameraComponent.h"
+#include "Components/BoxComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 
 #include "PlayerCharacter.generated.h"
 
-class UCameraComponent;
-class UBoxComponent;
+class ASoundObject;
 
 UCLASS()
 class INVISIBLE_API APlayerCharacter : public ACharacter
@@ -56,14 +57,28 @@ private:
     */
 	UFUNCTION()
 	void playerAction();
+	/**
+    * 何かに衝突した時に呼ばれる
+    */
+	UFUNCTION()
+	void onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
+	    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	/**
+    * 音が聞こえた
+    */
+	void heardSound(ASoundObject* soundObject);
 
 private:
+	//!< 最大移動速度
 	UPROPERTY(EditAnywhere)
-	float maxMoveSpeed = 500.0f; //!< 最大移動速度
+	float maxMoveSpeed = 500.0f;
+	//!< マウス感度
 	UPROPERTY(EditAnywhere)
-	float mouseSensitivity = 100.0f; //!< マウス感度
+	float mouseSensitivity = 100.0f;
+	//!< プレイヤーカメラ
 	UPROPERTY(VisibleAnywhere)
-	UCameraComponent* cameraComponent; //!< プレイヤーカメラ
+	UCameraComponent* cameraComponent;
+	//!< アクション実行可能エリア
 	UPROPERTY(VisibleAnywhere)
-	UBoxComponent* actionArea; //!< アクション実行可能エリア
+	UBoxComponent* actionArea;
 };

@@ -2,10 +2,15 @@
 
 #pragma once
 
+#include "Components/AudioComponent.h"
+#include "Components/SphereComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
 #include "SoundObject.generated.h"
+
+struct FSoundData;
+enum class ESoundType : uint8;
 
 UCLASS()
 class INVISIBLE_API ASoundObject : public AActor
@@ -26,8 +31,14 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	void playSound(USoundBase* sound, USoundAttenuation* attenuation);
+	void playSound(FSoundData* sound, USoundAttenuation* attenuation);
+
+    ESoundType getSoundType() const { return soundType; }
+private:
+	UPROPERTY(VisibleAnywhere)
+	USphereComponent* soundHeardArea;
 
 private:
 	UAudioComponent* audio;
+    ESoundType soundType;
 };

@@ -51,7 +51,7 @@ void USoundSystem::play3DSound(ESoundType sound, const FVector& location)
 		return;
 	}
 
-	soundObject->playSound(data->sound, attenuation);
+	soundObject->playSound(data, attenuation);
 }
 
 FSoundData* USoundSystem::findSoundData(ESoundType sound) const

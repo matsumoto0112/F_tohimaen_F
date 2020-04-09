@@ -2,18 +2,16 @@
 
 #include "PlayerCharacter.h"
 
-#include "Camera/CameraComponent.h"
-#include "Components/BoxComponent.h"
 #include "Engine.h"
 #include "Invisible/ActionableObject/Actionable.h"
 #include "Invisible/System/MyGameInstance.h"
+#include "Invisible/System/SoundObject.h"
 #include "Invisible/System/SoundSystem.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
-	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	//カメラを追加する
@@ -22,6 +20,8 @@ APlayerCharacter::APlayerCharacter()
 	cameraComponent->SetRelativeLocation(FVector(30.0f, 0.0f, 80.0f));
 	//ポーンがカメラの回転を制御できるように
 	cameraComponent->bUsePawnControlRotation = true;
+
+	this->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::onComponentBeginOverlap);
 
 	//アクション実行可能エリアを作成
 	actionArea = CreateDefaultSubobject<UBoxComponent>(TEXT("ActionArea"));
@@ -118,4 +118,26 @@ void APlayerCharacter::playerAction()
 	});
 
 	IActionable::Execute_action(actors[0]);
+}
+
+void APlayerCharacter::onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
+    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (Cast<ASoundObject>(OtherActor))
+	{
+		heardSound(Cast<ASoundObject>(OtherActor));
+		return;
+	}
+}
+
+void APlayerCharacter::heardSound(ASoundObject* soundObject)
+{
+	switch (soundObject->getSoundType())
+	{
+	case ESoundType::Valve:
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red,TEXT("heard valve sound"));
+        break;
+	default:
+		break;
+	}
 }
