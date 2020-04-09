@@ -10,70 +10,84 @@ namespace
 	const FString PATH = "/Game/System/SoundObject_BP.SoundObject_BP_C";
 }
 
-// Sets default values
-ASoundSystem::ASoundSystem()
+USoundSystem::USoundSystem()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
 }
 
-// Called when the game starts or when spawned
-void ASoundSystem::BeginPlay()
+void USoundSystem::init(UDataTable* soundData, USoundAttenuation* soundAttenuation)
 {
-	Super::BeginPlay();
+	this->dataTable = soundData;
+	this->attenuation = soundAttenuation;
+
 	soundObjectOrigin = TSoftClassPtr<AActor>(FSoftObjectPath(*PATH)).LoadSynchronous();
 	if (soundObjectOrigin == nullptr)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SoundObject_BP can't find"));
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SoundObject_BP can't find"));
+		}
 		return;
 	}
 
-	auto dt = dataTable->FindRow<FSoundData>(TEXT("0"), FString());
-	if (dt != nullptr)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("find"));
-	}
+	soundTableRowNames = dataTable->GetRowNames();
 }
 
-// Called every frame
-void ASoundSystem::Tick(float DeltaTime)
+void USoundSystem::play3DSound(ESoundType sound, const FVector& location)
 {
-	Super::Tick(DeltaTime);
+	if (!isValid(sound))
+		return;
 
-	static int Counter = 0;
-	Counter++;
-	if (Counter % 300 == 0)
+	FSoundData* data = findSoundData(sound);
+	AActor* spawned = GetWorld()->SpawnActor(soundObjectOrigin, &location);
+	if (spawned == nullptr)
 	{
-		if (soundObjectOrigin == nullptr)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SoundObject_BP can't find"));
-			return;
-		}
-		FRandomStream rnd;
-		FVector locate = FVector(rnd.FRandRange(-4000.0f, 4000.0f), rnd.FRandRange(-4000.0f, 4000.0f), 0.0f);
-		AActor* spawned = GetWorld()->SpawnActor(soundObjectOrigin, &locate);
-		if (spawned == nullptr)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SoundObject_BP spawn failed"));
-			return;
-		}
-		ASoundObject* soundObject = Cast<ASoundObject>(spawned);
-		if (soundObject == nullptr)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cast SoundObject component is failed"));
-			return;
-		}
-		//soundObject->playSound(doorOpen, soundAttenuation);
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SoundObject_BP spawn failed"));
+		return;
+	}
+	ASoundObject* soundObject = Cast<ASoundObject>(spawned);
+	if (soundObject == nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cast SoundObject component is failed"));
+		return;
+	}
 
-		const TArray<FName> names = dataTable->GetRowNames();
-		for (auto name : names)
+	soundObject->playSound(data->sound, attenuation);
+}
+
+FSoundData* USoundSystem::findSoundData(ESoundType sound) const
+{
+	for (auto name : soundTableRowNames)
+	{
+		FSoundData* data = dataTable->FindRow<FSoundData>(name, FString());
+		if (data->soundType == sound)
 		{
-			FSoundData* data = dataTable->FindRow<FSoundData>(name, FString());
-			if (data->soundType == ESoundType::Valve)
-			{
-				soundObject->playSound(data->sound, soundAttenuation);
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Spawn SoundObject is completed"));
-			}
+			return data;
 		}
 	}
+	return nullptr;
+}
+
+bool USoundSystem::isValid(ESoundType sound) const
+{
+	if (!dataTable)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("DataTable not found"));
+		return false;
+	}
+	if (!attenuation)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Attenuation not found"));
+		return false;
+	}
+	if (!soundObjectOrigin)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SoundObjectOrigin not found"));
+		return false;
+	}
+	if (!findSoundData(sound))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Data not found"));
+		return false;
+	}
+	return true;
 }

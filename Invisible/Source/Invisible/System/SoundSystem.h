@@ -6,11 +6,9 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "Engine/DataTable.h"
-#include "GameFramework/Actor.h"
+#include "UObject/NoExportTypes.h"
 
 #include "SoundSystem.generated.h"
-
-class USoundAttenuation;
 
 UENUM(BlueprintType)
 enum class ESoundType : uint8
@@ -33,27 +31,25 @@ struct INVISIBLE_API FSoundData : public FTableRowBase
 	USoundBase* sound;
 };
 
+/**
+ *
+ */
 UCLASS()
-class INVISIBLE_API ASoundSystem : public AActor
+class INVISIBLE_API USoundSystem : public UObject
 {
 	GENERATED_BODY()
-
 public:
-	// Sets default values for this actor's properties
-	ASoundSystem();
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	USoundSystem();
+	void init(UDataTable* soundData, class USoundAttenuation* soundAttenuation);
+	void play3DSound(ESoundType sound, const FVector& location);
 
 private:
+	FSoundData* findSoundData(ESoundType sound) const;
+    bool isValid(ESoundType sound) const;
+private:
 	TSubclassOf<AActor> soundObjectOrigin;
-	UPROPERTY(EditDefaultsOnly)
-	USoundAttenuation* soundAttenuation;
-	UPROPERTY(EditAnywhere)
+	USoundAttenuation* attenuation;
 	UDataTable* dataTable;
+
+	TArray<FName> soundTableRowNames;
 };

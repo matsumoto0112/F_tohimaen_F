@@ -6,6 +6,8 @@
 #include "Components/BoxComponent.h"
 #include "Engine.h"
 #include "Invisible/ActionableObject/Actionable.h"
+#include "Invisible/System/MyGameInstance.h"
+#include "Invisible/System/SoundSystem.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -21,7 +23,7 @@ APlayerCharacter::APlayerCharacter()
 	//ポーンがカメラの回転を制御できるように
 	cameraComponent->bUsePawnControlRotation = true;
 
-    //アクション実行可能エリアを作成
+	//アクション実行可能エリアを作成
 	actionArea = CreateDefaultSubobject<UBoxComponent>(TEXT("ActionArea"));
 	actionArea->InitBoxExtent(FVector(32.0f, 32.0f, 64.0f));
 	actionArea->SetRelativeLocation(FVector(32.0f, 0.0f, 0.0f));
@@ -87,19 +89,29 @@ void APlayerCharacter::lookup(float amount)
 //プレイヤーのアクションを実行する
 void APlayerCharacter::playerAction()
 {
+	USoundSystem* sound = UMyGameInstance::GetInstance()->getSoundSystem();
+	if (sound)
+	{
+		sound->play3DSound(ESoundType::Valve, GetActorLocation());
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("sound off"));
+	}
+
 	//条件を満たしたオブジェクトの中で一番近いオブジェクトを対象とし、アクションを実行する
 	TArray<AActor*> actors;
 	actionArea->GetOverlappingActors(actors);
 
-    //対象以外のオブジェクトを削除する
+	//対象以外のオブジェクトを削除する
 	actors.RemoveAllSwap([](AActor* a) { return !a->GetClass()->ImplementsInterface(UActionable::StaticClass()); });
 
 	if (actors.Num() == 0)
 		return;
 
-    //対象との距離でソートし、一番近いオブジェクトを対象とする
-    //NOTE:ソートアルゴリズムはクイックソートで、平均O(Nlog(N))より、対象オブジェクト数が少ないので全探索と同程度の速度になると予想しソートを使用
-    //NOTE:ほんの少し、全探索より配列の再構築のオーバーヘッドがあるので改善の余地あり。
+	//対象との距離でソートし、一番近いオブジェクトを対象とする
+	//NOTE:ソートアルゴリズムはクイックソートで、平均O(Nlog(N))より、対象オブジェクト数が少ないので全探索と同程度の速度になると予想しソートを使用
+	//NOTE:ほんの少し、全探索より配列の再構築のオーバーヘッドがあるので改善の余地あり。
 	actors.Sort([this](auto& a, auto& b) {
 		const FVector myLocation = GetActorLocation();
 		return FVector::Dist2D(myLocation, a.GetActorLocation()) < FVector::Dist2D(myLocation, b.GetActorLocation());

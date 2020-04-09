@@ -40,7 +40,7 @@ void ASoundObject::Tick(float DeltaTime)
 
 void ASoundObject::playSound(USoundBase* sound, USoundAttenuation* attenuation)
 {
-	if (sound == nullptr)
+	if (!sound)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Sound wave/cue is null!"));
 		return;
