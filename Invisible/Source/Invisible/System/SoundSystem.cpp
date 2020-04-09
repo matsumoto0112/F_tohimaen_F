@@ -14,10 +14,9 @@ USoundSystem::USoundSystem()
 {
 }
 
-void USoundSystem::init(UDataTable* soundData, USoundAttenuation* soundAttenuation)
+void USoundSystem::init(UDataTable* soundData)
 {
 	this->dataTable = soundData;
-	this->attenuation = soundAttenuation;
 
 	soundObjectOrigin = TSoftClassPtr<AActor>(FSoftObjectPath(*PATH)).LoadSynchronous();
 	if (soundObjectOrigin == nullptr)
@@ -51,7 +50,7 @@ void USoundSystem::play3DSound(ESoundType sound, const FVector& location)
 		return;
 	}
 
-	soundObject->playSound(data, attenuation);
+	soundObject->playSound(data);
 }
 
 FSoundData* USoundSystem::findSoundData(ESoundType sound) const
@@ -72,11 +71,6 @@ bool USoundSystem::isValid(ESoundType sound) const
 	if (!dataTable)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("DataTable not found"));
-		return false;
-	}
-	if (!attenuation)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Attenuation not found"));
 		return false;
 	}
 	if (!soundObjectOrigin)

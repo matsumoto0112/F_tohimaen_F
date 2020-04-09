@@ -40,9 +40,9 @@ struct INVISIBLE_API FSoundData : public FTableRowBase
 	UPROPERTY(EditDefaultsOnly)
 	USoundBase* sound;
 
-	//!< 音の届き具合
-	UPROPERTY(EditAnywhere)
-	float reachRate = 1.0f;
+	//!< 音の減衰パラメータ
+    UPROPERTY(EditAnywhere)
+    USoundAttenuation* soundAttenuation;
 };
 
 /**
@@ -57,7 +57,7 @@ public:
     *  コンストラクタ
     */
 	USoundSystem();
-	void init(UDataTable* soundData, class USoundAttenuation* soundAttenuation);
+	void init(UDataTable* soundData);
 
 	UFUNCTION()
 	void play3DSound(ESoundType sound, const FVector& location);
@@ -68,7 +68,6 @@ private:
 
 private:
 	TSubclassOf<AActor> soundObjectOrigin;
-	USoundAttenuation* attenuation;
 	UDataTable* dataTable;
 
 	TArray<FName> soundTableRowNames;

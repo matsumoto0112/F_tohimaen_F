@@ -28,5 +28,5 @@ void UMyGameInstance::Init()
 		soundSystem = NewObject<USoundSystem>();
 		soundSystem->Rename(nullptr, this);
 	}
-	soundSystem->init(soundData, attenuation);
+	soundSystem->init(soundData);
 }

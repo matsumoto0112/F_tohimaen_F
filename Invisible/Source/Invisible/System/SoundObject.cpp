@@ -44,7 +44,7 @@ void ASoundObject::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ASoundObject::playSound(FSoundData* sound, USoundAttenuation* attenuation)
+void ASoundObject::playSound(FSoundData* sound)
 {
 	if (!sound)
 	{
@@ -53,7 +53,8 @@ void ASoundObject::playSound(FSoundData* sound, USoundAttenuation* attenuation)
 	}
 	this->soundType = sound->soundType;
 
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(), sound->sound, GetActorLocation(), sound->reachRate, 1.0f, 0.0f, attenuation);
-	float radius = (attenuation->Attenuation.FalloffDistance + attenuation->Attenuation.AttenuationShapeExtents.Size());
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), sound->sound, GetActorLocation(), 1.0f, 1.0f, 0.0f, sound->soundAttenuation);
+	const USoundAttenuation* atte = sound->soundAttenuation;
+	float radius = (atte->Attenuation.FalloffDistance + atte->Attenuation.AttenuationShapeExtents.Size());
 	soundHeardArea->SetSphereRadius(radius);
 }

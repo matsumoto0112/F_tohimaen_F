@@ -31,7 +31,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	void playSound(FSoundData* sound, USoundAttenuation* attenuation);
+	void playSound(FSoundData* sound);
 
     ESoundType getSoundType() const { return soundType; }
 private:

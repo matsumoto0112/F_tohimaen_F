@@ -29,8 +29,6 @@ public:
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Params")
 	UDataTable* soundData;
-	UPROPERTY(EditDefaultsOnly, Category = "Params")
-	USoundAttenuation* attenuation;
 
 private:
 	USoundSystem* soundSystem;
