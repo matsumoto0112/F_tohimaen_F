@@ -9,7 +9,6 @@ namespace
 {
 	const FString path = "/Game/ActionableObject/Blueprint/Puddle_BP.Puddle_BP_C";
 	static TSubclassOf<AActor> puddleOrigin;
-	constexpr float FLOOR_Z = 50.0f;
 }
 
 //コンストラクタ
@@ -95,10 +94,6 @@ void ASprinkler::action_Implementation()
 	for (auto& point : puddlePoints)
 	{
 		AActor* a = GetWorld()->SpawnActor<AActor>(puddleOrigin);
-		FVector pos = GetActorLocation();
-		//床の高さに合わせる
-		//NOTE:床の高さはベタ打ちなので改善対象
-		pos.Z = FLOOR_Z;
 		a->SetActorLocation(point->GetActorLocation());
 	}
 	puddleSpawned = true;
