@@ -27,11 +27,8 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
-private:
-	//!< バルブのメッシュコンポーネント
-	UPROPERTY(VisibleAnywhere)
+public:
+	//!< 水たまりのメッシュ
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Mesh")
 	UStaticMeshComponent* meshComponent;
-
-	//!< バルブのメッシュ
-	UStaticMesh* mesh;
 };

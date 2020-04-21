@@ -17,25 +17,17 @@ ASprinkler::ASprinkler()
 	PrimaryActorTick.bCanEverTick = true;
 
 	//メッシュコンポーネントを作成する
-	mesh = CreateDefaultSubobject<UStaticMesh>(TEXT("Mesh"));
-	meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	if (meshComponent)
-	{
-		RootComponent = meshComponent;
-		meshComponent->SetStaticMesh(mesh);
-	}
+	meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	RootComponent = meshComponent;
 
 	//パーティクルを作成する
 	particleComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleComponent"));
-	if (particleComponent)
-	{
-		particleComponent->AttachToComponent(RootComponent,
-		    FAttachmentTransformRules(
-		        EAttachmentRule::KeepRelative,
-		        EAttachmentRule::KeepRelative,
-		        EAttachmentRule::KeepRelative,
-		        false));
-	}
+	particleComponent->AttachToComponent(RootComponent,
+	    FAttachmentTransformRules(
+	        EAttachmentRule::KeepRelative,
+	        EAttachmentRule::KeepRelative,
+	        EAttachmentRule::KeepRelative,
+	        false));
 
 	//水たまりの元オブジェクトがまだ読み込めていなければ読み込む
 	if (puddleOrigin == nullptr)
