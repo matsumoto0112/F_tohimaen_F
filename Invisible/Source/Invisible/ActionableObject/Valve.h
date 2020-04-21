@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Invisible/ActionableObject/Actionable.h"
+#include "Components/SphereComponent.h"
 
 #include "Valve.generated.h"
 
 class ASprinkler;
-class USphereComponent;
 
 UCLASS()
 class INVISIBLE_API AValve : public AActor, public IActionable
@@ -18,7 +18,7 @@ class INVISIBLE_API AValve : public AActor, public IActionable
 
 public:
 	// Sets default values for this actor's properties
-	AValve(const FObjectInitializer& ObjectInitializer);
+	AValve();
 
 protected:
 	// Called when the game starts or when spawned
@@ -32,16 +32,18 @@ public:
     */
 	virtual void action_Implementation() override;
 
-private:
-	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* meshComponent; //!< バルブのメッシュコンポーネント
-	UStaticMesh* mesh; //!< バルブのメッシュ
-
-	UPROPERTY(VisibleAnywhere)
-	USphereComponent* actionableArea; //!< バルブを対象としたアクション実行可能エリア
-	TArray<ASprinkler*> chainSprinklers; //!< 連携しているスプリンクラー
-
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Parameter)
-	int32 sprinklerID; //!< 連携するスプリンクラーID
+	//!< バルブのメッシュ
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Mesh")
+	UStaticMeshComponent* meshComponent;
+
+    //!< バルブを対象としたアクション実行可能エリア
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Collision")
+	USphereComponent* actionableArea;
+    //!< 連携するスプリンクラーID
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
+	int32 sprinklerID;
+private:
+    //!< 連携しているスプリンクラー
+	TArray<ASprinkler*> chainSprinklers;
 };

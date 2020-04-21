@@ -53,32 +53,32 @@ public:
 		return sprinklerID;
 	}
 
-private:
-	//!< スプリンクラーのメッシュコンポーネント
-	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* meshComponent;
+public:
 	//!< スプリンクラーのメッシュ
-	UStaticMesh* mesh;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Mesh")
+	UStaticMeshComponent* meshComponent;
 
 	//!< スプリンクラーの水のパーティクル
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Particle")
 	UParticleSystemComponent* particleComponent;
 	//!< パーティクルのエミッタ名
 	//NOTE: パーティクルのエミッタ名をベタ打ちなので改善対象
 	const FName particleEmitterName = TEXT("Main");
 
 	//!< スプリンクラーの稼働時間
-	UPROPERTY(EditDefaultsOnly, Category = Parameter)
+	UPROPERTY(EditDefaultsOnly, Category = "Parameter")
 	float activeTime = 5.0f;
-	//!< スプリンクラーの稼働タイマーハンドル
-	FTimerHandle timerHandle;
-	//!< 連携するバルブID
-	UPROPERTY(EditAnywhere, Category = Parameter)
+
+    //!< 連携するバルブID
+	UPROPERTY(EditAnywhere, Category = "Parameter")
 	int32 sprinklerID;
 
 	//!< 水たまりの設置場所
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Parameter")
 	TArray<ATargetPoint*> puddlePoints;
+private:
+	//!< スプリンクラーの稼働タイマーハンドル
+	FTimerHandle timerHandle;
 	//!< 水たまりがすでに生成されたかどうか
 	bool puddleSpawned;
 };

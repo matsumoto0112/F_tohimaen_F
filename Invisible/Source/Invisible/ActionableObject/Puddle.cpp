@@ -10,13 +10,8 @@ APuddle::APuddle()
 	PrimaryActorTick.bCanEverTick = true;
 
 	//メッシュコンポーネントを作成する
-	mesh = CreateDefaultSubobject<UStaticMesh>(TEXT("Mesh"));
-	meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	if (meshComponent)
-	{
-		RootComponent = meshComponent;
-		meshComponent->SetStaticMesh(mesh);
-	}
+	meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	RootComponent = meshComponent;
 }
 
 void APuddle::BeginPlay()
