@@ -80,6 +80,4 @@ private:
 	TSubclassOf<AActor> soundObjectOrigin;
 	//音データのテーブル
 	UDataTable* dataTable;
-	//音データのテーブル行名
-	TArray<FName> soundTableRowNames;
 };

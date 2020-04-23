@@ -7,7 +7,7 @@
 
 namespace
 {
-	const FString PATH = "/Game/System/SoundObject_BP.SoundObject_BP_C";
+	static const FString PATH = "/Game/System/SoundObject_BP.SoundObject_BP_C";
 }
 
 //コンストラクタ
@@ -30,8 +30,6 @@ void USoundSystem::init(UDataTable* soundData)
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SoundObject_BP can't find"));
 		return;
 	}
-	//後々の検索用にテーブルの行名を取得する
-	soundTableRowNames = dataTable->GetRowNames();
 }
 
 //3D音源で再生する
@@ -44,7 +42,14 @@ void USoundSystem::play3DSound(ESoundType sound, const FVector& location)
 	//再生する音データを取得する
 	FSoundData* data = findSoundData(sound);
 
-	AActor* spawned = GetWorld()->SpawnActor(soundObjectOrigin, &location);
+    if (!soundObjectOrigin)
+    {
+        if (GEngine)
+            GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SoundObject_BP can't find"));
+        return;
+    }
+
+	AActor* spawned = GetWorld()->SpawnActor<AActor>(soundObjectOrigin);
 	if (spawned == nullptr)
 	{
 		if (GEngine)
@@ -52,6 +57,7 @@ void USoundSystem::play3DSound(ESoundType sound, const FVector& location)
 		return;
 	}
 
+    spawned->SetActorLocation(location);
 	ASoundObject* soundObject = Cast<ASoundObject>(spawned);
 	if (soundObject == nullptr)
 	{
@@ -66,10 +72,11 @@ void USoundSystem::play3DSound(ESoundType sound, const FVector& location)
 //音データを取得する
 FSoundData* USoundSystem::findSoundData(ESoundType sound) const
 {
+	FString contextString;
 	//全データから対応する音を取得する
-	for (auto name : soundTableRowNames)
+	for (auto& name : dataTable->GetRowNames())
 	{
-		FSoundData* data = dataTable->FindRow<FSoundData>(name, FString());
+		FSoundData* data = dataTable->FindRow<FSoundData>(name, contextString);
 		if (data->soundType == sound)
 		{
 			return data;

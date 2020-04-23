@@ -10,6 +10,15 @@ UMyGameInstance::UMyGameInstance()
 {
 }
 
+void UMyGameInstance::PrintLogBlueprintCallstack()
+{
+    FString Callstack = FFrame::GetScriptCallstack();
+
+    UE_LOG(LogTemp, Error, TEXT("--------------------------------------"));
+    UE_LOG(LogTemp, Error, TEXT(" Blueprint Callstack:\n%s"), *Callstack);
+    UE_LOG(LogTemp, Error, TEXT("--------------------------------------"));
+}
+
 //インスタンスの取得
 UMyGameInstance* UMyGameInstance::GetInstance()
 {
@@ -23,9 +32,17 @@ UMyGameInstance* UMyGameInstance::GetInstance()
 	return nullptr;
 }
 
+void UMyGameInstance::OnSystemError()
+{
+    PrintLogBlueprintCallstack();
+}
+
 //初期化
 void UMyGameInstance::Init()
 {
+	Super::Init();
+	OnSystemErrorDelegateHandle = FCoreDelegates::OnHandleSystemError.AddUObject(this, &UMyGameInstance::OnSystemError);
+
 	if (soundSystem == nullptr)
 	{
 		soundSystem = NewObject<USoundSystem>();
@@ -33,4 +50,10 @@ void UMyGameInstance::Init()
 		soundSystem->Rename(nullptr, this);
 	}
 	soundSystem->init(soundData);
+}
+
+void UMyGameInstance::Shutdown()
+{
+    FCoreDelegates::OnHandleSystemError.Remove(OnSystemErrorDelegateHandle);
+    Super::Shutdown();
 }

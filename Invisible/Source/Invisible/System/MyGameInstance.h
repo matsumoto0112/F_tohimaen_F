@@ -24,6 +24,17 @@ public:
     * 初期化
     */
 	virtual void Init() override;
+
+    /**
+    * シャットダウン時に呼ばれる
+    */
+    virtual void Shutdown() override;
+
+    /**
+    * 実行中のBlueprintのコールスタックをログ出力する
+    */
+     UFUNCTION(BlueprintCallable, Category = "Debug")
+    static void PrintLogBlueprintCallstack();
     /**
     * インスタンスの取得
     */
@@ -34,7 +45,14 @@ public:
     */
 	UFUNCTION()
 	USoundSystem* getSoundSystem() const { return soundSystem; }
+private:
+    //!< OnHandleSystemError デリゲート登録時のハンドル
+    FDelegateHandle OnSystemErrorDelegateHandle;
 
+    /**
+    * システムエラー時に呼ばれる関数
+    */
+    void OnSystemError();
 private:
     //!< サウンドデータテーブル
 	UPROPERTY(EditDefaultsOnly, Category = "Params")
