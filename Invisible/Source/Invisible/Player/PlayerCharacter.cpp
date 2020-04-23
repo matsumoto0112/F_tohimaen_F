@@ -9,6 +9,12 @@
 #include "Invisible/System/SoundSystem.h"
 #include "Kismet/GameplayStatics.h"
 
+namespace
+{
+    constexpr float WALKING_THRESHOLD = 0.5f; //!< 歩いているとみなす閾値
+    constexpr float WALKING_SOUND_PLAY_INTERVAL = 0.66f; //!< 歩行音の再生間隔
+}
+
 //コンストラクタ
 APlayerCharacter::APlayerCharacter()
 {
@@ -42,6 +48,26 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+    //歩いているときに一定時間ごとに歩行音再生
+	if (isWalking)
+	{
+		walkingSecond += DeltaTime;
+		if (walkingSecond > WALKING_SOUND_PLAY_INTERVAL)
+		{
+            walkingSecond -= WALKING_SOUND_PLAY_INTERVAL;
+			FVector location = GetActorLocation();
+
+            //TODO:床を取得して高さを取得するか、アニメーションにサウンドの再生を任せるかのどちらかにする
+			location.Z = 50.0f;
+			UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Player_Walk, location);
+		}
+	}
+	else
+	{
+        isWalking = 0.0f;
+	}
+    isWalking = false;
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -61,6 +87,12 @@ void APlayerCharacter::moveForward(float value)
 {
 	const FVector direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
 	AddMovementInput(direction, value);
+
+    //一定値以上の移動量があれば歩いているとみなす
+    if (std::abs(value) > WALKING_THRESHOLD)
+    {
+        isWalking = true;
+    }
 }
 
 //右方向への移動
@@ -68,6 +100,12 @@ void APlayerCharacter::moveRight(float value)
 {
 	const FVector direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
 	AddMovementInput(direction, value);
+
+    //一定値以上の移動量があれば歩いているとみなす
+	if (std::abs(value) > WALKING_THRESHOLD)
+	{
+        isWalking = true;
+	}
 }
 
 //カメラの横方向の回転処理
@@ -131,6 +169,9 @@ void APlayerCharacter::heardSound(ASoundObject* soundObject)
 		//スプリンクラーの音が聞こえた
 	case ESoundType::Sprinkler:
 		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard sprinkler sound"));
+		break;
+	case ESoundType::Player_Walk:
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk sound"));
 		break;
 	default:
 		break;

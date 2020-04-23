@@ -16,10 +16,15 @@ ASoundObject::ASoundObject()
 
 	//音の聞こえる範囲用のコリジョンを作成する
 	soundHeardArea = CreateDefaultSubobject<USphereComponent>(TEXT("SoundHeardArea"));
+	RootComponent = soundHeardArea;
 	soundHeardArea->InitSphereRadius(100.0f);
-	soundHeardArea->SetupAttachment(this->RootComponent);
 	soundHeardArea->SetSimulatePhysics(false);
-	soundHeardArea->SetCollisionProfileName("OverlapOnlyPawn");
+	soundHeardArea->SetCollisionProfileName("OverlapAllDynamic");
+	soundHeardArea->SetGenerateOverlapEvents(false);
+
+	audio = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));
+	audio->SetupAttachment(this->RootComponent);
+	audio->OnAudioFinished.AddDynamic(this, &ASoundObject::onAudioFinished);
 }
 
 void ASoundObject::BeginPlay()
@@ -48,16 +53,16 @@ void ASoundObject::playSound(FSoundData* sound)
 	}
 	this->soundType = sound->soundType;
 
-    //音を再生する
-    UAudioComponent* audioComponent = UGameplayStatics::SpawnSoundAttached(sound->sound, this->RootComponent,
-        NAME_None, FVector::ZeroVector, EAttachLocation::Type::KeepRelativeOffset, false, 1.0f, 1.0f, 0.0f, sound->soundAttenuation);
-    //再生終了時のイベントをセットする
-    audioComponent->OnAudioFinished.AddDynamic(this, &ASoundObject::onAudioFinished);
+	//音をセットして再生する
+	audio->SetSound(sound->sound);
+	audio->AttenuationSettings = sound->soundAttenuation;
+	audio->Play();
 
-    //コリジョンの半径を音の聞こえる範囲と同じようにセットする
+	//コリジョンの半径を音の聞こえる範囲と同じようにセットする
 	const USoundAttenuation* attenuation = sound->soundAttenuation;
 	float radius = (attenuation->Attenuation.FalloffDistance + attenuation->Attenuation.AttenuationShapeExtents.Size());
-	soundHeardArea->SetSphereRadius(radius);
+	soundHeardArea->SetSphereRadius(radius, false);
+	soundHeardArea->SetGenerateOverlapEvents(true);
 }
 
 //音の再生が終了したときのイベント

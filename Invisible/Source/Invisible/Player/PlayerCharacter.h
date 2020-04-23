@@ -83,4 +83,9 @@ private:
 	//!< アクション実行可能エリア
 	UPROPERTY(VisibleAnywhere)
 	UBoxComponent* actionArea;
+
+    //!< 今歩いているか
+    bool isWalking;
+    //!< 歩いている時間(秒)
+    float walkingSecond;
 };
