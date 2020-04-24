@@ -4,41 +4,37 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "SearchManager.h"
+#include "SearchEgde.h"
 
-#include "Enemy.generated.h"
+#include "SearchManager.generated.h"
 
 UCLASS()
-class INVISIBLE_API AEnemy : public AActor
+class INVISIBLE_API ASearchManager : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
-	AEnemy();
+	ASearchManager();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void Moving(float DeltaTime);
-	void SearchCourse();
+	TArray<FVector> Course(AActor* actor) const;
+	float GetRadius() const;
+
+private:
+	ASearchEgde* NearSearch(AActor* actor) const;
+	ASearchEgde* GetRandomSearch(ASearchEgde* remove) const;
 
 private:
 	UPROPERTY(EditAnywhere)
-	float speed = 15.0f;
+	TArray<ASearchEgde*> search;
 	UPROPERTY(EditAnywhere)
-	float reflection=10;
-
-	UPROPERTY(EditAnywhere)
-	ASearchManager* searchManager;
-	TArray<FVector> courses;
-
-	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* meshComponent; //!< メッシュコンポーネント
-	UStaticMesh* mesh; //!< メッシュ
+	float radius=100.0f;
 };

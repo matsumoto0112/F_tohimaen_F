@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "SearchManager.h"
-
 #include "Enemy.generated.h"
 
 UCLASS()
@@ -25,20 +23,4 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void Moving(float DeltaTime);
-	void SearchCourse();
-
-private:
-	UPROPERTY(EditAnywhere)
-	float speed = 15.0f;
-	UPROPERTY(EditAnywhere)
-	float reflection=10;
-
-	UPROPERTY(EditAnywhere)
-	ASearchManager* searchManager;
-	TArray<FVector> courses;
-
-	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* meshComponent; //!< メッシュコンポーネント
-	UStaticMesh* mesh; //!< メッシュ
 };
