@@ -11,8 +11,8 @@
 
 namespace
 {
-    constexpr float WALKING_THRESHOLD = 0.5f; //!< 歩いているとみなす閾値
-    constexpr float WALKING_SOUND_PLAY_INTERVAL = 0.66f; //!< 歩行音の再生間隔
+	constexpr float WALKING_THRESHOLD = 0.5f; //!< 歩いているとみなす閾値
+	constexpr float WALKING_SOUND_PLAY_INTERVAL = 0.66f; //!< 歩行音の再生間隔
 }
 
 //コンストラクタ
@@ -49,25 +49,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-    //歩いているときに一定時間ごとに歩行音再生
-	if (isWalking)
-	{
-		walkingSecond += DeltaTime;
-		if (walkingSecond > WALKING_SOUND_PLAY_INTERVAL)
-		{
-            walkingSecond -= WALKING_SOUND_PLAY_INTERVAL;
-			FVector location = GetActorLocation();
-
-            //TODO:床を取得して高さを取得するか、アニメーションにサウンドの再生を任せるかのどちらかにする
-			location.Z = 50.0f;
-			UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Player_Walk, location);
-		}
-	}
-	else
-	{
-        isWalking = 0.0f;
-	}
-    isWalking = false;
+	playWalkSound(DeltaTime);
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -88,11 +70,11 @@ void APlayerCharacter::moveForward(float value)
 	const FVector direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
 	AddMovementInput(direction, value);
 
-    //一定値以上の移動量があれば歩いているとみなす
-    if (std::abs(value) > WALKING_THRESHOLD)
-    {
-        isWalking = true;
-    }
+	//一定値以上の移動量があれば歩いているとみなす
+	if (std::abs(value) > WALKING_THRESHOLD)
+	{
+		isWalking = true;
+	}
 }
 
 //右方向への移動
@@ -101,10 +83,10 @@ void APlayerCharacter::moveRight(float value)
 	const FVector direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
 	AddMovementInput(direction, value);
 
-    //一定値以上の移動量があれば歩いているとみなす
+	//一定値以上の移動量があれば歩いているとみなす
 	if (std::abs(value) > WALKING_THRESHOLD)
 	{
-        isWalking = true;
+		isWalking = true;
 	}
 }
 
@@ -164,16 +146,55 @@ void APlayerCharacter::heardSound(ASoundObject* soundObject)
 	{
 		//バルブの音が聞こえた
 	case ESoundType::Valve:
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard valve sound"));
+		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard valve sound"));
 		break;
 		//スプリンクラーの音が聞こえた
 	case ESoundType::Sprinkler:
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard sprinkler sound"));
+		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard sprinkler sound"));
 		break;
 	case ESoundType::Player_Walk:
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk sound"));
+		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk sound"));
 		break;
 	default:
 		break;
+	}
+}
+
+void APlayerCharacter::playWalkSound(float deltaTime)
+{
+	//歩いているときに一定時間ごとに歩行音再生
+	if (isWalking)
+	{
+		//次の移動の入力があるまで歩いていない状態として扱う
+		isWalking = false;
+
+		walkingSecond += deltaTime;
+
+		//歩いている時間が一定量を超えたら再生する
+		if (walkingSecond > WALKING_SOUND_PLAY_INTERVAL)
+		{
+			walkingSecond -= WALKING_SOUND_PLAY_INTERVAL;
+
+			FHitResult hit;
+			if (!GetWorld()->LineTraceSingleByChannel(hit, GetActorLocation(), FVector::DownVector * 1000.0f,
+			        ECollisionChannel::ECC_Visibility))
+				return;
+
+			const ESoundType sound = [&hit]() {
+                //TODO:GamePlayTagで処理するのが望ましい
+                //TODO:床と親クラスを一致させないと難しい
+				if (hit.Actor->ActorHasTag(TEXT("Puddle")))
+				{
+					return ESoundType::Walk_On_Puddle;
+				}
+				return ESoundType::Player_Walk;
+			}();
+
+			UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(sound, hit.Location);
+		}
+	}
+	else
+	{
+		walkingSecond = 0.0f;
 	}
 }

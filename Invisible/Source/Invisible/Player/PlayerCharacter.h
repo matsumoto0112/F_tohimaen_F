@@ -20,7 +20,7 @@ class INVISIBLE_API APlayerCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-    /**
+	/**
     * コンストラクタ
     */
 	APlayerCharacter();
@@ -69,6 +69,10 @@ private:
     * 音が聞こえた
     */
 	void heardSound(ASoundObject* soundObject);
+	/**
+    * 歩行音の再生処理
+    */
+	void playWalkSound(float deltaTime);
 
 private:
 	//!< 最大移動速度
@@ -84,8 +88,8 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	UBoxComponent* actionArea;
 
-    //!< 今歩いているか
-    bool isWalking;
-    //!< 歩いている時間(秒)
-    float walkingSecond;
+	//!< 今歩いているか
+	bool isWalking;
+	//!< 歩いている時間(秒)
+	float walkingSecond;
 };
