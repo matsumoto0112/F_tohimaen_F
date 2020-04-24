@@ -11,13 +11,13 @@ AEnemy::AEnemy()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	mesh = CreateDefaultSubobject<UStaticMesh>(TEXT("Mesh"));
-	meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	if (meshComponent)
-	{
-		RootComponent = meshComponent;
-		meshComponent->SetStaticMesh(mesh);
-	}
+	//mesh = CreateDefaultSubobject<UStaticMesh>(TEXT("Mesh"));
+	//meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
+	//if (meshComponent)
+	//{
+	//	RootComponent = meshComponent;
+	//	meshComponent->SetStaticMesh(mesh);
+	//}
 }
 
 // Called when the game starts or when spawned
@@ -34,7 +34,7 @@ void AEnemy::Tick(float DeltaTime)
 	Moving(DeltaTime);
 	SearchCourse();
 
-	meshComponent->SetScalarParameterValueOnMaterials("reflection", reflection);
+	//meshComponent->SetScalarParameterValueOnMaterials("reflection", reflection);
 }
 
 void AEnemy::Moving(float DeltaTime)
@@ -49,17 +49,17 @@ void AEnemy::Moving(float DeltaTime)
 
 	auto pos = GetActorLocation();
 	auto vector = (courses[0] - pos);
-	auto length = (speed < vector.Size()) ? speed:vector.Size();
+	auto length = (speed < vector.Size()) ? speed : vector.Size();
 	//vector.Normalize();
 	auto nor = vector.GetSafeNormal();
 
 	auto mov = nor * length * DeltaTime;
 	mov = (mov.Size() < vector.Size()) ? mov : vector;
 
-	SetActorLocation(pos+mov);
+	SetActorLocation(pos + mov);
 	auto right = GetActorRightVector();
 	right.Normalize();
-	auto r = nor+(nor-right)*DeltaTime;
+	auto r = nor + (nor - right) * DeltaTime;
 	SetActorRotation(r.Rotation());
 
 	if (vector.Size() <= searchManager->GetRadius())

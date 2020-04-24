@@ -12,8 +12,8 @@ UCLASS()
 class INVISIBLE_API AEnemy : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AEnemy();
 
@@ -21,7 +21,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -32,13 +32,13 @@ private:
 	UPROPERTY(EditAnywhere)
 	float speed = 15.0f;
 	UPROPERTY(EditAnywhere)
-	float reflection=10;
+	float reflection = 10;
 
 	UPROPERTY(EditAnywhere)
 	ASearchManager* searchManager;
 	TArray<FVector> courses;
 
-	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* meshComponent; //!< メッシュコンポーネント
-	UStaticMesh* mesh; //!< メッシュ
+	//UPROPERTY(EditAnywhere)
+	//UStaticMeshComponent* meshComponent; //!< メッシュコンポーネント
+	//UStaticMesh* mesh; //!< メッシュ
 };
