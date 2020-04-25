@@ -35,6 +35,7 @@ void USoundSystem::init(UDataTable* soundData)
 //3D‰¹Œ¹‚ÅÄ¶‚·‚é
 void USoundSystem::play3DSound(ESoundType sound, const FVector& location)
 {
+    return;
 	//‰¹‚ª—LŒø‚©‚Ç‚¤‚©’²‚×‚é
 	if (!isValid(sound))
 		return;
