@@ -181,8 +181,8 @@ void APlayerCharacter::playWalkSound(float deltaTime)
 				return;
 
 			const ESoundType sound = [&hit]() {
-                //TODO:GamePlayTag‚Åˆ—‚·‚é‚Ì‚ª–]‚Ü‚µ‚¢
-                //TODO:°‚ÆeƒNƒ‰ƒX‚ðˆê’v‚³‚¹‚È‚¢‚Æ“ï‚µ‚¢
+				//TODO:GamePlayTag‚Åˆ—‚·‚é‚Ì‚ª–]‚Ü‚µ‚¢
+				//TODO:°‚ÆeƒNƒ‰ƒX‚ðˆê’v‚³‚¹‚È‚¢‚Æ“ï‚µ‚¢
 				if (hit.Actor->ActorHasTag(TEXT("Puddle")))
 				{
 					return ESoundType::Walk_On_Puddle;
@@ -190,7 +190,9 @@ void APlayerCharacter::playWalkSound(float deltaTime)
 				return ESoundType::Player_Walk;
 			}();
 
-			UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(sound, hit.Location);
+			FVector seLocation = GetActorLocation();
+			seLocation.Z = hit.Location.Z;
+			UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(sound, seLocation);
 		}
 	}
 	else

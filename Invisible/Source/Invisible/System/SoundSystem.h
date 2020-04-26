@@ -10,6 +10,8 @@
 
 #include "SoundSystem.generated.h"
 
+class ASoundObject;
+
 /**
 * 使用する音の種類
 * @details 音を再生する時に指定する列挙型
@@ -52,6 +54,7 @@ UCLASS()
 class INVISIBLE_API USoundSystem : public UObject
 {
 	GENERATED_BODY()
+
 public:
 	/**
     *  コンストラクタ
@@ -78,6 +81,9 @@ private:
 private:
 	//!< 元となる音オブジェクト
 	TSubclassOf<AActor> soundObjectOrigin;
-	//音データのテーブル
+	//!< 音データのテーブル
 	UDataTable* dataTable;
+
+    //!< 使用しているサウンドオブジェクトリスト
+    TArray<ASoundObject*> soundObjects;
 };

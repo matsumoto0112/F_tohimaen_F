@@ -30,6 +30,7 @@ ASoundObject::ASoundObject()
 void ASoundObject::BeginPlay()
 {
 	Super::BeginPlay();
+    isPlaying = false;
 }
 
 void ASoundObject::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -43,7 +44,7 @@ void ASoundObject::Tick(float DeltaTime)
 }
 
 //音を再生する
-void ASoundObject::playSound(FSoundData* sound)
+void ASoundObject::playSound(FSoundData* sound,const FVector& location)
 {
 	//音があるかどうかチェックする
 	if (!sound)
@@ -53,6 +54,7 @@ void ASoundObject::playSound(FSoundData* sound)
 	}
 	this->soundType = sound->soundType;
 
+    SetActorLocation(location);
 	//音をセットして再生する
 	audio->SetSound(sound->sound);
 	audio->AttenuationSettings = sound->soundAttenuation;
@@ -63,10 +65,13 @@ void ASoundObject::playSound(FSoundData* sound)
 	float radius = (attenuation->Attenuation.FalloffDistance + attenuation->Attenuation.AttenuationShapeExtents.Size());
 	soundHeardArea->SetSphereRadius(radius, false);
 	soundHeardArea->SetGenerateOverlapEvents(true);
+
+    isPlaying = true;
 }
 
 //音の再生が終了したときのイベント
 void ASoundObject::onAudioFinished()
 {
-	this->Destroy();
+    isPlaying = false;
+    soundHeardArea->SetGenerateOverlapEvents(false);
 }

@@ -35,12 +35,13 @@ public:
 	/**
     * 音を再生する
     */
-	void playSound(FSoundData* sound);
+	void playSound(FSoundData* sound,const FVector& location);
 	/**
     * 音の種類を取得する
     */
 	ESoundType getSoundType() const { return soundType; }
 
+    bool unused() const { return !isPlaying; }
 private:
 	/**
     * 音の再生終了時のイベント
@@ -59,4 +60,5 @@ private:
 private:
 	//!< 再生している音の種類
 	ESoundType soundType;
+    bool isPlaying;
 };
