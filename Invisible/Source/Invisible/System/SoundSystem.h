@@ -23,7 +23,8 @@ enum class ESoundType : uint8
 	Sprinkler,
 	Player_Walk,
 	Enemy_Walk,
-	Walk_On_Puddle,
+	Player_Walk_On_Puddle,
+    Enemy_Walk_On_Puddle,
 };
 
 /**

@@ -142,18 +142,26 @@ void APlayerCharacter::onComponentBeginOverlap(UPrimitiveComponent* HitComp, AAc
 //音が聞こえる範囲内に入った
 void APlayerCharacter::heardSound(ASoundObject* soundObject)
 {
+	//聞こえた音の種類によって場合分け
 	switch (soundObject->getSoundType())
 	{
-		//バルブの音が聞こえた
 	case ESoundType::Valve:
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard valve sound"));
 		break;
-		//スプリンクラーの音が聞こえた
 	case ESoundType::Sprinkler:
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard sprinkler sound"));
 		break;
 	case ESoundType::Player_Walk:
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk sound"));
+		break;
+	case ESoundType::Enemy_Walk:
+		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Enemy_Walk sound"));
+		break;
+	case ESoundType::Player_Walk_On_Puddle:
+		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk_On_Puddle sound"));
+		break;
+	case ESoundType::Enemy_Walk_On_Puddle:
+		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Enemy_Walk_On_Puddle sound"));
 		break;
 	default:
 		break;
@@ -185,13 +193,17 @@ void APlayerCharacter::playWalkSound(float deltaTime)
 				//TODO:床と親クラスを一致させないと難しい
 				if (hit.Actor->ActorHasTag(TEXT("Puddle")))
 				{
-					return ESoundType::Walk_On_Puddle;
+					return ESoundType::Player_Walk_On_Puddle;
 				}
 				return ESoundType::Player_Walk;
 			}();
 
-			FVector seLocation = GetActorLocation();
-			seLocation.Z = hit.Location.Z;
+			const FVector seLocation = [&]() {
+				FVector location = GetActorLocation();
+				location.Z = hit.Location.Z;
+				return location;
+			}();
+
 			UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(sound, seLocation);
 		}
 	}
