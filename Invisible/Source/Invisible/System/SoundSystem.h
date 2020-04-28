@@ -24,7 +24,7 @@ enum class ESoundType : uint8
 	Player_Walk,
 	Enemy_Walk,
 	Player_Walk_On_Puddle,
-    Enemy_Walk_On_Puddle,
+	Enemy_Walk_On_Puddle,
 };
 
 /**
@@ -65,9 +65,12 @@ public:
 
 	/**
     * 3D音源を再生する
+    * @param sound 音の種類
+    * @param location 音の発生場所
+    * @param soundGenerateSource 音の発生源のアクター
     */
 	UFUNCTION()
-	void play3DSound(ESoundType sound, const FVector& location);
+	void play3DSound(ESoundType sound, const FVector& location, AActor* soundGenerateSource);
 
 private:
 	/**
@@ -85,6 +88,6 @@ private:
 	//!< 音データのテーブル
 	UDataTable* dataTable;
 
-    //!< 使用しているサウンドオブジェクトリスト
-    TArray<ASoundObject*> soundObjects;
+	//!< 使用しているサウンドオブジェクトリスト
+	TArray<ASoundObject*> soundObjects;
 };

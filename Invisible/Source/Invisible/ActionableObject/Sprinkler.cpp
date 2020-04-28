@@ -74,7 +74,7 @@ void ASprinkler::action_Implementation()
 	    activeTime, false);
 
 	//スプリンクラーの音を再生する
-	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Sprinkler, GetActorLocation());
+	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Sprinkler, GetActorLocation(),this);
 
 	//水たまりの元がなければ何もしない
 	if (puddleOrigin == nullptr)

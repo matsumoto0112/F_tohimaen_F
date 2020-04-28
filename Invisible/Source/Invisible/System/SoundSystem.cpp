@@ -41,7 +41,7 @@ void USoundSystem::init(UDataTable* soundData)
 }
 
 //3D‰¹Œ¹‚ÅÄ¶‚·‚é
-void USoundSystem::play3DSound(ESoundType sound, const FVector& location)
+void USoundSystem::play3DSound(ESoundType sound, const FVector& location, AActor* soundGenerateSource)
 {
     //‰¹‚ª—LŒø‚©‚Ç‚¤‚©’²‚×‚é
 	if (!isValid(sound))
@@ -62,7 +62,7 @@ void USoundSystem::play3DSound(ESoundType sound, const FVector& location)
     {
 		if (soundObjects[i]->unused())
 		{
-			soundObjects[i]->playSound(data, location);
+			soundObjects[i]->playSound(data, location, soundGenerateSource);
 			return;
 		}
     }

@@ -204,7 +204,7 @@ void APlayerCharacter::playWalkSound(float deltaTime)
 				return location;
 			}();
 
-			UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(sound, seLocation);
+			UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(sound, seLocation, this);
 		}
 	}
 	else

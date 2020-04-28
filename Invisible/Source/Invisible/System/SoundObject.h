@@ -35,13 +35,24 @@ public:
 	/**
     * 音を再生する
     */
-	void playSound(FSoundData* sound,const FVector& location);
+	void playSound(FSoundData* sound, const FVector& location, AActor* soundGenerateSource);
 	/**
     * 音の種類を取得する
     */
 	ESoundType getSoundType() const { return soundType; }
+    /**
+    * 音の発生源のアクターを取得する
+    */
+	AActor* getSoundGenerateSource() const
+	{
+		return soundGenerateSourceActor;
+	}
 
-    bool unused() const { return !isPlaying; }
+    /**
+    * 現在この音源オブジェクトが使われていないか
+    */
+	bool unused() const { return !isPlaying; }
+
 private:
 	/**
     * 音の再生終了時のイベント
@@ -53,12 +64,17 @@ private:
 	//!< 音の聞こえる範囲用コリジョン
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* soundHeardArea;
-
+    //!< 音源
 	UPROPERTY(VisibleAnywhere)
 	UAudioComponent* audio;
 
+
 private:
+    //!< 音の発生源のアクター
+	UPROPERTY()
+	AActor* soundGenerateSourceActor;
 	//!< 再生している音の種類
 	ESoundType soundType;
-    bool isPlaying;
+    //!< 音を再生しているか
+	bool isPlaying;
 };

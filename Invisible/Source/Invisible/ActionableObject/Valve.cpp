@@ -57,5 +57,5 @@ void AValve::action_Implementation()
 	}
 
 	//ƒoƒ‹ƒu‰¹Ä¶
-	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Valve, GetActorLocation());
+	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Valve, GetActorLocation(),this);
 }
