@@ -8,6 +8,8 @@
 
 #include "SearchManager.generated.h"
 
+class SearchCourse;
+
 UCLASS()
 class INVISIBLE_API ASearchManager : public AActor
 {
@@ -26,11 +28,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	TArray<FVector> Course(AActor* actor) const;
+	TArray<FVector> Course(AActor* start, AActor* end) const;
 	float GetRadius() const;
 
 private:
 	ASearchEgde* NearSearch(AActor* actor) const;
 	ASearchEgde* GetRandomSearch(ASearchEgde* remove) const;
+	TArray<FVector> Course(SearchCourse* start, ASearchEgde* end) const;
 
 private:
 	UPROPERTY(EditAnywhere)

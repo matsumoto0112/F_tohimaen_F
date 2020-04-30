@@ -37,6 +37,26 @@ TArray<FVector> ASearchManager::Course(AActor* actor) const
 	}
 	auto start = new SearchCourse(near);
 	auto end = GetRandomSearch(start->GetBaseSearch());
+	
+	return Course(start, end);
+}
+
+TArray<FVector> ASearchManager::Course(AActor* start, AActor* end) const
+{
+	auto nearStart = NearSearch(start);
+	auto nearEnd = NearSearch(end);
+	if ((nearStart == nullptr) || (nearEnd == nullptr))
+	{
+		return TArray<FVector>();
+	}
+	auto searchStart = new SearchCourse(nearStart);
+	auto searchEnd = (new SearchCourse(nearEnd))->GetBaseSearch();
+
+	return Course(searchStart, searchEnd);
+}
+
+TArray<FVector> ASearchManager::Course(SearchCourse* start, ASearchEgde* end) const
+{
 	auto searched = TArray<SearchCourse*>();
 	searched.Add(start);
 
@@ -110,6 +130,6 @@ ASearchEgde* ASearchManager::GetRandomSearch(ASearchEgde* remove) const
 	case 1:
 		return s[0];
 	default:
-		return s[FMath::FRandRange(0,s.Num())];
+		return s[FMath::FRandRange(0, s.Num())];
 	}
 }
