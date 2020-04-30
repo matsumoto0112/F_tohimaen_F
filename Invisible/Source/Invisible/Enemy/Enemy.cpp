@@ -199,14 +199,14 @@ void AEnemy::playWalkSound(float deltaTime)
 				//TODO:°‚ÆeƒNƒ‰ƒX‚ðˆê’v‚³‚¹‚È‚¢‚Æ“ï‚µ‚¢
 				if (hit.Actor->ActorHasTag(TEXT("Puddle")))
 				{
-					return ESoundType::Walk_On_Puddle;
+					return ESoundType::Enemy_Walk_On_Puddle;
 				}
-				return ESoundType::Player_Walk;
+				return ESoundType::Enemy_Walk;
 			}();
 
 			FVector seLocation = GetActorLocation();
 			seLocation.Z = hit.Location.Z;
-			UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(sound, seLocation);
+			UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(sound, seLocation, this);
 		}
 	}
 	else
