@@ -3,21 +3,34 @@
 #include "Enemy.h"
 
 #include "Engine.h"
+#include "Invisible/System/MyGameInstance.h"
+#include "Invisible/System/SoundObject.h"
+#include "Invisible/System/SoundSystem.h"
 
 #include <string>
+
+namespace
+{
+	constexpr float WALKING_THRESHOLD = 0.5f; //!< 歩いているとみなす閾値
+	constexpr float WALKING_SOUND_PLAY_INTERVAL = 0.66f; //!< 歩行音の再生間隔
+}
 
 // Sets default values
 AEnemy::AEnemy()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	//mesh = CreateDefaultSubobject<UStaticMesh>(TEXT("Mesh"));
-	//meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	//if (meshComponent)
-	//{
-	//	RootComponent = meshComponent;
-	//	meshComponent->SetStaticMesh(mesh);
-	//}
+
+	reflection = 0;
+
+	skeltal = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeltal"));
+	//meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	RootComponent = skeltal;
+
+	actionableArea = CreateDefaultSubobject<USphereComponent>(TEXT("ActionableArea"));
+	actionableArea->InitSphereRadius(500.0f);
+	actionableArea->SetCollisionProfileName("OverlapOnlyPawn");
+	actionableArea->SetSimulatePhysics(false);
+	actionableArea->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -31,48 +44,69 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	Moving(DeltaTime);
-	SearchCourse();
+	SearchCourse(DeltaTime);
+	SetMaterial(DeltaTime);
 
-	//meshComponent->SetScalarParameterValueOnMaterials("reflection", reflection);
+	Moving(DeltaTime);
+	//playWalkSound(DeltaTime);
 }
 
+// 移動処理
 void AEnemy::Moving(float DeltaTime)
 {
-	//FVector location = GetActorLocation();
-	//location.X += 10.0f;
-	//SetActorLocation(location);
 	if (courses.Num() <= 0)
 	{
 		return;
 	}
 
+	// 初期値設定
 	auto pos = GetActorLocation();
 	auto vector = (courses[0] - pos);
-	auto length = (speed < vector.Size()) ? speed : vector.Size();
-	//vector.Normalize();
+	auto length = (moveSpeed < vector.Size()) ? moveSpeed : vector.Size();
 	auto nor = vector.GetSafeNormal();
-
 	auto mov = nor * length * DeltaTime;
-	mov = (mov.Size() < vector.Size()) ? mov : vector;
 
+	// 移動
+	mov = (mov.Size() < vector.Size()) ? mov : vector;
 	SetActorLocation(pos + mov);
-	auto right = GetActorRightVector();
-	right.Normalize();
-	auto r = nor + (nor - right) * DeltaTime;
+
+	// 回転
+	auto r = GetActorForwardVector() + nor * DeltaTime * rotateSpeed;
 	SetActorRotation(r.Rotation());
 
+	// 経路更新
 	if (vector.Size() <= searchManager->GetRadius())
 	{
 		courses.RemoveAt(0);
 	}
+	if (courses.Num() <= 0)
+	{
+		SetWait();
+	}
 }
 
-void AEnemy::SearchCourse()
+// 待機時間設定
+void AEnemy::SetWait()
 {
-	auto s = std::to_string(courses.Num());
-	auto str = FString::FString(s.c_str());
-	UKismetSystemLibrary::DrawDebugString(GetWorld(), GetActorLocation(), str, nullptr, FLinearColor::Black, 0);
+	waitTimer = waitTime * FMath::FRandRange(0.0f, 1.0f);
+}
+
+// 経路探索
+void AEnemy::SearchCourse(float DeltaTime)
+{
+	//auto s = std::to_string(courses.Num());
+	//auto str = FString::FString(s.c_str());
+	//UKismetSystemLibrary::DrawDebugString(GetWorld(), GetActorLocation(), str, nullptr, FLinearColor::Black, 0);
+	if (0 < waitTimer)
+	{
+		waitTimer -= DeltaTime;
+		if (0 < waitTimer)
+		{
+			return;
+		}
+		waitTimer = 0;
+	}
+
 	if (0 < courses.Num())
 	{
 		return;
@@ -83,4 +117,109 @@ void AEnemy::SearchCourse()
 	}
 
 	courses = searchManager->Course(this);
+}
+
+// プレイヤー探索
+void AEnemy::searchPlayer(AActor* OtherActor)
+{
+	courses.RemoveAll([](FVector) { return true; });
+	courses = searchManager->Course(this, OtherActor);
+}
+
+// マテリアル
+void AEnemy::SetMaterial(float DeltaTime)
+{
+	//actionableArea->OnComponentHit;
+	reflection = reflection - DeltaTime;
+	reflection = (reflection < 0) ? 0 : (1 < reflection) ? 1 : reflection;
+	skeltal->SetScalarParameterValueOnMaterials("reflection", reflection);
+}
+
+// 透明化設定
+void AEnemy::AddReflection(float add)
+{
+	reflection = reflection + add;
+	reflection = (reflection < 0) ? 0 : (1 < reflection) ? 1 : reflection;
+}
+
+// 衝突開始時に呼ばれる
+void AEnemy::onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
+    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	bathing(OtherActor);
+	//音オブジェクトなら音が聞こえる範囲内に入ったことを表す
+	if (Cast<ASoundObject>(OtherActor))
+	{
+		heardSound(Cast<ASoundObject>(OtherActor));
+		return;
+	}
+}
+
+//音が聞こえる範囲内に入った
+void AEnemy::heardSound(ASoundObject* soundObject)
+{
+	switch (soundObject->getSoundType())
+	{
+		//バルブの音が聞こえた
+	case ESoundType::Valve:
+		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard valve sound"));
+		break;
+		//スプリンクラーの音が聞こえた
+	case ESoundType::Sprinkler:
+		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard sprinkler sound"));
+		break;
+	case ESoundType::Player_Walk:
+		searchPlayer(soundObject);
+		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk sound"));
+		break;
+	default:
+		break;
+	}
+}
+
+void AEnemy::playWalkSound(float deltaTime)
+{
+	//歩いているときに一定時間ごとに歩行音再生
+	if (0 < courses.Num())
+	{
+		walkingSecond += deltaTime;
+
+		//歩いている時間が一定量を超えたら再生する
+		if (walkingSecond > WALKING_SOUND_PLAY_INTERVAL)
+		{
+			walkingSecond -= WALKING_SOUND_PLAY_INTERVAL;
+
+			FHitResult hit;
+			if (!GetWorld()->LineTraceSingleByChannel(hit, GetActorLocation(), FVector::DownVector * 1000.0f,
+			        ECollisionChannel::ECC_Visibility))
+				return;
+
+			const ESoundType sound = [&hit]() {
+				//TODO:GamePlayTagで処理するのが望ましい
+				//TODO:床と親クラスを一致させないと難しい
+				if (hit.Actor->ActorHasTag(TEXT("Puddle")))
+				{
+					return ESoundType::Walk_On_Puddle;
+				}
+				return ESoundType::Player_Walk;
+			}();
+
+			FVector seLocation = GetActorLocation();
+			seLocation.Z = hit.Location.Z;
+			UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(sound, seLocation);
+		}
+	}
+	else
+	{
+		walkingSecond = 0.0f;
+	}
+}
+
+void AEnemy::bathing(AActor* OtherActor)
+{
+	if (OtherActor->ActorHasTag(TEXT("Sprinkler")))
+	{
+		extern ENGINE_API float GAverageFPS;
+		AddReflection(1.0f / GAverageFPS);
+	}
 }
