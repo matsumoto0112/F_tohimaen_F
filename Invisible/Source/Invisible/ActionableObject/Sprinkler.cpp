@@ -29,6 +29,14 @@ ASprinkler::ASprinkler()
 	        EAttachmentRule::KeepRelative,
 	        false));
 
+	wetArea = CreateDefaultSubobject<UBoxComponent>(TEXT("WetArea"));
+    wetArea->InitBoxExtent(FVector(250.0f, 200.0f, 250.0f));
+    wetArea->SetRelativeLocation(FVector(0.0f,-220.0f,0.0f));
+	wetArea->SetGenerateOverlapEvents(false);
+    wetArea->SetSimulatePhysics(false);
+    wetArea->SetCollisionProfileName("OverlapAllDynamic");
+	wetArea->SetupAttachment(RootComponent);
+
 	//水たまりの元オブジェクトがまだ読み込めていなければ読み込む
 	if (puddleOrigin == nullptr)
 	{
@@ -61,6 +69,7 @@ void ASprinkler::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ASprinkler::action_Implementation()
 {
 	particleComponent->SetEmitterEnable(particleEmitterName, true);
+	wetArea->SetGenerateOverlapEvents(true);
 
 	//タイマーが稼働中なら上書きする
 	if (timerHandle.IsValid())
@@ -70,11 +79,12 @@ void ASprinkler::action_Implementation()
 	//一定時間後にパーティクルを無効にする
 	GetWorldTimerManager().SetTimer(timerHandle, [&]() {
 		particleComponent->SetEmitterEnable(particleEmitterName, false);
+		wetArea->SetGenerateOverlapEvents(false);
 	},
 	    activeTime, false);
 
 	//スプリンクラーの音を再生する
-	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Sprinkler, GetActorLocation(),this);
+	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Sprinkler, GetActorLocation(), this);
 
 	//水たまりの元がなければ何もしない
 	if (puddleOrigin == nullptr)

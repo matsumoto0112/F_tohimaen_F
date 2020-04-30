@@ -76,6 +76,10 @@ public:
 	//!< 水たまりの設置場所
 	UPROPERTY(EditAnywhere, Category = "Parameter")
 	TArray<ATargetPoint*> puddlePoints;
+
+    //!< 水がかかる範囲
+    UPROPERTY(VisibleAnywhere)
+        UBoxComponent* wetArea;
 private:
 	//!< スプリンクラーの稼働タイマーハンドル
 	FTimerHandle timerHandle;
