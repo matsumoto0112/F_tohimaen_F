@@ -20,8 +20,6 @@ AEnemy::AEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	reflection = 0;
-
 	skeltal = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeltal"));
 	//meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	RootComponent = skeltal;
@@ -32,7 +30,7 @@ AEnemy::AEnemy()
 	actionableArea->SetSimulatePhysics(false);
 	actionableArea->SetupAttachment(RootComponent);
 
-	skeltal->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::onComponentBeginOverlap);
+	//skeltal->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::onComponentBeginOverlap);
 	//skeltal->OnComponentHit.AddDynamic(this, &AEnemy::onComponentHit);
 	//this->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::onComponentBeginOverlap);
 }
@@ -41,6 +39,7 @@ AEnemy::AEnemy()
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+	reflection = 0;
 }
 
 // Called every frame
@@ -126,6 +125,11 @@ void AEnemy::SearchCourse(float DeltaTime)
 // プレイヤー探索
 void AEnemy::searchPlayer(AActor* OtherActor)
 {
+	if (searchManager == nullptr)
+	{
+		return;
+	}
+
 	courses.RemoveAll([](FVector) { return true; });
 	courses = searchManager->Course(this, OtherActor);
 }
@@ -133,8 +137,9 @@ void AEnemy::searchPlayer(AActor* OtherActor)
 // マテリアル
 void AEnemy::SetMaterial(float DeltaTime)
 {
-	//actionableArea->OnComponentHit;
-	float thirst = (thirstSpeed <= 1.0f) ? DeltaTime:DeltaTime/thirstSpeed;
+	overBathing();
+
+	float thirst = (thirstSpeed <= 1.0f) ? DeltaTime : DeltaTime / thirstSpeed;
 	reflection -= thirst;
 	reflection = (reflection < 0) ? 0 : (1 < reflection) ? 1 : reflection;
 	skeltal->SetScalarParameterValueOnMaterials("reflection", reflection);
@@ -143,7 +148,7 @@ void AEnemy::SetMaterial(float DeltaTime)
 // 透明化設定
 void AEnemy::AddReflection(float add)
 {
-	reflection = reflection + add;
+	reflection += add;
 	reflection = (reflection < 0) ? 0 : (1 < reflection) ? 1 : reflection;
 }
 
@@ -151,7 +156,6 @@ void AEnemy::AddReflection(float add)
 void AEnemy::onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	bathing(OtherActor);
 	//音オブジェクトなら音が聞こえる範囲内に入ったことを表す
 	if (Cast<ASoundObject>(OtherActor))
 	{
@@ -232,6 +236,18 @@ void AEnemy::bathing(AActor* OtherActor)
 	if (OtherActor->ActorHasTag(TEXT("Sprinkler")))
 	{
 		extern ENGINE_API float GAverageFPS;
-		AddReflection(1.0f /*/ GAverageFPS*/);
+		AddReflection(1.0f / GAverageFPS);
+	}
+}
+
+void AEnemy::overBathing()
+{
+	TArray<AActor*> actors;
+	skeltal->GetOverlappingActors(actors);
+	actors.RemoveAllSwap([](AActor* a) { return !a->ActorHasTag(TEXT("Sprinkler")); });
+
+	for (int i = 0; i < actors.Num(); i++)
+	{
+		bathing(actors[i]);
 	}
 }
