@@ -25,12 +25,12 @@ AEnemy::AEnemy()
 	RootComponent = skeltal;
 
 	actionableArea = CreateDefaultSubobject<USphereComponent>(TEXT("ActionableArea"));
-	actionableArea->InitSphereRadius(500.0f);
+	actionableArea->InitSphereRadius(2000.0f);
 	actionableArea->SetCollisionProfileName("OverlapOnlyPawn");
 	actionableArea->SetSimulatePhysics(false);
 	actionableArea->SetupAttachment(RootComponent);
 
-	//skeltal->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::onComponentBeginOverlap);
+	actionableArea->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::onComponentBeginOverlap);
 	//skeltal->OnComponentHit.AddDynamic(this, &AEnemy::onComponentHit);
 	//this->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::onComponentBeginOverlap);
 }
@@ -52,6 +52,18 @@ void AEnemy::Tick(float DeltaTime)
 
 	Moving(DeltaTime);
 	//playWalkSound(DeltaTime);
+
+	//TArray<AActor*> actors;
+	//actionableArea->GetOverlappingActors(actors);
+	//actors.RemoveAllSwap([](AActor* a) { return !Cast<ASoundObject>(a); });
+
+	//if (0 < actors.Num())
+	//{
+	//	if (Cast<ASoundObject>(actors[0]))
+	//	{
+	//		heardSound(Cast<ASoundObject>(actors[0]));
+	//	}
+	//}
 }
 
 // 移動処理
@@ -164,12 +176,12 @@ void AEnemy::onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* Other
 	}
 }
 
-// 衝突開始時に呼ばれる
-void AEnemy::onComponentHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
-    UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& SweepResult)
-{
-	bathing(OtherActor);
-}
+//// 衝突開始時に呼ばれる
+//void AEnemy::onComponentHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
+//    UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& SweepResult)
+//{
+//	bathing(OtherActor);
+//}
 
 //音が聞こえる範囲内に入った
 void AEnemy::heardSound(ASoundObject* soundObject)

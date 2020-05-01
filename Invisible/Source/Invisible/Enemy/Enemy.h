@@ -46,10 +46,10 @@ public:
 	UFUNCTION(BluePrintCallable, Category = "Collision")
 	virtual void onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	// è’ìÀíÜÇ…åƒÇŒÇÍÇÈ
-	UFUNCTION(BluePrintCallable, Category = "Collision")
-	virtual void onComponentHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
-	    UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& SweepResult);
+	//// è’ìÀíÜÇ…åƒÇŒÇÍÇÈ
+	//UFUNCTION(BluePrintCallable, Category = "Collision")
+	//virtual void onComponentHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
+	//    UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& SweepResult);
     // âπÇ™ï∑Ç±Ç¶ÇΩ
 	void heardSound(ASoundObject* soundObject);
 	// ï‡çsâπÇÃçƒê∂èàóù
