@@ -43,19 +43,22 @@ public:
 	void AddReflection(float add);
 
 	// Õ“ËŠJn‚ÉŒÄ‚Î‚ê‚é
-	UFUNCTION()
-	void onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
+	UFUNCTION(BluePrintCallable, Category = "Collision")
+	virtual void onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	// Õ“Ë’†‚ÉŒÄ‚Î‚ê‚é
-	UFUNCTION()
-	void onComponentHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
+	UFUNCTION(BluePrintCallable, Category = "Collision")
+	virtual void onComponentHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	    UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& SweepResult);
     // ‰¹‚ª•·‚±‚¦‚½
 	void heardSound(ASoundObject* soundObject);
 	// •às‰¹‚ÌÄ¶ˆ—
 	void playWalkSound(float deltaTime);
 	// …—‚Ñ
+	UFUNCTION(BluePrintCallable, Category = "Collision")
 	void bathing(AActor* OtherActor);
+	UFUNCTION(BluePrintCallable, Category = "Collision")
+	void overBathing();
 
 private:
 
