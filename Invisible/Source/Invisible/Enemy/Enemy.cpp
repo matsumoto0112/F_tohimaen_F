@@ -31,6 +31,10 @@ AEnemy::AEnemy()
 	actionableArea->SetCollisionProfileName("OverlapOnlyPawn");
 	actionableArea->SetSimulatePhysics(false);
 	actionableArea->SetupAttachment(RootComponent);
+
+	skeltal->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::onComponentBeginOverlap);
+	//skeltal->OnComponentHit.AddDynamic(this, &AEnemy::onComponentHit);
+	//this->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::onComponentBeginOverlap);
 }
 
 // Called when the game starts or when spawned
@@ -130,7 +134,8 @@ void AEnemy::searchPlayer(AActor* OtherActor)
 void AEnemy::SetMaterial(float DeltaTime)
 {
 	//actionableArea->OnComponentHit;
-	reflection = reflection - DeltaTime;
+	float thirst = (thirstSpeed <= 1.0f) ? DeltaTime:DeltaTime/thirstSpeed;
+	reflection -= thirst;
 	reflection = (reflection < 0) ? 0 : (1 < reflection) ? 1 : reflection;
 	skeltal->SetScalarParameterValueOnMaterials("reflection", reflection);
 }
@@ -153,6 +158,13 @@ void AEnemy::onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* Other
 		heardSound(Cast<ASoundObject>(OtherActor));
 		return;
 	}
+}
+
+// Õ“ËŠJŽnŽž‚ÉŒÄ‚Î‚ê‚é
+void AEnemy::onComponentHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
+    UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& SweepResult)
+{
+	bathing(OtherActor);
 }
 
 //‰¹‚ª•·‚±‚¦‚é”ÍˆÍ“à‚É“ü‚Á‚½
@@ -220,6 +232,6 @@ void AEnemy::bathing(AActor* OtherActor)
 	if (OtherActor->ActorHasTag(TEXT("Sprinkler")))
 	{
 		extern ENGINE_API float GAverageFPS;
-		AddReflection(1.0f / GAverageFPS);
+		AddReflection(1.0f /*/ GAverageFPS*/);
 	}
 }

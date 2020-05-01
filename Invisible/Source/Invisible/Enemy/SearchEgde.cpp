@@ -63,5 +63,6 @@ void ASearchEgde::SetBranch()
 
 		UKismetSystemLibrary::DrawDebugLine(GetWorld(), GetActorLocation(), branch[index]->GetActorLocation(), FLinearColor::Black, 0);
 		UKismetSystemLibrary::DrawDebugSphere(GetWorld(), GetActorLocation(), radius,12, FLinearColor::Black, 0);
+		//UKismetSystemLibrary::DrawDebugCapsule(GetWorld(),)
 	}
 }

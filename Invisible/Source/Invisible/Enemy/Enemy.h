@@ -46,6 +46,10 @@ public:
 	UFUNCTION()
 	void onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	// Õ“Ë’†‚ÉŒÄ‚Î‚ê‚é
+	UFUNCTION()
+	void onComponentHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
+	    UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& SweepResult);
     // ‰¹‚ª•·‚±‚¦‚½
 	void heardSound(ASoundObject* soundObject);
 	// •às‰¹‚ÌÄ¶ˆ—
@@ -67,7 +71,10 @@ private:
 	float waitTimer = 0.0f;
 	// ”G‚ê”»’è
 	UPROPERTY(EditAnywhere)
-	float reflection = 10;
+	float reflection = 1;
+	// Š‰‚«‘¬“x
+	UPROPERTY(EditAnywhere)
+	float thirstSpeed = 5.0f;
 
 	//!< •à‚¢‚Ä‚¢‚éŠÔ(•b)
 	float walkingSecond;
