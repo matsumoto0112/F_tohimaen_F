@@ -50,6 +50,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	playWalkSound(DeltaTime);
+    clampPlayerCameraPitchRotation();
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -211,4 +212,12 @@ void APlayerCharacter::playWalkSound(float deltaTime)
 	{
 		walkingSecond = 0.0f;
 	}
+}
+
+//プレイヤーカメラの上下方向の回転制限
+void APlayerCharacter::clampPlayerCameraPitchRotation()
+{
+    FRotator rot = Controller->GetControlRotation();
+    rot.Pitch = FMath::ClampAngle(rot.Pitch, minCameraPitch, maxCameraPitch);
+    Controller->SetControlRotation(rot);
 }
