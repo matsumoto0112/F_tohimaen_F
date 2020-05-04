@@ -3,9 +3,11 @@
 #include "Enemy.h"
 
 #include "Engine.h"
+#include "Invisible/Player/PlayerCharacter.h"
 #include "Invisible/System/MyGameInstance.h"
 #include "Invisible/System/SoundObject.h"
 #include "Invisible/System/SoundSystem.h"
+#include "Kismet/GameplayStatics.h"
 
 #include <string>
 
@@ -42,6 +44,9 @@ void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 	reflection = 0;
+
+	auto actor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
+	player = (actor == nullptr) ? nullptr : actor;
 }
 
 // Called every frame
@@ -110,6 +115,10 @@ void AEnemy::SearchCourse(float DeltaTime)
 	//	str += c;
 	//}
 	//UKismetSystemLibrary::DrawDebugString(GetWorld(), GetActorLocation(), str, nullptr, FLinearColor::Black, 0);
+	if (IsEyeArea()) {
+		searchPlayer(player);
+	}
+
 	if (0 < waitTimer)
 	{
 		waitTimer -= DeltaTime;
@@ -174,6 +183,41 @@ void AEnemy::AddReflection(float add)
 	reflection = (reflection < 0) ? 0 : (1 < reflection) ? 1 : reflection;
 }
 
+float GetDeg_XY(FVector forward)
+{
+	auto vector = forward;
+	forward.Z = 0;
+	auto normal = forward.GetSafeNormal();
+	auto rad = FMath::Atan2(normal.Y, normal.X);
+	return FMath::RadiansToDegrees(rad);
+}
+bool AEnemy::IsEyeArea()
+{
+	if (player == nullptr)
+	{
+		return false;
+	}
+
+	auto vector = (player->GetActorLocation() - GetActorLocation());
+	auto e_forward_deg = GetDeg_XY(GetActorForwardVector());
+	auto ep_vector_deg = GetDeg_XY(vector);
+
+	vector.Z = 0;
+	auto length = vector.Size();
+	if (eyeLength < length)
+	{
+		return false;
+	}
+
+	e_forward_deg = (e_forward_deg < 0) ? (e_forward_deg + 360.0f) : (e_forward_deg);
+	ep_vector_deg = (ep_vector_deg < 0) ? (ep_vector_deg + 360.0f) : (ep_vector_deg);
+
+	auto deg = FMath::Abs(ep_vector_deg - e_forward_deg);
+	deg = (180.0f < deg) ? (FMath::Abs(deg - 360.0f)) : (deg);
+
+	return (deg <= FMath::Abs(eyeDeg / 2.0f));
+}
+
 // Õ“ËŠJŽnŽž‚ÉŒÄ‚Î‚ê‚é
 void AEnemy::onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -207,6 +251,10 @@ void AEnemy::heardSound(ASoundObject* soundObject)
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard sprinkler sound"));
 		break;
 	case ESoundType::Player_Walk:
+		if (IsEyeArea())
+		{
+			return;
+		}
 		searchPlayer(soundObject);
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk sound"));
 		break;
@@ -253,15 +301,6 @@ void AEnemy::playWalkSound(float deltaTime)
 	}
 }
 
-void AEnemy::bathing(AActor* OtherActor)
-{
-	if (OtherActor->ActorHasTag(TEXT("Sprinkler")))
-	{
-		extern ENGINE_API float GAverageFPS;
-		AddReflection(1.0f / GAverageFPS);
-	}
-}
-
 void AEnemy::overBathing()
 {
 	TArray<AActor*> actors;
@@ -270,6 +309,10 @@ void AEnemy::overBathing()
 
 	for (int i = 0; i < actors.Num(); i++)
 	{
-		bathing(actors[i]);
+		if (actors[i]->ActorHasTag(TEXT("Sprinkler")))
+		{
+			extern ENGINE_API float GAverageFPS;
+			AddReflection(1.0f / GAverageFPS);
+		}
 	}
 }
