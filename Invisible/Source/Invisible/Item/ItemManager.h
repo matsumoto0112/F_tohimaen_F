@@ -5,10 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
-#include "ExitItem.h"
-#include "ExitDevice.h"
-
 #include "ItemManager.generated.h"
+
+class AExitItem;
 
 UCLASS()
 class INVISIBLE_API AItemManager : public AActor
@@ -27,13 +26,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-private:
-	//UPROPERTY(EditAnywhere)
-	TMap<AExitDevice*, TArray<AExitItem*>> manager;
-
-//	UPROPERTY(EditAnywhere)
-//	TArray<AExitItem> items;
-//	UPROPERTY(EditAnywhere)
-//	TArray<AExitDevice> devices;
+public:
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Items")
+	TArray<AExitItem*> items;
 
 };

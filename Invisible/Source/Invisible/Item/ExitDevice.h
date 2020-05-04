@@ -3,13 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-//#include "ExitItem.h"
 #include "GameFramework/Actor.h"
+#include "Invisible/ActionableObject/Actionable.h"
+#include "Components/SphereComponent.h"
 
 #include "ExitDevice.generated.h"
 
-UCLASS(BlueprintType)
-class INVISIBLE_API AExitDevice : public AActor
+class AExitItem;
+
+UCLASS()
+class INVISIBLE_API AExitDevice : public AActor, public IActionable
 {
 	GENERATED_BODY()
 
@@ -22,19 +25,27 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	//// Called every frame
-	//virtual void Tick(float DeltaTime) override;
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void action_Implementation() override;
 
 	void Action();
-	bool IsGet();
 
-private:
+	UFUNCTION(BluePrintCallable, Category = "DeviceAction")
 	virtual void DeviceAction(){};
+
+	UFUNCTION(BluePrintCallable, Category = "Get")
+	virtual bool IsGet();
 
 public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Mesh")
 	UStaticMeshComponent* meshComponent;
 
-//private:
-//	TArray<AExitItem*> items;
+	//!< バルブを対象としたアクション実行可能エリア
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Collision")
+	USphereComponent* actionableArea;
+
+	UPROPERTY(EditAnywhere, Category = "Items")
+	TArray<AExitItem*> items;
 };

@@ -14,6 +14,12 @@ AExitItem::AExitItem()
 	//メッシュコンポーネントを作成する
 	meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	RootComponent = meshComponent;
+
+	actionableArea = CreateDefaultSubobject<USphereComponent>(TEXT("ActionableArea"));
+	actionableArea->InitSphereRadius(50.0f);
+	actionableArea->SetCollisionProfileName("OverlapOnlyPawn");
+	actionableArea->SetSimulatePhysics(false);
+	actionableArea->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -23,12 +29,23 @@ void AExitItem::BeginPlay()
 	
 }
 
-//// Called every frame
-//void AExitItem::Tick(float DeltaTime)
-//{
-//	Super::Tick(DeltaTime);
-//
-//}
+// Called every frame
+void AExitItem::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+}
+
+void AExitItem::Action()
+{
+	Get();
+	ItemAction();
+}
+
+void AExitItem::action_Implementation()
+{
+	Action();
+}
 
 void AExitItem::Get()
 {
