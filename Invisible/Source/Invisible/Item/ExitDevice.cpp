@@ -15,7 +15,7 @@ AExitDevice::AExitDevice()
 	RootComponent = meshComponent;
 
 	actionableArea = CreateDefaultSubobject<USphereComponent>(TEXT("ActionableArea"));
-	actionableArea->InitSphereRadius(50.0f);
+	actionableArea->InitSphereRadius(FMath::Abs(radius));
 	actionableArea->SetCollisionProfileName("OverlapOnlyPawn");
 	actionableArea->SetSimulatePhysics(false);
 	actionableArea->SetupAttachment(RootComponent);
@@ -32,10 +32,11 @@ void AExitDevice::BeginPlay()
 void AExitDevice::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	DeviceActionUpdate();
+	actionableArea->SetSphereRadius(FMath::Abs(radius));
 }
 
-void AExitDevice::Action()
+void AExitDevice::action_Implementation()
 {
 	if (IsGet())
 	{
@@ -43,12 +44,12 @@ void AExitDevice::Action()
 	}
 }
 
-void AExitDevice::action_Implementation()
+void AExitDevice::DeviceAction_Implementation()
 {
-	if (IsGet())
-	{
-		Action();
-	}
+}
+
+void AExitDevice::DeviceActionUpdate_Implementation()
+{
 }
 
 bool AExitDevice::IsGet()
