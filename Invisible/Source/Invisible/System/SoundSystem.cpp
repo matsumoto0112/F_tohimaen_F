@@ -8,7 +8,7 @@
 namespace
 {
 	static const FString PATH = "/Game/System/SoundObject_BP.SoundObject_BP_C";
-    constexpr int32 SOUND_OBJECT_NUM = 10;
+    constexpr int32 SOUND_OBJECT_NUM = 50;
 }
 
 //コンストラクタ
