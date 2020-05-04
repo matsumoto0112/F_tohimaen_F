@@ -73,6 +73,10 @@ private:
     * 歩行音の再生処理
     */
 	void playWalkSound(float deltaTime);
+	/**
+    * プレイヤーカメラの上下方向に回転制限をかける
+    */
+	void clampPlayerCameraPitchRotation();
 
 private:
 	//!< 最大移動速度
@@ -87,6 +91,13 @@ private:
 	//!< アクション実行可能エリア
 	UPROPERTY(VisibleAnywhere)
 	UBoxComponent* actionArea;
+
+	//!< カメラの上下方向の回転制限（下限）
+	UPROPERTY(EditDefaultsOnly)
+	float minCameraPitch = -45.0f;
+	//!< カメラの上下方向の回転制限（上限）
+	UPROPERTY(EditDefaultsOnly)
+	float maxCameraPitch = 45.0f;
 
 	//!< 今歩いているか
 	bool isWalking;
