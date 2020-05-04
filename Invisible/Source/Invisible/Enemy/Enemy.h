@@ -2,12 +2,12 @@
 
 #pragma once
 
+#include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "SearchManager.h"
 #include "Invisible/ActionableObject/Actionable.h"
-#include "Components/SphereComponent.h"
-#include "Components/CapsuleComponent.h"
+#include "SearchManager.h"
 
 #include "Enemy.generated.h"
 
@@ -42,26 +42,35 @@ public:
 	void SetMaterial(float DeltaTime);
 	// 透明化設定
 	void AddReflection(float add);
+	// 視覚内にいるか
+	UFUNCTION(BluePrintCallable, Category = "EyeArea")
+	virtual bool IsEyeArea();
 
 	// 衝突開始時に呼ばれる
 	UFUNCTION(BluePrintCallable, Category = "Collision")
 	virtual void onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 	//// 衝突中に呼ばれる
 	//UFUNCTION(BluePrintCallable, Category = "Collision")
 	//virtual void onComponentHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	//    UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& SweepResult);
-    // 音が聞こえた
+
+	// 音が聞こえた
 	void heardSound(ASoundObject* soundObject);
 	// 歩行音の再生処理
 	void playWalkSound(float deltaTime);
 	// 水浴び
 	UFUNCTION(BluePrintCallable, Category = "Collision")
-	void bathing(AActor* OtherActor);
-	UFUNCTION(BluePrintCallable, Category = "Collision")
 	void overBathing();
 
 private:
+	// 視野角度
+	UPROPERTY(EditAnywhere)
+	float eyeDeg = 60.0f;
+	// 視野角度
+	UPROPERTY(EditAnywhere)
+	float eyeLength = 1000.0f;
 
 	// 移動速度
 	UPROPERTY(EditAnywhere)
@@ -73,6 +82,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	float waitTime = 3.0f;
 	float waitTimer = 0.0f;
+
 	// 濡れ判定
 	UPROPERTY(EditAnywhere)
 	float reflection = 1;
@@ -86,9 +96,12 @@ private:
 	// 経路管理クラス
 	UPROPERTY(EditAnywhere)
 	ASearchManager* searchManager;
+	// 経路リスト
 	TArray<FVector> courses;
 
-	public:
+	AActor* player;
+
+public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Collision")
 	UCapsuleComponent* capsule;
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Collision")
