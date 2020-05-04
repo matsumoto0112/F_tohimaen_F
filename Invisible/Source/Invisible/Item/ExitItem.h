@@ -28,10 +28,9 @@ public:
 
 	virtual void action_Implementation() override;
 
-	void Action();
-
-	UFUNCTION(BluePrintCallable, Category = "ItemAction")
-	virtual void ItemAction(){};
+	UFUNCTION(BluePrintCallable, BlueprintNativeEvent, Category = "ItemAction")
+	void ItemAction();
+	virtual void ItemAction_Implementation();
 
 	virtual void Get();
 	virtual void Use();
@@ -48,4 +47,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ActionArea")
 	USphereComponent* actionableArea;
+
+	UPROPERTY(EditAnywhere, Category = "radius")
+	float radius = 100.0f;
 };

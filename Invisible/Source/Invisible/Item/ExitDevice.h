@@ -2,10 +2,10 @@
 
 #pragma once
 
+#include "Components/SphereComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Invisible/ActionableObject/Actionable.h"
-#include "Components/SphereComponent.h"
 
 #include "ExitDevice.generated.h"
 
@@ -30,10 +30,13 @@ public:
 
 	virtual void action_Implementation() override;
 
-	void Action();
+	UFUNCTION(BluePrintCallable, BlueprintNativeEvent, Category = "DeviceAction")
+	void DeviceAction();
+	virtual void DeviceAction_Implementation();
 
-	UFUNCTION(BluePrintCallable, Category = "DeviceAction")
-	virtual void DeviceAction(){};
+	UFUNCTION(BluePrintCallable, BlueprintNativeEvent, Category = "DeviceAction")
+	void DeviceActionUpdate();
+	virtual void DeviceActionUpdate_Implementation();
 
 	UFUNCTION(BluePrintCallable, Category = "Get")
 	virtual bool IsGet();
@@ -48,4 +51,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Items")
 	TArray<AExitItem*> items;
+
+	UPROPERTY(EditAnywhere, Category = "radius")
+	float radius=100.0f;
 };

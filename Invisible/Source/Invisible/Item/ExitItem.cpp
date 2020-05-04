@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "ExitItem.h"
 
 #include "Engine.h"
@@ -8,7 +7,7 @@
 // Sets default values
 AExitItem::AExitItem()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	//メッシュコンポーネントを作成する
@@ -16,7 +15,7 @@ AExitItem::AExitItem()
 	RootComponent = meshComponent;
 
 	actionableArea = CreateDefaultSubobject<USphereComponent>(TEXT("ActionableArea"));
-	actionableArea->InitSphereRadius(50.0f);
+	actionableArea->InitSphereRadius(FMath::Abs(radius));
 	actionableArea->SetCollisionProfileName("OverlapOnlyPawn");
 	actionableArea->SetSimulatePhysics(false);
 	actionableArea->SetupAttachment(RootComponent);
@@ -26,30 +25,29 @@ AExitItem::AExitItem()
 void AExitItem::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
 void AExitItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	actionableArea->InitSphereRadius(FMath::Abs(radius));
 }
 
-void AExitItem::Action()
+void AExitItem::action_Implementation()
 {
 	Get();
 	ItemAction();
 }
 
-void AExitItem::action_Implementation()
+void AExitItem::ItemAction_Implementation()
 {
-	Action();
 }
 
 void AExitItem::Get()
 {
 	isGet = true;
+	meshComponent->SetStaticMesh(nullptr);
 }
 void AExitItem::Use()
 {
@@ -64,4 +62,3 @@ bool AExitItem::IsUse()
 {
 	return isUse;
 }
-

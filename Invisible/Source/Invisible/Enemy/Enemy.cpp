@@ -67,6 +67,7 @@ void AEnemy::Moving(float DeltaTime)
 	// èâä˙ílê›íË
 	auto pos = GetActorLocation();
 	auto vector = (courses[0] - pos);
+	vector.Z = 0;
 	auto length = (moveSpeed < vector.Size()) ? moveSpeed : vector.Size();
 	auto nor = vector.GetSafeNormal();
 	auto mov = nor * length * DeltaTime;
@@ -114,6 +115,7 @@ void AEnemy::SearchCourse(float DeltaTime)
 		waitTimer -= DeltaTime;
 		if (0 < waitTimer)
 		{
+			courses.RemoveAll([](FVector) { return true; });
 			return;
 		}
 		waitTimer = 0;
@@ -143,6 +145,7 @@ void AEnemy::searchPlayer(AActor* OtherActor)
 	courses = searchManager->Course(this, OtherActor);
 	if (0 < courses.Num())
 	{
+		waitTimer = 0;
 		auto actorLength = (OtherActor->GetActorLocation() - GetActorLocation()).Size();
 		auto courseLength = (courses[0] - GetActorLocation()).Size();
 		if (actorLength < courseLength)
