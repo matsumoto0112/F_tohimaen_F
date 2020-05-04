@@ -3,6 +3,9 @@
 
 #include "ItemManager.h"
 
+#include "ExitItem.h"
+#include "ExitDevice.h"
+
 // Sets default values
 AItemManager::AItemManager()
 {

@@ -88,8 +88,12 @@ TArray<SearchCourse*> SearchCourse::GetParents(TArray<SearchCourse*> parents)
 	if (parentSearch == nullptr)
 	{
 		//parents.IndexOfByKey(this);
-		//parents.Sort();
-		return parents;
+		auto result = TArray<SearchCourse*>();
+		for (int i = 0; i < parents.Num(); i++)
+		{
+			result.Add(parents[parents.Num() - i - 1]);
+		}
+		return result;
 	}
 	return parentSearch->GetParents(parents);
 }

@@ -7,6 +7,7 @@
 #include "SearchManager.h"
 #include "Invisible/ActionableObject/Actionable.h"
 #include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 
 #include "Enemy.generated.h"
 
@@ -89,11 +90,10 @@ private:
 
 	public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Collision")
+	UCapsuleComponent* capsule;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Collision")
 	USkeletalMeshComponent* skeltal;
 
-	//UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Mesh")
-	//UStaticMeshComponent* meshComponent;
-
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Collision")
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ActionArea")
 	USphereComponent* actionableArea;
 };

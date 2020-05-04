@@ -2,13 +2,15 @@
 
 #pragma once
 
+#include "Components/SphereComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Invisible/ActionableObject/Actionable.h"
 
 #include "ExitItem.generated.h"
 
-UCLASS(BlueprintType)
-class INVISIBLE_API AExitItem : public AActor
+UCLASS()
+class INVISIBLE_API AExitItem : public AActor, public IActionable
 {
 	GENERATED_BODY()
 
@@ -22,7 +24,14 @@ protected:
 
 public:
 	// Called every frame
-	//virtual void Tick(float DeltaTime) override;
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void action_Implementation() override;
+
+	void Action();
+
+	UFUNCTION(BluePrintCallable, Category = "ItemAction")
+	virtual void ItemAction(){};
 
 	virtual void Get();
 	virtual void Use();
@@ -36,4 +45,7 @@ private:
 public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Mesh")
 	UStaticMeshComponent* meshComponent;
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ActionArea")
+	USphereComponent* actionableArea;
 };

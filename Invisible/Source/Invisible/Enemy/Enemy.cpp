@@ -20,9 +20,11 @@ AEnemy::AEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
+	capsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("capsule"));
+	capsule->InitCapsuleSize(20.0f, 80.0f);
+	RootComponent = capsule;
+
 	skeltal = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeltal"));
-	//meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	RootComponent = skeltal;
 
 	actionableArea = CreateDefaultSubobject<USphereComponent>(TEXT("ActionableArea"));
 	actionableArea->InitSphereRadius(2000.0f);
@@ -51,19 +53,7 @@ void AEnemy::Tick(float DeltaTime)
 	SetMaterial(DeltaTime);
 
 	Moving(DeltaTime);
-	//playWalkSound(DeltaTime);
-
-	//TArray<AActor*> actors;
-	//actionableArea->GetOverlappingActors(actors);
-	//actors.RemoveAllSwap([](AActor* a) { return !Cast<ASoundObject>(a); });
-
-	//if (0 < actors.Num())
-	//{
-	//	if (Cast<ASoundObject>(actors[0]))
-	//	{
-	//		heardSound(Cast<ASoundObject>(actors[0]));
-	//	}
-	//}
+	playWalkSound(DeltaTime);
 }
 
 // à⁄ìÆèàóù
@@ -111,6 +101,13 @@ void AEnemy::SearchCourse(float DeltaTime)
 {
 	//auto s = std::to_string(courses.Num());
 	//auto str = FString::FString(s.c_str());
+	//for (int i = 0; i < courses.Num(); i++)
+	//{
+	//	auto num = "[ "+std::to_string(i)+" ]";
+	//	auto pos = "( " + std::to_string(courses[i].X) + ", " + std::to_string(courses[i].Y) + ", " + std::to_string(courses[i].Z) + ") ";
+	//	auto c = ("\n" + FString::FString((num+pos).c_str()));
+	//	str += c;
+	//}
 	//UKismetSystemLibrary::DrawDebugString(GetWorld(), GetActorLocation(), str, nullptr, FLinearColor::Black, 0);
 	if (0 < waitTimer)
 	{
@@ -144,6 +141,16 @@ void AEnemy::searchPlayer(AActor* OtherActor)
 
 	courses.RemoveAll([](FVector) { return true; });
 	courses = searchManager->Course(this, OtherActor);
+	if (0 < courses.Num())
+	{
+		auto actorLength = (OtherActor->GetActorLocation() - GetActorLocation()).Size();
+		auto courseLength = (courses[0] - GetActorLocation()).Size();
+		if (actorLength < courseLength)
+		{
+			courses.RemoveAll([](FVector) { return true; });
+			courses.Add(OtherActor->GetActorLocation());
+		}
+	}
 }
 
 // É}ÉeÉäÉAÉã
