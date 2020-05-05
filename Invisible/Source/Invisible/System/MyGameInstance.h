@@ -20,46 +20,48 @@ class INVISIBLE_API UMyGameInstance : public UGameInstance
 	UMyGameInstance();
 
 public:
-    /**
+	/**
     * 初期化
     */
 	virtual void Init() override;
 
-    /**
+	/**
     * シャットダウン時に呼ばれる
     */
-    virtual void Shutdown() override;
+	virtual void Shutdown() override;
 
-    /**
+	/**
     * 実行中のBlueprintのコールスタックをログ出力する
     */
-     UFUNCTION(BlueprintCallable, Category = "Debug")
-    static void PrintLogBlueprintCallstack();
-    /**
+	UFUNCTION(BlueprintCallable, Category = "Debug")
+	static void PrintLogBlueprintCallstack();
+	/**
     * インスタンスの取得
     */
 	UFUNCTION()
 	static UMyGameInstance* GetInstance();
-    /**
+	/**
     * サウンドシステムを取得する
     */
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Singleton")
 	USoundSystem* getSoundSystem() const { return soundSystem; }
-private:
-    //!< OnHandleSystemError デリゲート登録時のハンドル
-    FDelegateHandle OnSystemErrorDelegateHandle;
 
-    /**
+private:
+	//!< OnHandleSystemError デリゲート登録時のハンドル
+	FDelegateHandle OnSystemErrorDelegateHandle;
+
+	/**
     * システムエラー時に呼ばれる関数
     */
-    void OnSystemError();
+	void OnSystemError();
+
 private:
-    //!< サウンドデータテーブル
+	//!< サウンドデータテーブル
 	UPROPERTY(EditDefaultsOnly, Category = "Data")
 	UDataTable* soundData;
 
 private:
-    //!< サウンドシステム
-    UPROPERTY()
+	//!< サウンドシステム
+	UPROPERTY()
 	USoundSystem* soundSystem;
 };

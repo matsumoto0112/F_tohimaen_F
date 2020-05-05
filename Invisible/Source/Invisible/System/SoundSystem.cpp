@@ -8,7 +8,7 @@
 namespace
 {
 	static const FString PATH = "/Game/System/SoundObject_BP.SoundObject_BP_C";
-    constexpr int32 SOUND_OBJECT_NUM = 50;
+	constexpr int32 SOUND_OBJECT_NUM = 50;
 }
 
 //コンストラクタ
@@ -24,26 +24,12 @@ void USoundSystem::init(UDataTable* soundData)
 
 	//音オブジェクトの元をアセットから探す
 	soundObjectOrigin = TSoftClassPtr<AActor>(FSoftObjectPath(*PATH)).LoadSynchronous();
-
-	//見つからなかったらメッセージを表示する
-	if (soundObjectOrigin == nullptr)
-	{
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SoundObject_BP can't find"));
-		return;
-	}
-
-	for (int32 i = 0; i < SOUND_OBJECT_NUM; i++)
-	{
-		ASoundObject* spawned = GetWorld()->SpawnActor<ASoundObject>(soundObjectOrigin);
-		soundObjects.Emplace(spawned);
-	}
 }
 
 //3D音源で再生する
 void USoundSystem::play3DSound(ESoundType sound, const FVector& location, AActor* soundGenerateSource)
 {
-    //音が有効かどうか調べる
+	//音が有効かどうか調べる
 	if (!isValid(sound))
 		return;
 
@@ -57,19 +43,45 @@ void USoundSystem::play3DSound(ESoundType sound, const FVector& location, AActor
 		return;
 	}
 
-    //使えるサウンドオブジェクトを探す
-    for (int32 i = 0; i < soundObjects.Num(); i++)
-    {
+	//使えるサウンドオブジェクトを探す
+	for (int32 i = 0; i < soundObjects.Num(); i++)
+	{
 		if (soundObjects[i]->unused())
 		{
 			soundObjects[i]->playSound(data, location, soundGenerateSource);
 			return;
 		}
-    }
-    if (GEngine)
-    {
-        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Sound Object not available"));
-    }
+	}
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Sound Object not available"));
+	}
+}
+
+void USoundSystem::createSoundObjects(int32 num)
+{
+	//見つからなかったらメッセージを表示する
+	if (soundObjectOrigin == nullptr)
+	{
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SoundObject_BP can't find"));
+		return;
+	}
+
+	for (int32 i = 0; i < num; i++)
+	{
+		ASoundObject* spawned = GetWorld()->SpawnActor<ASoundObject>(soundObjectOrigin);
+		soundObjects.Emplace(spawned);
+	}
+}
+
+void USoundSystem::destroySoundObjects()
+{
+	for (auto& obj : soundObjects)
+	{
+		obj->Destroy();
+	}
+	soundObjects.Empty();
 }
 
 //音データを取得する
@@ -102,7 +114,7 @@ bool USoundSystem::isValid(ESoundType sound) const
 	{
 		if (GEngine)
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SoundObjectOrigin not found"));
-        return false;
+		return false;
 	}
 	if (!findSoundData(sound))
 	{

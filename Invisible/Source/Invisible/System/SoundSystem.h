@@ -72,6 +72,11 @@ public:
 	UFUNCTION()
 	void play3DSound(ESoundType sound, const FVector& location, AActor* soundGenerateSource);
 
+	UFUNCTION(BlueprintCallable, Category = "SoundSystem")
+	void createSoundObjects(int32 num);
+	UFUNCTION(BlueprintCallable, Category = "SoundSystem")
+	void destroySoundObjects();
+
 private:
 	/**
     * âπÉfÅ[É^ÇíTÇ∑
