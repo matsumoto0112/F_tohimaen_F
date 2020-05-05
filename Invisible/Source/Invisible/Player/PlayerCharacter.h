@@ -80,25 +80,29 @@ private:
 
 private:
 	//!< 最大移動速度
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, Category = "Parameter")
 	float maxMoveSpeed = 500.0f;
-	//!< マウス感度
-	UPROPERTY(EditAnywhere)
-	float mouseSensitivity = 100.0f;
-	//!< プレイヤーカメラ
-	UPROPERTY(VisibleAnywhere)
-	UCameraComponent* cameraComponent;
-	//!< アクション実行可能エリア
-	UPROPERTY(VisibleAnywhere)
-	UBoxComponent* actionArea;
 
+protected:
+	//!< マウス感度
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
+	float mouseSensitivity = 100.0f;
 	//!< カメラの上下方向の回転制限（下限）
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
 	float minCameraPitch = -45.0f;
 	//!< カメラの上下方向の回転制限（上限）
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
 	float maxCameraPitch = 45.0f;
 
+public:
+	//!< プレイヤーカメラ
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	UCameraComponent* cameraComponent;
+	//!< アクション実行可能エリア
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	UBoxComponent* actionArea;
+
+private:
 	//!< 今歩いているか
 	bool isWalking;
 	//!< 歩いている時間(秒)

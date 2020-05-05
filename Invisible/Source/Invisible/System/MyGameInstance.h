@@ -55,7 +55,7 @@ private:
     void OnSystemError();
 private:
     //!< サウンドデータテーブル
-	UPROPERTY(EditDefaultsOnly, Category = "Params")
+	UPROPERTY(EditDefaultsOnly, Category = "Data")
 	UDataTable* soundData;
 
 private:

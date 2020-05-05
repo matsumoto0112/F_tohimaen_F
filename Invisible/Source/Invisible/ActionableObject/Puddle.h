@@ -29,6 +29,6 @@ public:
 
 public:
 	//!< …‚½‚Ü‚è‚ÌƒƒbƒVƒ…
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Mesh")
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	UStaticMeshComponent* meshComponent;
 };

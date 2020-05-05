@@ -53,33 +53,35 @@ public:
 		return sprinklerID;
 	}
 
+protected:
+	//!< 連携するバルブID
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
+	int32 sprinklerID;
+	//!< スプリンクラーの稼働時間
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
+	float activeTime = 5.0f;
+
+	//!< 水たまりの設置場所
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
+	TArray<ATargetPoint*> puddlePoints;
+
 public:
 	//!< スプリンクラーのメッシュ
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Mesh")
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	UStaticMeshComponent* meshComponent;
 
 	//!< スプリンクラーの水のパーティクル
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Particle")
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	UParticleSystemComponent* particleComponent;
+
+	//!< 水がかかる範囲
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	UBoxComponent* wetArea;
+
+private:
 	//!< パーティクルのエミッタ名
-	//NOTE: パーティクルのエミッタ名をベタ打ちなので改善対象
 	const FName particleEmitterName = TEXT("Main");
 
-	//!< スプリンクラーの稼働時間
-	UPROPERTY(EditDefaultsOnly, Category = "Parameter")
-	float activeTime = 5.0f;
-
-    //!< 連携するバルブID
-	UPROPERTY(EditAnywhere, Category = "Parameter")
-	int32 sprinklerID;
-
-	//!< 水たまりの設置場所
-	UPROPERTY(EditAnywhere, Category = "Parameter")
-	TArray<ATargetPoint*> puddlePoints;
-
-    //!< 水がかかる範囲
-    UPROPERTY(VisibleAnywhere)
-        UBoxComponent* wetArea;
 private:
 	//!< スプリンクラーの稼働タイマーハンドル
 	FTimerHandle timerHandle;

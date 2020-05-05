@@ -22,7 +22,7 @@ public:
 	virtual void DrawHUD() override;
 
 private:
-    //!< クロスヘアの画像
-	UPROPERTY(EditDefaultsOnly)
+	//!< クロスヘアの画像
+	UPROPERTY(EditDefaultsOnly, Category = "Texture")
 	UTexture2D* crossHairTexture;
 };
