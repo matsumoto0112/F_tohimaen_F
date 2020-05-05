@@ -64,37 +64,37 @@ public:
 	UFUNCTION(BluePrintCallable, Category = "Collision")
 	void overBathing();
 
-private:
+protected:
 	// Ž‹–ìŠp“x
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float eyeDeg = 60.0f;
 	// Ž‹–ìŠp“x
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float eyeLength = 1000.0f;
 
 	// ˆÚ“®‘¬“x
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float moveSpeed = 150.0f;
 	// ‰ñ“]‘¬“x
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float rotateSpeed = 15.0f;
 	// ‘Ò‹@ŽžŠÔ
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float waitTime = 3.0f;
 	float waitTimer = 0.0f;
 
 	// ”G‚ê”»’è
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float reflection = 1;
 	// Š‰‚«‘¬“x
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float thirstSpeed = 5.0f;
 
 	//!< •à‚¢‚Ä‚¢‚éŽžŠÔ(•b)
 	float walkingSecond;
 
 	// Œo˜HŠÇ—ƒNƒ‰ƒX
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ASearchManager* searchManager;
 	// Œo˜HƒŠƒXƒg
 	TArray<FVector> courses;
