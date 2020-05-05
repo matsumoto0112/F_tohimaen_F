@@ -2,10 +2,10 @@
 
 #pragma once
 
+#include "Components/SphereComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Invisible/ActionableObject/Actionable.h"
-#include "Components/SphereComponent.h"
 
 #include "Valve.generated.h"
 
@@ -32,18 +32,21 @@ public:
     */
 	virtual void action_Implementation() override;
 
-public:
-	//!< バルブのメッシュ
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Mesh")
-	UStaticMeshComponent* meshComponent;
-
-    //!< バルブを対象としたアクション実行可能エリア
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Collision")
-	USphereComponent* actionableArea;
-    //!< 連携するスプリンクラーID
+protected:
+	//!< 連携するスプリンクラーID
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
 	int32 sprinklerID;
+
+public:
+	//!< バルブのメッシュ
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	UStaticMeshComponent* meshComponent;
+
+	//!< バルブを対象としたアクション実行可能エリア
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	USphereComponent* actionableArea;
+
 private:
-    //!< 連携しているスプリンクラー
+	//!< 連携しているスプリンクラー
 	TArray<ASprinkler*> chainSprinklers;
 };
