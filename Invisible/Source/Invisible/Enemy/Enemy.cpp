@@ -37,6 +37,12 @@ AEnemy::AEnemy()
 	actionableArea->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::onComponentBeginOverlap);
 	//skeltal->OnComponentHit.AddDynamic(this, &AEnemy::onComponentHit);
 	//this->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::onComponentBeginOverlap);
+
+	silhouetteSkeltal = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SilhouetteSkeltal"));
+	silhouetteSkeltal->bRenderInMainPass = false;
+	silhouetteSkeltal->bRenderInDepthPass = false;
+	silhouetteSkeltal->bRenderCustomDepth = true;
+	silhouetteSkeltal->CustomDepthStencilValue = 0;
 }
 
 // Called when the game starts or when spawned
@@ -115,7 +121,8 @@ void AEnemy::SearchCourse(float DeltaTime)
 	//	str += c;
 	//}
 	//UKismetSystemLibrary::DrawDebugString(GetWorld(), GetActorLocation(), str, nullptr, FLinearColor::Black, 0);
-	if (IsEyeArea()) {
+	if (IsEyeArea())
+	{
 		searchPlayer(player);
 	}
 
@@ -315,4 +322,10 @@ void AEnemy::overBathing()
 			AddReflection(1.0f / GAverageFPS);
 		}
 	}
+}
+
+void AEnemy::setEnableSilhouette(bool enabled)
+{
+	const int32 value = enabled ? 1 : 0;
+	silhouetteSkeltal->CustomDepthStencilValue = value;
 }
