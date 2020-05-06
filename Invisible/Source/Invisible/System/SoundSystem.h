@@ -61,7 +61,10 @@ public:
     *  コンストラクタ
     */
 	USoundSystem();
-	void init(UDataTable* soundData);
+	/**
+    * 初期化
+    */
+	void init(UDataTable* soundData, TSubclassOf<AActor> soundObjectOrigin);
 
 	/**
     * 3D音源を再生する

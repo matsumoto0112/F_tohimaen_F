@@ -57,8 +57,11 @@ private:
 
 private:
 	//!< サウンドデータテーブル
-	UPROPERTY(EditDefaultsOnly, Category = "Data")
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
 	UDataTable* soundData;
+    //!< 元となる音オブジェクト
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	TSubclassOf<AActor> soundObjectOrigin;
 
 private:
 	//!< サウンドシステム

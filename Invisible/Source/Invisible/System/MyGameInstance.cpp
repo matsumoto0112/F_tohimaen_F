@@ -12,11 +12,11 @@ UMyGameInstance::UMyGameInstance()
 
 void UMyGameInstance::PrintLogBlueprintCallstack()
 {
-    FString Callstack = FFrame::GetScriptCallstack();
+	FString Callstack = FFrame::GetScriptCallstack();
 
-    UE_LOG(LogTemp, Error, TEXT("--------------------------------------"));
-    UE_LOG(LogTemp, Error, TEXT(" Blueprint Callstack:\n%s"), *Callstack);
-    UE_LOG(LogTemp, Error, TEXT("--------------------------------------"));
+	UE_LOG(LogTemp, Error, TEXT("--------------------------------------"));
+	UE_LOG(LogTemp, Error, TEXT(" Blueprint Callstack:\n%s"), *Callstack);
+	UE_LOG(LogTemp, Error, TEXT("--------------------------------------"));
 }
 
 //インスタンスの取得
@@ -34,7 +34,7 @@ UMyGameInstance* UMyGameInstance::GetInstance()
 
 void UMyGameInstance::OnSystemError()
 {
-    PrintLogBlueprintCallstack();
+	PrintLogBlueprintCallstack();
 }
 
 //初期化
@@ -49,11 +49,11 @@ void UMyGameInstance::Init()
 		//サウンドシステムのワールドを再設定するのに必要
 		soundSystem->Rename(nullptr, this);
 	}
-	soundSystem->init(soundData);
+	soundSystem->init(soundData, soundObjectOrigin);
 }
 
 void UMyGameInstance::Shutdown()
 {
-    FCoreDelegates::OnHandleSystemError.Remove(OnSystemErrorDelegateHandle);
-    Super::Shutdown();
+	FCoreDelegates::OnHandleSystemError.Remove(OnSystemErrorDelegateHandle);
+	Super::Shutdown();
 }
