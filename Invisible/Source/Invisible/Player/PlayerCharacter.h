@@ -32,6 +32,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UFUNCTION(BlueprintNativeEvent, Category = "Sound")
+	void heardEnemySound(AActor* enemy);
+	virtual void heardEnemySound_Implementation(AActor* enemy) {}
 
 private:
 	/**

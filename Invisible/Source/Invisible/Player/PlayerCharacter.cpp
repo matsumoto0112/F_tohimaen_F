@@ -50,7 +50,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	playWalkSound(DeltaTime);
-    clampPlayerCameraPitchRotation();
+	clampPlayerCameraPitchRotation();
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -156,13 +156,13 @@ void APlayerCharacter::heardSound(ASoundObject* soundObject)
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk sound"));
 		break;
 	case ESoundType::Enemy_Walk:
-		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Enemy_Walk sound"));
+		heardEnemySound(soundObject->getSoundGenerateSource());
 		break;
 	case ESoundType::Player_Walk_On_Puddle:
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk_On_Puddle sound"));
 		break;
 	case ESoundType::Enemy_Walk_On_Puddle:
-		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Enemy_Walk_On_Puddle sound"));
+		heardEnemySound(soundObject->getSoundGenerateSource());
 		break;
 	default:
 		break;
@@ -217,7 +217,7 @@ void APlayerCharacter::playWalkSound(float deltaTime)
 //プレイヤーカメラの上下方向の回転制限
 void APlayerCharacter::clampPlayerCameraPitchRotation()
 {
-    FRotator rot = Controller->GetControlRotation();
-    rot.Pitch = FMath::ClampAngle(rot.Pitch, minCameraPitch, maxCameraPitch);
-    Controller->SetControlRotation(rot);
+	FRotator rot = Controller->GetControlRotation();
+	rot.Pitch = FMath::ClampAngle(rot.Pitch, minCameraPitch, maxCameraPitch);
+	Controller->SetControlRotation(rot);
 }
