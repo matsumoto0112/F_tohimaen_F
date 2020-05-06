@@ -64,10 +64,6 @@ public:
 	UFUNCTION(BluePrintCallable, Category = "Collision")
 	void overBathing();
 
-	//シルエット描画を有効にするかどうかセットする
-	UFUNCTION(BlueprintCallable, Category = "Silhouette")
-	void setEnableSilhouette(bool enabled);
-
 protected:
 	// 視野角度
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

@@ -27,6 +27,7 @@ AEnemy::AEnemy()
 	RootComponent = capsule;
 
 	skeltal = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeltal"));
+	skeltal->SetupAttachment(RootComponent);
 
 	actionableArea = CreateDefaultSubobject<USphereComponent>(TEXT("ActionableArea"));
 	actionableArea->InitSphereRadius(2000.0f);
@@ -41,8 +42,9 @@ AEnemy::AEnemy()
 	silhouetteSkeltal = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SilhouetteSkeltal"));
 	silhouetteSkeltal->bRenderInMainPass = false;
 	silhouetteSkeltal->bRenderInDepthPass = false;
-	silhouetteSkeltal->bRenderCustomDepth = true;
-	silhouetteSkeltal->CustomDepthStencilValue = 0;
+	silhouetteSkeltal->bRenderCustomDepth = false;
+	silhouetteSkeltal->CustomDepthStencilValue = 1;
+	silhouetteSkeltal->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -322,10 +324,4 @@ void AEnemy::overBathing()
 			AddReflection(1.0f / GAverageFPS);
 		}
 	}
-}
-
-void AEnemy::setEnableSilhouette(bool enabled)
-{
-	const int32 value = enabled ? 1 : 0;
-	silhouetteSkeltal->CustomDepthStencilValue = value;
 }
