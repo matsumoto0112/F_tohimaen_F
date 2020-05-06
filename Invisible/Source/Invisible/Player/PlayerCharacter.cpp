@@ -156,7 +156,7 @@ void APlayerCharacter::heardSound(ASoundObject* soundObject)
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk sound"));
 		break;
 	case ESoundType::Enemy_Walk:
-		heardEnemySound(soundObject->getSoundGenerateSource());
+		//heardEnemySound(soundObject->getSoundGenerateSource());
 		break;
 	case ESoundType::Player_Walk_On_Puddle:
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk_On_Puddle sound"));
