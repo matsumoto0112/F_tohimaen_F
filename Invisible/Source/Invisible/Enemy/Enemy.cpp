@@ -51,7 +51,8 @@ AEnemy::AEnemy()
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	reflection = 0;
+	//reflection = 1;
+	//thirstSpeed = 10000;
 
 	auto actor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
 	player = (actor == nullptr) ? nullptr : actor;
@@ -69,6 +70,40 @@ void AEnemy::Tick(float DeltaTime)
 	playWalkSound(DeltaTime);
 }
 
+void AEnemy::HitMoved()
+{
+	return;
+	if (searchManager == nullptr)
+	{
+		return;
+	}
+	if (courses.Num() <= 0)
+	{
+		return;
+	}
+
+	// 初期値設定
+	auto pos = GetActorLocation();
+	auto vector = (courses[0] - pos);
+	vector.Z = 0;
+	auto length = (moveSpeed < vector.Size()) ? moveSpeed : vector.Size();
+	auto nor = vector.GetSafeNormal();
+
+	TArray<FHitResult> hits;
+	if (GetWorld()->LineTraceMultiByChannel(hits, pos, courses[0],
+	        ECollisionChannel::ECC_Pawn))
+	{
+		for (int i = 0; i < hits.Num(); i++)
+		{
+			if ((hits[i].Actor == nullptr) || (hits[i].Actor == this))
+			{
+				continue;
+			}
+			auto a = hits[i].Actor;
+		}
+	}
+}
+
 // 移動処理
 void AEnemy::Moving(float DeltaTime)
 {
@@ -76,6 +111,12 @@ void AEnemy::Moving(float DeltaTime)
 	{
 		return;
 	}
+	if (moveType == EMoveType::None)
+	{
+		return;
+	}
+
+	HitMoved();
 
 	// 初期値設定
 	auto pos = GetActorLocation();
@@ -102,12 +143,26 @@ void AEnemy::Moving(float DeltaTime)
 	{
 		SetWait();
 	}
+	//for (int i = 0; i < courses.Num() - 1; i++)
+	//{
+	//	auto start = courses[i];
+	//	auto end = courses[i + 1];
+	//	start.Z = player->GetActorLocation().Z;
+	//	end.Z = player->GetActorLocation().Z;
+	//	UKismetSystemLibrary::DrawDebugLine(GetWorld(), start, end, FLinearColor::Red, 10);
+	//	UKismetSystemLibrary::DrawDebugSphere(GetWorld(), end, 50, 12, FLinearColor::Red, 0);
+	//}
 }
 
 // 待機時間設定
 void AEnemy::SetWait()
 {
+	if (moveType == EMoveType::None)
+	{
+		return;
+	}
 	waitTimer = waitTime * FMath::FRandRange(0.0f, 1.0f);
+	moveType = EMoveType::None;
 }
 
 // 経路探索
@@ -123,10 +178,7 @@ void AEnemy::SearchCourse(float DeltaTime)
 	//	str += c;
 	//}
 	//UKismetSystemLibrary::DrawDebugString(GetWorld(), GetActorLocation(), str, nullptr, FLinearColor::Black, 0);
-	if (IsEyeArea())
-	{
-		searchPlayer(player);
-	}
+	chasePlayer();
 
 	if (0 < waitTimer)
 	{
@@ -139,16 +191,21 @@ void AEnemy::SearchCourse(float DeltaTime)
 		waitTimer = 0;
 	}
 
+	if (searchManager == nullptr)
+	{
+		return;
+	}
 	if (0 < courses.Num())
 	{
 		return;
 	}
-	if (searchManager == nullptr)
+	if (moveType != EMoveType::None)
 	{
 		return;
 	}
 
 	courses = searchManager->Course(this);
+	moveType = EMoveType::Move;
 }
 
 // プレイヤー探索
@@ -158,18 +215,55 @@ void AEnemy::searchPlayer(AActor* OtherActor)
 	{
 		return;
 	}
+	if (moveType == EMoveType::SE_Move)
+	{
+		return;
+	}
+	if (moveType == EMoveType::PlayerChase)
+	{
+		return;
+	}
+	if (IsEyeArea())
+	{
+		return;
+	}
 
+	moveType = EMoveType::SE_Move;
 	courses.RemoveAll([](FVector) { return true; });
 	courses = searchManager->Course(this, OtherActor);
-	if (0 < courses.Num())
+	courses.Add(OtherActor->GetActorLocation());
+	//if (0 < courses.Num())
+	//{
+	//	waitTimer = 0;
+	//	auto actorLength = (OtherActor->GetActorLocation() - GetActorLocation()).Size();
+	//	auto courseLength = (courses[0] - GetActorLocation()).Size();
+	//	if (actorLength < courseLength)
+	//	{
+	//		courses.RemoveAll([](FVector) { return true; });
+	//		courses.Add(OtherActor->GetActorLocation());
+	//	}
+	//}
+}
+
+// プレイヤー追跡
+void AEnemy::chasePlayer()
+{
+	if (player == nullptr)
+	{
+		return;
+	}
+	if (IsEyeArea())
 	{
 		waitTimer = 0;
-		auto actorLength = (OtherActor->GetActorLocation() - GetActorLocation()).Size();
-		auto courseLength = (courses[0] - GetActorLocation()).Size();
-		if (actorLength < courseLength)
+		moveType = EMoveType::PlayerChase;
+		courses.RemoveAll([](FVector) { return true; });
+		courses.Add(player->GetActorLocation());
+	}
+	else
+	{
+		if (moveType == EMoveType::PlayerChase)
 		{
-			courses.RemoveAll([](FVector) { return true; });
-			courses.Add(OtherActor->GetActorLocation());
+			SetWait();
 		}
 	}
 }
