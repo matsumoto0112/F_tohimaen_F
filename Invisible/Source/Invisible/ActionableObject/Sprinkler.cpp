@@ -2,14 +2,9 @@
 
 #include "Sprinkler.h"
 
+#include "Invisible/ActionableObject/PuddleFactory.h"
 #include "Invisible/System/MyGameInstance.h"
 #include "Invisible/System/SoundSystem.h"
-
-namespace
-{
-	const FString path = "/Game/ActionableObject/Blueprint/Puddle_BP.Puddle_BP_C";
-	static TSubclassOf<AActor> puddleOrigin;
-}
 
 //コンストラクタ
 ASprinkler::ASprinkler()
@@ -30,19 +25,12 @@ ASprinkler::ASprinkler()
 	        false));
 
 	wetArea = CreateDefaultSubobject<UBoxComponent>(TEXT("WetArea"));
-    wetArea->InitBoxExtent(FVector(250.0f, 200.0f, 250.0f));
-    wetArea->SetRelativeLocation(FVector(0.0f,-220.0f,0.0f));
+	wetArea->InitBoxExtent(FVector(250.0f, 200.0f, 250.0f));
+	wetArea->SetRelativeLocation(FVector(0.0f, -220.0f, 0.0f));
 	wetArea->SetGenerateOverlapEvents(false);
-    wetArea->SetSimulatePhysics(false);
-    wetArea->SetCollisionProfileName("OverlapAllDynamic");
+	wetArea->SetSimulatePhysics(false);
+	wetArea->SetCollisionProfileName("OverlapAllDynamic");
 	wetArea->SetupAttachment(RootComponent);
-
-	//水たまりの元オブジェクトがまだ読み込めていなければ読み込む
-	if (puddleOrigin == nullptr)
-	{
-		//NOTE:パスをコードにベタ打ちなので改善対象
-		puddleOrigin = TSoftClassPtr<AActor>(FSoftObjectPath(*path)).LoadSynchronous();
-	}
 }
 
 void ASprinkler::BeginPlay()
@@ -86,17 +74,23 @@ void ASprinkler::action_Implementation()
 	//スプリンクラーの音を再生する
 	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Sprinkler, GetActorLocation(), this);
 
-	//水たまりの元がなければ何もしない
-	if (puddleOrigin == nullptr)
-		return;
 	//水たまりがすでにあるなら何もしない
 	if (puddleSpawned)
 		return;
+
+    //レベルから水たまり生成器を取得する
+	AActor* aFactory = UGameplayStatics::GetActorOfClass(GetWorld(), APuddleFactory::StaticClass());
+	if (!aFactory)
+		return;
+	if (!Cast<APuddleFactory>(aFactory))
+		return;
+
+	APuddleFactory* factory = Cast<APuddleFactory>(aFactory);
+
 	//水たまりの発生ポイントすべてに水たまりを配置する
 	for (auto& point : puddlePoints)
 	{
-		AActor* a = GetWorld()->SpawnActor<AActor>(puddleOrigin);
-		a->SetActorLocation(point->GetActorLocation());
+		factory->spawnRandomPuddle(point->GetActorLocation());
 	}
 	puddleSpawned = true;
 }
