@@ -60,9 +60,10 @@ void ASearchEgde::SetBranch()
 		{
 			continue;
 		}
-
-		UKismetSystemLibrary::DrawDebugLine(GetWorld(), GetActorLocation(), branch[index]->GetActorLocation(), FLinearColor::Black, 0);
-		UKismetSystemLibrary::DrawDebugSphere(GetWorld(), GetActorLocation(), radius,12, FLinearColor::Black, 0);
+		auto start = GetActorLocation() + FVector::UpVector * radius;
+		auto end = branch[index]->GetActorLocation() + FVector::UpVector * radius;
+		UKismetSystemLibrary::DrawDebugLine(GetWorld(), start, end, FLinearColor::Blue, 0);
+		UKismetSystemLibrary::DrawDebugSphere(GetWorld(), GetActorLocation(), radius,12, FLinearColor::Blue, 0);
 		//UKismetSystemLibrary::DrawDebugCapsule(GetWorld(),)
 	}
 }

@@ -13,6 +13,14 @@
 
 class ASoundObject;
 
+enum class EMoveType : uint8
+{
+	None,
+	Move,
+	SE_Move,
+	PlayerChase,
+};
+
 UCLASS()
 class INVISIBLE_API AEnemy : public AActor, public IActionable
 {
@@ -30,12 +38,15 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void HitMoved();
 	// 移動処理
 	void Moving(float DeltaTime);
 	// 経路探索
 	void SearchCourse(float DeltaTime);
 	// プレイヤー探索
 	void searchPlayer(AActor* OtherActor);
+	// プレイヤー追跡
+	void chasePlayer();
 	// 待機時間設定
 	void SetWait();
 	// マテリアル
@@ -97,7 +108,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ASearchManager* searchManager;
 	// 経路リスト
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FVector> courses;
+
+	EMoveType moveType;
 
 	AActor* player;
 

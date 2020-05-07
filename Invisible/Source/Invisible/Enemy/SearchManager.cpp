@@ -37,7 +37,7 @@ TArray<FVector> ASearchManager::Course(AActor* actor) const
 	}
 	auto start = new SearchCourse(near);
 	auto end = GetRandomSearch(start->GetBaseSearch());
-	
+
 	return Course(start, end);
 }
 
@@ -92,27 +92,46 @@ float ASearchManager::GetRadius() const
 	return radius;
 }
 
+FVector ASearchManager::NearSearchPosition(AActor* actor) const
+{
+	return NearSearchPosition(actor->GetActorLocation());
+}
+FVector ASearchManager::NearSearchPosition(FVector point) const
+{
+	auto near = NearSearch(point);
+	if (near == nullptr)
+	{
+		return point;
+	}
+	return near->GetActorLocation();
+}
+
 ASearchEgde* ASearchManager::NearSearch(AActor* actor) const
 {
-	ASearchEgde* result = nullptr;
+	return NearSearch(actor->GetActorLocation());
+}
+ASearchEgde* ASearchManager::NearSearch(FVector point) const
+{
+	int resultIndex = -1;
 	for (int i = 0; i < search.Num(); i++)
 	{
-		auto aLoc = actor->GetActorLocation();
+		auto aLoc = point;
 		auto sLoc = search[i]->GetActorLocation();
-		auto length = (aLoc - sLoc).Size();
+		auto length = (sLoc - aLoc).Size();
 
-		if (result == nullptr)
+		if (resultIndex<0)
 		{
-			result = search[i];
+			resultIndex = 0;
 		}
-		auto rLoc = result->GetActorLocation();
-		auto rLength = (rLoc - sLoc).Size();
+		auto rLoc = search[resultIndex]->GetActorLocation();
+		auto rLength = (rLoc - aLoc).Size();
+		auto flag = (length < rLength);
 		if (length < rLength)
 		{
-			result = search[i];
+			resultIndex = i;
 		}
 	}
-	return result;
+	return (resultIndex<0)?nullptr:search[resultIndex];
 }
 
 ASearchEgde* ASearchManager::GetRandomSearch(ASearchEgde* remove) const

@@ -31,8 +31,12 @@ public:
 	TArray<FVector> Course(AActor* start, AActor* end) const;
 	float GetRadius() const;
 
+	FVector NearSearchPosition(AActor* actor) const;
+	FVector NearSearchPosition(FVector point) const;
+
 private:
 	ASearchEgde* NearSearch(AActor* actor) const;
+	ASearchEgde* NearSearch(FVector point) const;
 	ASearchEgde* GetRandomSearch(ASearchEgde* remove) const;
 	TArray<FVector> Course(SearchCourse* start, ASearchEgde* end) const;
 
