@@ -50,7 +50,8 @@ void ASprinkler::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 
 	//パーティクルの終了タイマーを消去する
-	GetWorldTimerManager().ClearAllTimersForObject(this);
+	if (timerHandle.IsValid())
+		GetWorldTimerManager().ClearTimer(timerHandle);
 }
 
 //アクションの実装
@@ -78,7 +79,7 @@ void ASprinkler::action_Implementation()
 	if (puddleSpawned)
 		return;
 
-    //レベルから水たまり生成器を取得する
+	//レベルから水たまり生成器を取得する
 	AActor* aFactory = UGameplayStatics::GetActorOfClass(GetWorld(), APuddleFactory::StaticClass());
 	if (!aFactory)
 		return;
