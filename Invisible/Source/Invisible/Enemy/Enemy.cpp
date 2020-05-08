@@ -72,7 +72,6 @@ void AEnemy::Tick(float DeltaTime)
 
 void AEnemy::HitMoved()
 {
-	return;
 	if (searchManager == nullptr)
 	{
 		return;
@@ -82,25 +81,27 @@ void AEnemy::HitMoved()
 		return;
 	}
 
-	// 初期値設定
-	auto pos = GetActorLocation();
-	auto vector = (courses[0] - pos);
-	vector.Z = 0;
-	auto length = (moveSpeed < vector.Size()) ? moveSpeed : vector.Size();
-	auto nor = vector.GetSafeNormal();
-
-	TArray<FHitResult> hits;
-	if (GetWorld()->LineTraceMultiByChannel(hits, pos, courses[0],
-	        ECollisionChannel::ECC_Pawn))
+	FHitResult hit;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+	if (player != nullptr)
 	{
-		for (int i = 0; i < hits.Num(); i++)
+		params.AddIgnoredActor(player);
+	}
+
+	auto start = GetActorLocation();
+	auto end = courses[0];
+	start.Z = (player == nullptr) ? 100 : player->GetActorLocation().Z;
+	end.Z = (player == nullptr) ? 100 : player->GetActorLocation().Z;
+	if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
+	        ECollisionChannel::ECC_Pawn, params))
+	{
+		if (hit.GetActor() == nullptr)
 		{
-			if ((hits[i].Actor == nullptr) || (hits[i].Actor == this))
-			{
-				continue;
-			}
-			auto a = hits[i].Actor;
+			return;
 		}
+		auto near = searchManager->NearSearchPosition(hit.ImpactPoint);
+		courses[0] = near;
 	}
 }
 
@@ -138,6 +139,35 @@ void AEnemy::Moving(float DeltaTime)
 	if (vector.Size() <= searchManager->GetRadius())
 	{
 		courses.RemoveAt(0);
+	}
+	if (moveType == EMoveType::PlayerChase)
+	{
+		if (player != nullptr)
+		{
+			if (courses.Num() <= 0)
+			{
+				FHitResult hit;
+				FCollisionQueryParams params;
+				params.AddIgnoredActor(this);
+				if (player != nullptr)
+				{
+					params.AddIgnoredActor(player);
+				}
+
+				auto start = GetActorLocation();
+				auto end = player->GetActorLocation();
+				start.Z = player->GetActorLocation().Z;
+				if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
+				        ECollisionChannel::ECC_Pawn, params))
+				{
+					if (hit.GetActor() != nullptr)
+					{
+						auto near = searchManager->NearSearchPosition(hit.ImpactPoint);
+						courses.Add(player->GetActorLocation());
+					}
+				}
+			}
+		}
 	}
 	if (courses.Num() <= 0)
 	{
@@ -259,13 +289,13 @@ void AEnemy::chasePlayer()
 		courses.RemoveAll([](FVector) { return true; });
 		courses.Add(player->GetActorLocation());
 	}
-	else
-	{
-		if (moveType == EMoveType::PlayerChase)
-		{
-			SetWait();
-		}
-	}
+	//else
+	//{
+	//	if (moveType == EMoveType::PlayerChase)
+	//	{
+	//		SetWait();
+	//	}
+	//}
 }
 
 // マテリアル
