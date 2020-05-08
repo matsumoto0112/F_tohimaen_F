@@ -188,9 +188,6 @@ void APlayerCharacter::playWalkSound(float deltaTime)
 			if (!GetWorld()->LineTraceSingleByChannel(hit, GetActorLocation(), GetActorLocation() + FVector::DownVector * 1000.0f,
 			        ECollisionChannel::ECC_Visibility, param))
 				return;
-			UKismetSystemLibrary::DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + FVector::DownVector * 1000.0f, FLinearColor::Blue, 20.0f);
-
-			UE_LOG(LogTemp, Log, TEXT("%s"), *hit.Actor->GetName());
 			const ESoundType sound = [&hit]() {
 				//TODO:GamePlayTag‚Åˆ—‚·‚é‚Ì‚ª–]‚Ü‚µ‚¢
 				//TODO:°‚ÆeƒNƒ‰ƒX‚ğˆê’v‚³‚¹‚È‚¢‚Æ“ï‚µ‚¢
