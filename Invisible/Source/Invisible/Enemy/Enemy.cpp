@@ -379,10 +379,11 @@ void AEnemy::playWalkSound(float deltaTime)
 			walkingSecond -= WALKING_SOUND_PLAY_INTERVAL;
 
 			FHitResult hit;
-			if (!GetWorld()->LineTraceSingleByChannel(hit, GetActorLocation(), FVector::DownVector * 1000.0f,
-			        ECollisionChannel::ECC_Visibility))
+			FCollisionQueryParams params;
+			params.AddIgnoredActor(this);
+			if (!GetWorld()->LineTraceSingleByChannel(hit, GetActorLocation() + FVector(0, 0, 100), GetActorLocation() + FVector::DownVector * 1000.0f,
+			        ECollisionChannel::ECC_Visibility, params))
 				return;
-
 			const ESoundType sound = [&hit]() {
 				//TODO:GamePlayTag‚Åˆ—‚·‚é‚Ì‚ª–]‚Ü‚µ‚¢
 				//TODO:°‚ÆeƒNƒ‰ƒX‚ğˆê’v‚³‚¹‚È‚¢‚Æ“ï‚µ‚¢

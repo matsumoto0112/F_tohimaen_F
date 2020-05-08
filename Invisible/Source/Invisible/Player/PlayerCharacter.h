@@ -32,6 +32,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	/**
+    * “G‚©‚ç”­‚¹‚ç‚ê‚é‰¹‚ð•·‚¢‚½
+    */
 	UFUNCTION(BlueprintNativeEvent, Category = "Sound")
 	void heardEnemySound(AActor* enemy);
 	virtual void heardEnemySound_Implementation(AActor* enemy) {}
@@ -96,6 +100,12 @@ protected:
 	//!< ƒJƒƒ‰‚Ìã‰º•ûŒü‚Ì‰ñ“]§ŒÀiãŒÀj
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
 	float maxCameraPitch = 45.0f;
+	//!< •à‚¢‚Ä‚¢‚é‚Æ”»’f‚³‚ê‚éˆÚ“®—Ê
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
+	float walkingThreshold = 0.5f;
+	//!< •às‰¹‚ÌÄ¶ŠÔŠu
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
+    float walkingSoundPlayInterval = 0.5f;
 
 public:
 	//!< ƒvƒŒƒCƒ„[ƒJƒƒ‰
@@ -110,4 +120,5 @@ private:
 	bool isWalking;
 	//!< •à‚¢‚Ä‚¢‚éŽžŠÔ(•b)
 	float walkingSecond;
+    FCollisionQueryParams param;
 };

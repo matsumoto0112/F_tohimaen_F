@@ -4,16 +4,11 @@
 
 #include "Engine.h"
 #include "Invisible/ActionableObject/Actionable.h"
+#include "Invisible/Enemy/Enemy.h"
 #include "Invisible/System/MyGameInstance.h"
 #include "Invisible/System/SoundObject.h"
 #include "Invisible/System/SoundSystem.h"
 #include "Kismet/GameplayStatics.h"
-
-namespace
-{
-	constexpr float WALKING_THRESHOLD = 0.5f; //!< 歩いているとみなす閾値
-	constexpr float WALKING_SOUND_PLAY_INTERVAL = 0.66f; //!< 歩行音の再生間隔
-}
 
 //コンストラクタ
 APlayerCharacter::APlayerCharacter()
@@ -43,6 +38,10 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	GetCharacterMovement()->MaxWalkSpeed = maxMoveSpeed;
+	param.AddIgnoredActor(this);
+	TArray<AActor*> enemies;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemy::StaticClass(), enemies);
+	param.AddIgnoredActors(enemies);
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -72,7 +71,7 @@ void APlayerCharacter::moveForward(float value)
 	AddMovementInput(direction, value);
 
 	//一定値以上の移動量があれば歩いているとみなす
-	if (std::abs(value) > WALKING_THRESHOLD)
+	if (std::abs(value) > walkingThreshold)
 	{
 		isWalking = true;
 	}
@@ -85,7 +84,7 @@ void APlayerCharacter::moveRight(float value)
 	AddMovementInput(direction, value);
 
 	//一定値以上の移動量があれば歩いているとみなす
-	if (std::abs(value) > WALKING_THRESHOLD)
+	if (std::abs(value) > walkingThreshold)
 	{
 		isWalking = true;
 	}
@@ -180,15 +179,18 @@ void APlayerCharacter::playWalkSound(float deltaTime)
 		walkingSecond += deltaTime;
 
 		//歩いている時間が一定量を超えたら再生する
-		if (walkingSecond > WALKING_SOUND_PLAY_INTERVAL)
+		if (walkingSecond > walkingSoundPlayInterval)
 		{
-			walkingSecond -= WALKING_SOUND_PLAY_INTERVAL;
+			walkingSecond -= walkingSoundPlayInterval;
 
 			FHitResult hit;
-			if (!GetWorld()->LineTraceSingleByChannel(hit, GetActorLocation(), FVector::DownVector * 1000.0f,
-			        ECollisionChannel::ECC_Visibility))
-				return;
 
+			if (!GetWorld()->LineTraceSingleByChannel(hit, GetActorLocation(), GetActorLocation() + FVector::DownVector * 1000.0f,
+			        ECollisionChannel::ECC_Visibility, param))
+				return;
+			UKismetSystemLibrary::DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + FVector::DownVector * 1000.0f, FLinearColor::Blue, 20.0f);
+
+			UE_LOG(LogTemp, Log, TEXT("%s"), *hit.Actor->GetName());
 			const ESoundType sound = [&hit]() {
 				//TODO:GamePlayTagで処理するのが望ましい
 				//TODO:床と親クラスを一致させないと難しい
