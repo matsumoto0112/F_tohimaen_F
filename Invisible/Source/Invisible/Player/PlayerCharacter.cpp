@@ -16,19 +16,22 @@ APlayerCharacter::APlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	//カメラを追加する
-	cameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FPSCamera"));
-	cameraComponent->SetupAttachment(GetCapsuleComponent());
-	cameraComponent->SetRelativeLocation(FVector(30.0f, 0.0f, 80.0f));
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FPSCamera"));
+	CameraComponent->SetupAttachment(RootComponent);
+	CameraComponent->SetRelativeLocation(FVector(30.0f, 0.0f, 80.0f));
 	//ポーンがカメラの回転を制御できるように
-	cameraComponent->bUsePawnControlRotation = true;
+	CameraComponent->bUsePawnControlRotation = true;
 
 	//アクション実行可能エリアを作成
-	actionArea = CreateDefaultSubobject<UBoxComponent>(TEXT("ActionArea"));
-	actionArea->InitBoxExtent(FVector(32.0f, 32.0f, 64.0f));
-	actionArea->SetRelativeLocation(FVector(32.0f, 0.0f, 0.0f));
-	actionArea->SetSimulatePhysics(false);
-	actionArea->SetCollisionProfileName("OverlapAllDynamic");
-	actionArea->SetupAttachment(GetCapsuleComponent());
+	ActionArea = CreateDefaultSubobject<UBoxComponent>(TEXT("ActionArea"));
+	ActionArea->InitBoxExtent(FVector(32.0f, 32.0f, 64.0f));
+	ActionArea->SetRelativeLocation(FVector(32.0f, 0.0f, 0.0f));
+	ActionArea->SetSimulatePhysics(false);
+	ActionArea->SetCollisionProfileName("OverlapAllDynamic");
+	ActionArea->SetupAttachment(RootComponent);
+
+	EnemyDetectArea = CreateDefaultSubobject<UEnemyDetectArea>(TEXT("EnemyDetectArea"));
+	EnemyDetectArea->SetupAttachment(RootComponent);
 
 	//コンポーネントの衝突時イベントを追加
 	this->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::onComponentBeginOverlap);
@@ -50,6 +53,8 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	playWalkSound(DeltaTime);
 	clampPlayerCameraPitchRotation();
+
+	EnemyDetectArea->DetectAndWarn();
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -109,7 +114,7 @@ void APlayerCharacter::playerAction()
 {
 	//条件を満たしたオブジェクトの中で一番近いオブジェクトを対象とし、アクションを実行する
 	TArray<AActor*> actors;
-	actionArea->GetOverlappingActors(actors);
+	ActionArea->GetOverlappingActors(actors);
 
 	//対象以外のオブジェクトを削除する
 	actors.RemoveAllSwap([](AActor* a) { return !a->GetClass()->ImplementsInterface(UActionable::StaticClass()); });

@@ -6,6 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Invisible/Player/EnemyDetectArea.h"
 
 #include "PlayerCharacter.generated.h"
 
@@ -104,21 +105,23 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
 	float walkingThreshold = 0.5f;
 	//!< 歩行音の再生間隔
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
-    float walkingSoundPlayInterval = 0.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
+	float walkingSoundPlayInterval = 0.5f;
 
 public:
 	//!< プレイヤーカメラ
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	UCameraComponent* cameraComponent;
+	UCameraComponent* CameraComponent;
 	//!< アクション実行可能エリア
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	UBoxComponent* actionArea;
+	UBoxComponent* ActionArea;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	UEnemyDetectArea* EnemyDetectArea;
 
 private:
 	//!< 今歩いているか
 	bool isWalking;
 	//!< 歩いている時間(秒)
 	float walkingSecond;
-    FCollisionQueryParams param;
+	FCollisionQueryParams param;
 };
