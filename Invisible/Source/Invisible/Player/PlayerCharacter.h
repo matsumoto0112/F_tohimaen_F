@@ -88,25 +88,26 @@ private:
 
 private:
 	//!< 最大移動速度
-	UPROPERTY(EditDefaultsOnly, Category = "Parameter")
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
 	float maxMoveSpeed = 500.0f;
 
 protected:
-	//!< マウス感度
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
-	float mouseSensitivity = 100.0f;
+	//!< 回転係数
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	float RotateCoef = 100.0f;
 	//!< カメラの上下方向の回転制限（下限）
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
-	float minCameraPitch = -45.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	float MinCameraPitch = -45.0f;
 	//!< カメラの上下方向の回転制限（上限）
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
-	float maxCameraPitch = 45.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	float MaxCameraPitch = 45.0f;
+
 	//!< 歩いていると判断される移動量
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
-	float walkingThreshold = 0.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	float WalkingThreshold = 0.5f;
 	//!< 歩行音の再生間隔
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
-	float walkingSoundPlayInterval = 0.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	float WalkingSoundPlayInterval = 0.5f;
 
 public:
 	//!< プレイヤーカメラ
@@ -120,8 +121,9 @@ public:
 
 private:
 	//!< 今歩いているか
-	bool isWalking;
+	bool bIsWalking;
 	//!< 歩いている時間(秒)
-	float walkingSecond;
+	float WalkingSecond;
+    //!< レイトレース用クエリパラメータ
 	FCollisionQueryParams param;
 };

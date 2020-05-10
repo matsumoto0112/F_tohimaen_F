@@ -76,9 +76,9 @@ void APlayerCharacter::moveForward(float value)
 	AddMovementInput(direction, value);
 
 	//一定値以上の移動量があれば歩いているとみなす
-	if (std::abs(value) > walkingThreshold)
+	if (std::abs(value) > WalkingThreshold)
 	{
-		isWalking = true;
+		bIsWalking = true;
 	}
 }
 
@@ -89,23 +89,23 @@ void APlayerCharacter::moveRight(float value)
 	AddMovementInput(direction, value);
 
 	//一定値以上の移動量があれば歩いているとみなす
-	if (std::abs(value) > walkingThreshold)
+	if (std::abs(value) > WalkingThreshold)
 	{
-		isWalking = true;
+		bIsWalking = true;
 	}
 }
 
 //カメラの横方向の回転処理
 void APlayerCharacter::turn(float amount)
 {
-	const float yawValue = mouseSensitivity * amount * GetWorld()->GetDeltaSeconds();
+	const float yawValue = RotateCoef * amount * GetWorld()->GetDeltaSeconds();
 	AddControllerYawInput(yawValue);
 }
 
 //カメラの上下方向の回転処理
 void APlayerCharacter::lookup(float amount)
 {
-	const float pitchValue = mouseSensitivity * amount * GetWorld()->GetDeltaSeconds();
+	const float pitchValue = RotateCoef * amount * GetWorld()->GetDeltaSeconds();
 	AddControllerPitchInput(pitchValue);
 }
 
@@ -176,17 +176,17 @@ void APlayerCharacter::heardSound(ASoundObject* soundObject)
 void APlayerCharacter::playWalkSound(float deltaTime)
 {
 	//歩いているときに一定時間ごとに歩行音再生
-	if (isWalking)
+	if (bIsWalking)
 	{
 		//次の移動の入力があるまで歩いていない状態として扱う
-		isWalking = false;
+        bIsWalking = false;
 
-		walkingSecond += deltaTime;
+        WalkingSecond += deltaTime;
 
 		//歩いている時間が一定量を超えたら再生する
-		if (walkingSecond > walkingSoundPlayInterval)
+		if (WalkingSecond > WalkingSoundPlayInterval)
 		{
-			walkingSecond -= walkingSoundPlayInterval;
+            WalkingSecond -= WalkingSoundPlayInterval;
 
 			FHitResult hit;
 
@@ -214,7 +214,7 @@ void APlayerCharacter::playWalkSound(float deltaTime)
 	}
 	else
 	{
-		walkingSecond = 0.0f;
+        WalkingSecond = 0.0f;
 	}
 }
 
@@ -222,6 +222,6 @@ void APlayerCharacter::playWalkSound(float deltaTime)
 void APlayerCharacter::clampPlayerCameraPitchRotation()
 {
 	FRotator rot = Controller->GetControlRotation();
-	rot.Pitch = FMath::ClampAngle(rot.Pitch, minCameraPitch, maxCameraPitch);
+	rot.Pitch = FMath::ClampAngle(rot.Pitch, MinCameraPitch, MaxCameraPitch);
 	Controller->SetControlRotation(rot);
 }
