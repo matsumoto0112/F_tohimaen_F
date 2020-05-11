@@ -47,7 +47,7 @@ void AExitItem::ItemAction_Implementation()
 void AExitItem::Get()
 {
 	isGet = true;
-	meshComponent->SetStaticMesh(nullptr);
+	meshComponent->SetVisibility(false, true);
 }
 void AExitItem::Use()
 {
