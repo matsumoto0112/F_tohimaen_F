@@ -40,9 +40,9 @@ private:
 	ASearchEgde* GetRandomSearch(ASearchEgde* remove) const;
 	TArray<FVector> Course(SearchCourse* start, ASearchEgde* end) const;
 
-private:
-	UPROPERTY(EditAnywhere)
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<ASearchEgde*> search;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float radius=100.0f;
 };
