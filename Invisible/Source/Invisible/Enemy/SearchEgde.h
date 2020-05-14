@@ -31,8 +31,9 @@ public:
 	float GetRadius() const;
 	void SetRadius(float r);
 
-private:
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float radius = 100.0f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<ASearchEgde*> branch;
 };
