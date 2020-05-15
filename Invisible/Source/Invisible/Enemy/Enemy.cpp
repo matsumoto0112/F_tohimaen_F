@@ -125,10 +125,10 @@ void AEnemy::Moving(float DeltaTime)
 	vector.Z = 0;
 	auto length = (moveSpeed < vector.Size()) ? moveSpeed : vector.Size();
 	auto nor = vector.GetSafeNormal();
-	auto mov = nor * length * DeltaTime;
+	auto mov = nor * moveSpeed * DeltaTime;
 
 	// ˆÚ“®
-	mov = (mov.Size() < vector.Size()) ? mov : vector;
+	//mov = (mov.Size() < vector.Size()) ? mov : vector;
 	SetActorLocation(pos + mov);
 
 	// ‰ñ“]
