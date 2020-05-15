@@ -179,14 +179,14 @@ void APlayerCharacter::playWalkSound(float deltaTime)
 	if (bIsWalking)
 	{
 		//ŽŸ‚ÌˆÚ“®‚Ì“ü—Í‚ª‚ ‚é‚Ü‚Å•à‚¢‚Ä‚¢‚È‚¢ó‘Ô‚Æ‚µ‚Äˆµ‚¤
-        bIsWalking = false;
+		bIsWalking = false;
 
-        WalkingSecond += deltaTime;
+		WalkingSecond += deltaTime;
 
 		//•à‚¢‚Ä‚¢‚éŽžŠÔ‚ªˆê’è—Ê‚ð’´‚¦‚½‚çÄ¶‚·‚é
 		if (WalkingSecond > WalkingSoundPlayInterval)
 		{
-            WalkingSecond -= WalkingSoundPlayInterval;
+			WalkingSecond -= WalkingSoundPlayInterval;
 
 			FHitResult hit;
 
@@ -214,7 +214,7 @@ void APlayerCharacter::playWalkSound(float deltaTime)
 	}
 	else
 	{
-        WalkingSecond = 0.0f;
+		WalkingSecond = 0.0f;
 	}
 }
 
@@ -224,4 +224,12 @@ void APlayerCharacter::clampPlayerCameraPitchRotation()
 	FRotator rot = Controller->GetControlRotation();
 	rot.Pitch = FMath::ClampAngle(rot.Pitch, MinCameraPitch, MaxCameraPitch);
 	Controller->SetControlRotation(rot);
+}
+
+void APlayerCharacter::StartedGameEvent()
+{
+	if (Cast<APlayerController>(this->Controller))
+	{
+		this->DisableInput(Cast<APlayerController>(this->Controller));
+	}
 }

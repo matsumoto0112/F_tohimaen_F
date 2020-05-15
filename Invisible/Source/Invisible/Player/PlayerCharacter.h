@@ -86,6 +86,12 @@ private:
     */
 	void clampPlayerCameraPitchRotation();
 
+	/**
+    * ゲーム的なイベントが始まった
+    */
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void StartedGameEvent();
+
 private:
 	//!< 最大移動速度
 	UPROPERTY(EditDefaultsOnly, Category = "Player")
@@ -124,6 +130,6 @@ private:
 	bool bIsWalking;
 	//!< 歩いている時間(秒)
 	float WalkingSecond;
-    //!< レイトレース用クエリパラメータ
+	//!< レイトレース用クエリパラメータ
 	FCollisionQueryParams param;
 };

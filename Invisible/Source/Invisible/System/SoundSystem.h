@@ -25,6 +25,7 @@ enum class ESoundType : uint8
 	Enemy_Walk,
 	Player_Walk_On_Puddle,
 	Enemy_Walk_On_Puddle,
+    Door_Open,
 };
 
 /**
