@@ -42,8 +42,8 @@ AEnemy::AEnemy()
 	silhouetteSkeltal = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SilhouetteSkeltal"));
 	silhouetteSkeltal->bRenderInMainPass = false;
 	silhouetteSkeltal->bRenderInDepthPass = false;
-	silhouetteSkeltal->bRenderCustomDepth = false;
-	silhouetteSkeltal->CustomDepthStencilValue = 1;
+	silhouetteSkeltal->bRenderCustomDepth = true;
+	silhouetteSkeltal->CustomDepthStencilValue = 0;
 	silhouetteSkeltal->SetupAttachment(RootComponent);
 }
 
