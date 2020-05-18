@@ -19,6 +19,7 @@ enum class EMoveType : uint8
 	Move,
 	SE_Move,
 	PlayerChase,
+	BranchRotate,
 };
 
 UCLASS()
@@ -41,6 +42,8 @@ public:
 	void HitMoved();
 	// ˆÚ“®ˆ—
 	void Moving(float DeltaTime);
+	// ‰ñ“]’Tõˆ—
+	void RotateSearch(float DeltaTime);
 	// Œo˜H’Tõ
 	void SearchCourse(float DeltaTime);
 	// ƒvƒŒƒCƒ„[’Tõ
@@ -85,7 +88,10 @@ protected:
 
 	// ˆÚ“®‘¬“x
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float moveSpeed = 150.0f;
+	float walkSpeed = 150.0f;
+	// ˆÚ“®‘¬“x
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float runSpeed = 1500.0f;
 	// ‰ñ“]‘¬“x
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float rotateSpeed = 15.0f;
@@ -111,6 +117,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FVector> courses;
 
+	FVector lastSearch;
 	EMoveType moveType;
 
 	AActor* player;

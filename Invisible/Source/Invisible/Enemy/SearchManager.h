@@ -34,6 +34,9 @@ public:
 	FVector NearSearchPosition(AActor* actor) const;
 	FVector NearSearchPosition(FVector point) const;
 
+	bool DirectionSearch(AActor* actor, FVector near) const;
+	bool DirectionSearch(AActor* actor, ASearchEgde* near) const;
+
 private:
 	ASearchEgde* NearSearch(AActor* actor) const;
 	ASearchEgde* NearSearch(FVector point) const;
@@ -44,5 +47,5 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<ASearchEgde*> search;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float radius=100.0f;
+	float radius = 100.0f;
 };

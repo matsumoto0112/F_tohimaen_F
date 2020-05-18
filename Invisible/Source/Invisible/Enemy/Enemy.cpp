@@ -17,6 +17,15 @@ namespace
 	constexpr float WALKING_SOUND_PLAY_INTERVAL = 0.66f; //!< 歩行音の再生間隔
 }
 
+float GetDeg_XY(FVector forward)
+{
+	auto vector = forward;
+	forward.Z = 0;
+	auto normal = forward.GetSafeNormal();
+	auto rad = FMath::Atan2(normal.Y, normal.X);
+	return FMath::RadiansToDegrees(rad);
+}
+
 // Sets default values
 AEnemy::AEnemy()
 {
@@ -53,6 +62,7 @@ void AEnemy::BeginPlay()
 	Super::BeginPlay();
 	//reflection = 1;
 	//thirstSpeed = 10000;
+	lastSearch = GetActorLocation();
 
 	auto actor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
 	player = (actor == nullptr) ? nullptr : actor;
@@ -123,9 +133,10 @@ void AEnemy::Moving(float DeltaTime)
 	auto pos = GetActorLocation();
 	auto vector = (courses[0] - pos);
 	vector.Z = 0;
-	auto length = (moveSpeed < vector.Size()) ? moveSpeed : vector.Size();
+	auto speed = ((moveType == EMoveType::Move) || (moveType == EMoveType::SE_Move)) ? walkSpeed : runSpeed;
+	auto length = (speed < vector.Size()) ? speed : vector.Size();
 	auto nor = vector.GetSafeNormal();
-	auto mov = nor * moveSpeed * DeltaTime;
+	auto mov = nor * speed * DeltaTime;
 
 	// 移動
 	//mov = (mov.Size() < vector.Size()) ? mov : vector;
@@ -138,39 +149,48 @@ void AEnemy::Moving(float DeltaTime)
 	// 経路更新
 	if (vector.Size() <= searchManager->GetRadius())
 	{
+		lastSearch = courses[0];
 		courses.RemoveAt(0);
 	}
-	if (moveType == EMoveType::PlayerChase)
-	{
-		if (player != nullptr)
-		{
-			if (courses.Num() <= 0)
-			{
-				FHitResult hit;
-				FCollisionQueryParams params;
-				params.AddIgnoredActor(this);
-				if (player != nullptr)
-				{
-					params.AddIgnoredActor(player);
-				}
+	//if (moveType == EMoveType::PlayerChase)
+	//{
+	//	if (player != nullptr)
+	//	{
+	//		if (courses.Num() <= 0)
+	//		{
+	//			FHitResult hit;
+	//			FCollisionQueryParams params;
+	//			params.AddIgnoredActor(this);
+	//			if (player != nullptr)
+	//			{
+	//				params.AddIgnoredActor(player);
+	//			}
 
-				auto start = GetActorLocation();
-				auto end = player->GetActorLocation();
-				start.Z = player->GetActorLocation().Z;
-				if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
-				        ECollisionChannel::ECC_Pawn, params))
-				{
-					if (hit.GetActor() != nullptr)
-					{
-						auto near = searchManager->NearSearchPosition(hit.ImpactPoint);
-						courses.Add(player->GetActorLocation());
-					}
-				}
-			}
-		}
-	}
+	//			auto start = GetActorLocation();
+	//			auto end = player->GetActorLocation();
+	//			start.Z = player->GetActorLocation().Z;
+	//			if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
+	//			        ECollisionChannel::ECC_Pawn, params))
+	//			{
+	//				if (hit.GetActor() != nullptr)
+	//				{
+	//					auto near = searchManager->NearSearchPosition(hit.ImpactPoint);
+	//					courses.Add(player->GetActorLocation());
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
 	if (courses.Num() <= 0)
 	{
+		if (moveType == EMoveType::PlayerChase)
+		{
+			if (searchManager->DirectionSearch(player, lastSearch))
+			{
+				courses.Add(player->GetActorLocation());
+				return;
+			}
+		}
 		SetWait();
 	}
 	//for (int i = 0; i < courses.Num() - 1; i++)
@@ -198,19 +218,29 @@ void AEnemy::SetWait()
 // 経路探索
 void AEnemy::SearchCourse(float DeltaTime)
 {
-	//auto s = std::to_string(courses.Num());
-	//auto str = FString::FString(s.c_str());
-	//for (int i = 0; i < courses.Num(); i++)
-	//{
-	//	auto num = "[ "+std::to_string(i)+" ]";
-	//	auto pos = "( " + std::to_string(courses[i].X) + ", " + std::to_string(courses[i].Y) + ", " + std::to_string(courses[i].Z) + ") ";
-	//	auto c = ("\n" + FString::FString((num+pos).c_str()));
-	//	str += c;
-	//}
-	//UKismetSystemLibrary::DrawDebugString(GetWorld(), GetActorLocation(), str, nullptr, FLinearColor::Black, 0);
+	auto mov = TMap<EMoveType, FString>{
+	    {EMoveType::None, "None"},
+	    {EMoveType::Move, "Move"},
+	    {EMoveType::SE_Move, "SE_Move"},
+	    {EMoveType::PlayerChase, "PlayerChase"},
+	    {EMoveType::BranchRotate, "BranchRotate"},
+	};
+	auto m = mov[moveType];
+	auto s = "[ " + std::to_string(courses.Num()) + " ]";
+	auto str = FString::FString(s.c_str()) + m;
+
+	str += FString::FString(("\n" + std::to_string(GetDeg_XY(GetActorForwardVector()))).c_str());
+	for (int i = 0; i < courses.Num(); i++)
+	{
+		auto num = "[ " + std::to_string(i) + " ]";
+		auto nor = "( " + std::to_string(GetDeg_XY(courses[i] - GetActorLocation())) + ") ";
+		auto c = ("\n" + FString::FString((num + nor).c_str()));
+		str += c;
+	}
+	UKismetSystemLibrary::DrawDebugString(GetWorld(), GetActorLocation(), str, nullptr, FLinearColor::Black, 0);
 	chasePlayer();
 
-	if (0 < waitTimer)
+	if (moveType == EMoveType::None)
 	{
 		waitTimer -= DeltaTime;
 		if (0 < waitTimer)
@@ -235,6 +265,10 @@ void AEnemy::SearchCourse(float DeltaTime)
 	}
 
 	courses = searchManager->Course(this);
+	if (courses.Contains(lastSearch))
+	{
+		courses.Remove(lastSearch);
+	}
 	moveType = EMoveType::Move;
 }
 
@@ -262,17 +296,6 @@ void AEnemy::searchPlayer(AActor* OtherActor)
 	courses.RemoveAll([](FVector) { return true; });
 	courses = searchManager->Course(this, OtherActor);
 	courses.Add(OtherActor->GetActorLocation());
-	//if (0 < courses.Num())
-	//{
-	//	waitTimer = 0;
-	//	auto actorLength = (OtherActor->GetActorLocation() - GetActorLocation()).Size();
-	//	auto courseLength = (courses[0] - GetActorLocation()).Size();
-	//	if (actorLength < courseLength)
-	//	{
-	//		courses.RemoveAll([](FVector) { return true; });
-	//		courses.Add(OtherActor->GetActorLocation());
-	//	}
-	//}
 }
 
 // プレイヤー追跡
@@ -289,13 +312,35 @@ void AEnemy::chasePlayer()
 		courses.RemoveAll([](FVector) { return true; });
 		courses.Add(player->GetActorLocation());
 	}
-	//else
-	//{
-	//	if (moveType == EMoveType::PlayerChase)
-	//	{
-	//		SetWait();
-	//	}
-	//}
+	else if (moveType == EMoveType::PlayerChase)
+	{
+		if (player != nullptr)
+		{
+			if (courses.Num() <= 0)
+			{
+				FHitResult hit;
+				FCollisionQueryParams params;
+				params.AddIgnoredActor(this);
+				if (player != nullptr)
+				{
+					params.AddIgnoredActor(player);
+				}
+
+				auto start = GetActorLocation();
+				auto end = player->GetActorLocation();
+				start.Z = player->GetActorLocation().Z;
+				if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
+				        ECollisionChannel::ECC_Pawn, params))
+				{
+					if (hit.GetActor() != nullptr)
+					{
+						//auto near = searchManager->NearSearchPosition(hit.ImpactPoint);
+						courses.Add(player->GetActorLocation());
+					}
+				}
+			}
+		}
+	}
 }
 
 // マテリアル
@@ -316,14 +361,6 @@ void AEnemy::AddReflection(float add)
 	reflection = (reflection < 0) ? 0 : (1 < reflection) ? 1 : reflection;
 }
 
-float GetDeg_XY(FVector forward)
-{
-	auto vector = forward;
-	forward.Z = 0;
-	auto normal = forward.GetSafeNormal();
-	auto rad = FMath::Atan2(normal.Y, normal.X);
-	return FMath::RadiansToDegrees(rad);
-}
 bool AEnemy::IsEyeArea()
 {
 	if (player == nullptr)
@@ -348,7 +385,28 @@ bool AEnemy::IsEyeArea()
 	auto deg = FMath::Abs(ep_vector_deg - e_forward_deg);
 	deg = (180.0f < deg) ? (FMath::Abs(deg - 360.0f)) : (deg);
 
-	return (deg <= FMath::Abs(eyeDeg / 2.0f));
+	if (deg <= FMath::Abs(eyeDeg / 2.0f))
+	{
+		FHitResult hit;
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
+		if (player != nullptr)
+		{
+			params.AddIgnoredActor(player);
+		}
+
+		auto start = GetActorLocation();
+		auto end = player->GetActorLocation();
+		start.Z = player->GetActorLocation().Z;
+		if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
+		        ECollisionChannel::ECC_Pawn, params))
+		{
+			return false;
+		}
+		return true;
+	}
+
+	return false;
 }
 
 // 衝突開始時に呼ばれる
@@ -377,6 +435,15 @@ void AEnemy::heardSound(ASoundObject* soundObject)
 	{
 		//バルブの音が聞こえた
 	case ESoundType::Valve:
+		if (moveType == EMoveType::SE_Move)
+		{
+			return;
+		}
+		if (IsEyeArea())
+		{
+			return;
+		}
+		searchPlayer(soundObject);
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard valve sound"));
 		break;
 		//スプリンクラーの音が聞こえた
@@ -384,11 +451,6 @@ void AEnemy::heardSound(ASoundObject* soundObject)
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard sprinkler sound"));
 		break;
 	case ESoundType::Player_Walk:
-		if (IsEyeArea())
-		{
-			return;
-		}
-		searchPlayer(soundObject);
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk sound"));
 		break;
 	default:
