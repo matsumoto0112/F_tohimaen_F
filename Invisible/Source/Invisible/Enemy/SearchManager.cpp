@@ -2,6 +2,7 @@
 
 #include "SearchManager.h"
 
+#include "Components/SphereComponent.h"
 #include "SearchCourse.h"
 
 // Sets default values
@@ -106,6 +107,32 @@ FVector ASearchManager::NearSearchPosition(FVector point) const
 	return near->GetActorLocation();
 }
 
+bool ASearchManager::DirectionSearch(AActor* actor, FVector near) const
+{
+	return DirectionSearch(actor, NearSearch(near));
+}
+
+bool ASearchManager::DirectionSearch(AActor* actor, ASearchEgde* near) const
+{
+	auto point = actor->GetActorLocation();
+	auto forward = actor->GetActorForwardVector();
+
+	forward = (FVector(forward.X, forward.Y, 0)).GetSafeNormal();
+	auto vector = (point - near->GetActorLocation());
+	vector = FVector(vector.X, vector.Y, 0).GetSafeNormal();
+
+	FHitResult hit;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+	params.AddIgnoredActor(actor);
+
+	auto start = near->GetActorLocation();
+	auto end = actor->GetActorLocation();
+	start.Z = actor->GetActorLocation().Z;
+	return !(GetWorld()->LineTraceSingleByChannel(hit, start, end,
+	    ECollisionChannel::ECC_Pawn, params));
+}
+
 ASearchEgde* ASearchManager::NearSearch(AActor* actor) const
 {
 	return NearSearch(actor->GetActorLocation());
@@ -119,7 +146,7 @@ ASearchEgde* ASearchManager::NearSearch(FVector point) const
 		auto sLoc = search[i]->GetActorLocation();
 		auto length = (sLoc - aLoc).Size();
 
-		if (resultIndex<0)
+		if (resultIndex < 0)
 		{
 			resultIndex = 0;
 		}
@@ -131,7 +158,7 @@ ASearchEgde* ASearchManager::NearSearch(FVector point) const
 			resultIndex = i;
 		}
 	}
-	return (resultIndex<0)?nullptr:search[resultIndex];
+	return (resultIndex < 0) ? nullptr : search[resultIndex];
 }
 
 ASearchEgde* ASearchManager::GetRandomSearch(ASearchEgde* remove) const
