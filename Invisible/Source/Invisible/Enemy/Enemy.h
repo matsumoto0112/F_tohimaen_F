@@ -78,6 +78,14 @@ public:
 	UFUNCTION(BluePrintCallable, Category = "Collision")
 	void overBathing();
 
+    /**
+    * シルエットのスケルタルを取得
+    */
+	USkeletalMeshComponent* GetSilhouetteSkeltal() const
+	{
+		return silhouetteSkeltal;
+	}
+
 protected:
 	// 視野角度
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
