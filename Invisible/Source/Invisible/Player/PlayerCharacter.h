@@ -28,6 +28,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
 	virtual void Tick(float DeltaTime) override;
@@ -37,9 +38,8 @@ public:
 	/**
     * “G‚©‚ç”­‚¹‚ç‚ê‚é‰¹‚ð•·‚¢‚½
     */
-	UFUNCTION(BlueprintNativeEvent, Category = "Sound")
-	void heardEnemySound(AActor* enemy);
-	virtual void heardEnemySound_Implementation(AActor* enemy) {}
+	UFUNCTION(Category = "Sound")
+	void HeardEnemyWalkOnPuddleSound(AEnemy* enemy);
 
 private:
 	/**
@@ -114,6 +114,9 @@ protected:
 	//!< •às‰¹‚ÌÄ¶ŠÔŠu
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	float WalkingSoundPlayInterval = 0.5f;
+    //!< “G‚ª…‚½‚Ü‚è‚ð“¥‚ñ‚¾Žž‚ÉŒ©‚¦‚Ä‚¢‚éŽžŠÔ
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	float EnemyVisibleTimeWhenEnemyWalkOnPuddle = 1.0f;
 
 public:
 	//!< ƒvƒŒƒCƒ„[ƒJƒƒ‰

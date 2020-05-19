@@ -8,6 +8,7 @@
 #include "Invisible/System/MyGameInstance.h"
 #include "Invisible/System/SoundObject.h"
 #include "Invisible/System/SoundSystem.h"
+#include "Invisible/System/StencilBitValue.h"
 #include "Kismet/GameplayStatics.h"
 
 //コンストラクタ
@@ -47,6 +48,10 @@ void APlayerCharacter::BeginPlay()
 	param.AddIgnoredActors(enemies);
 }
 
+void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+}
+
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -67,6 +72,26 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("Turn", this, &APlayerCharacter::turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &APlayerCharacter::lookup);
 	PlayerInputComponent->BindAction("PlayerAction", EInputEvent::IE_Pressed, this, &APlayerCharacter::playerAction);
+}
+
+void APlayerCharacter::HeardEnemyWalkOnPuddleSound(AEnemy* enemy)
+{
+	//敵が水たまりを踏んだ時用のステンシル値を設定する
+	auto SilhouetteSkeltal = enemy->GetSilhouetteSkeltal();
+	const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue | static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyWalkOnPuddle);
+	SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
+
+    //一定時間後にステンシル値を元に戻す
+	FTimerManager& TimerManager = GetWorldTimerManager();
+	FTimerHandle Handle;
+	TimerManager.SetTimer(Handle, [SilhouetteSkeltal]() {
+        //シーンを超えたときなどキャプチャが無効になるときの対策
+		if (!SilhouetteSkeltal)
+			return;
+		const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue & ~static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyWalkOnPuddle);
+		SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
+	},
+        EnemyVisibleTimeWhenEnemyWalkOnPuddle, false);
 }
 
 //前方向への移動
@@ -166,8 +191,14 @@ void APlayerCharacter::heardSound(ASoundObject* soundObject)
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk_On_Puddle sound"));
 		break;
 	case ESoundType::Enemy_Walk_On_Puddle:
-		heardEnemySound(soundObject->getSoundGenerateSource());
-		break;
+	{
+		auto enemy = Cast<AEnemy>(soundObject->getSoundGenerateSource());
+		if (enemy)
+		{
+			HeardEnemyWalkOnPuddleSound(enemy);
+		}
+	}
+	break;
 	default:
 		break;
 	}
