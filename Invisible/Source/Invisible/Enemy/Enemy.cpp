@@ -7,6 +7,7 @@
 #include "Invisible/System/MyGameInstance.h"
 #include "Invisible/System/SoundObject.h"
 #include "Invisible/System/SoundSystem.h"
+#include "Invisible/System/StencilBitValue.h"
 #include "Kismet/GameplayStatics.h"
 
 #include <string>
@@ -509,6 +510,28 @@ void AEnemy::overBathing()
 		{
 			extern ENGINE_API float GAverageFPS;
 			AddReflection(1.0f / GAverageFPS);
+			ChangeStencilValueWhenPutOnWater();
 		}
 	}
+}
+
+//水をかぶった時のステンシル値の変更
+void AEnemy::ChangeStencilValueWhenPutOnWater()
+{
+    //ステンシル値を水をかぶった時用の値で和をとる
+	USkeletalMeshComponent* SilhouetteSkeltal = GetSilhouetteSkeltal();
+	const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue | static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyPutOnWater);
+	SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
+
+    //最後に当たった時から有効にしたいので古いタイマーは破棄する
+	FTimerManager& TimerManager = GetWorldTimerManager();
+	TimerManager.ClearTimer(ReturnStencilValueWhenPutOnWaterHandle);
+	TimerManager.SetTimer(ReturnStencilValueWhenPutOnWaterHandle, [SilhouetteSkeltal]() {
+        //ゲームが終了するなどしてスケルタルが参照できない場合に備えてチェックする
+		if (!SilhouetteSkeltal)
+			return;
+		const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue & ~static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyPutOnWater);
+		SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
+	},
+	    VisibleTimeWhenEnemyPutOnWater, false);
 }

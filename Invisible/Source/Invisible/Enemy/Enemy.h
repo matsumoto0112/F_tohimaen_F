@@ -78,13 +78,17 @@ public:
 	UFUNCTION(BluePrintCallable, Category = "Collision")
 	void overBathing();
 
-    /**
+	/**
     * シルエットのスケルタルを取得
     */
 	USkeletalMeshComponent* GetSilhouetteSkeltal() const
 	{
 		return silhouetteSkeltal;
 	}
+
+private:
+	//水をかぶった時のステンシル値の変更処理
+	void ChangeStencilValueWhenPutOnWater();
 
 protected:
 	// 視野角度
@@ -114,6 +118,9 @@ protected:
 	// 渇き速度
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float thirstSpeed = 5.0f;
+	//水がかかった時に見えているようになる時間
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float VisibleTimeWhenEnemyPutOnWater = 10.0f;
 
 	//!< 歩いている時間(秒)
 	float walkingSecond;
@@ -141,4 +148,8 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Silhouette")
 	USkeletalMeshComponent* silhouetteSkeltal;
+
+private:
+    //水をかぶった時にステンシル値を一定時間後に戻すためのタイマーハンドル
+	FTimerHandle ReturnStencilValueWhenPutOnWaterHandle;
 };
