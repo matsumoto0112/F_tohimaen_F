@@ -369,10 +369,12 @@ bool AEnemy::IsEyeArea()
 		return false;
 	}
 
+	// ベクトルと角度の代入
 	auto vector = (player->GetActorLocation() - GetActorLocation());
 	auto e_forward_deg = GetDeg_XY(GetActorForwardVector());
 	auto ep_vector_deg = GetDeg_XY(vector);
 
+	// 視野距離にいるか判定
 	vector.Z = 0;
 	auto length = vector.Size();
 	if (eyeLength < length)
@@ -380,6 +382,7 @@ bool AEnemy::IsEyeArea()
 		return false;
 	}
 
+	// -180°～180°を0°～360°に変更
 	e_forward_deg = (e_forward_deg < 0) ? (e_forward_deg + 360.0f) : (e_forward_deg);
 	ep_vector_deg = (ep_vector_deg < 0) ? (ep_vector_deg + 360.0f) : (ep_vector_deg);
 
@@ -396,6 +399,7 @@ bool AEnemy::IsEyeArea()
 			params.AddIgnoredActor(player);
 		}
 
+		// プレイヤー、敵の二点間に障害物があるか判定
 		auto start = GetActorLocation();
 		auto end = player->GetActorLocation();
 		start.Z = player->GetActorLocation().Z;
@@ -403,6 +407,16 @@ bool AEnemy::IsEyeArea()
 		        ECollisionChannel::ECC_Pawn, params))
 		{
 			return false;
+		}
+
+		// ロッカーIN
+		if (Cast<APlayerCharacter>(player))
+		{
+			auto p = Cast<APlayerCharacter>(player);
+			if (p->GetCurrentActionMode() == EPlayerActionMode::IsInLocker)
+			{
+				return false;
+			}
 		}
 		return true;
 	}
