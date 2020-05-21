@@ -2,7 +2,10 @@
 
 #include "Locker.h"
 
+#include "Engine.h"
 #include "Invisible/Player/PlayerCharacter.h"
+#include "Invisible/System/MyGameInstance.h"
+#include "Invisible/System/SoundSystem.h"
 
 // Sets default values
 ALocker::ALocker()
@@ -38,9 +41,17 @@ void ALocker::action_Implementation()
 		return;
 	}
 
+    const ESoundType Sound = ESoundType::Go_Into_Locker;
+    const FVector Location = GetActorLocation();
+    UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(Sound, Location, this);
+
 	const FTransform& Transform = PlayerStandPoint->GetComponentToWorld();
 	Player->IntoLocker(this, Transform.GetLocation(), Transform.Rotator());
 }
 
 void ALocker::GetOutPlayer()
-{ }
+{
+	const ESoundType Sound = ESoundType::Get_Out_Locker;
+	const FVector Location = GetActorLocation();
+	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(Sound, Location, this);
+}
