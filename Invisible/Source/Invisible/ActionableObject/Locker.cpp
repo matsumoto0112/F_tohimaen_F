@@ -41,3 +41,6 @@ void ALocker::action_Implementation()
 	const FTransform& Transform = PlayerStandPoint->GetComponentToWorld();
 	Player->IntoLocker(this, Transform.GetLocation(), Transform.Rotator());
 }
+
+void ALocker::GetOutPlayer()
+{ }

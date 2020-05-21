@@ -4,6 +4,7 @@
 
 #include "Engine.h"
 #include "Invisible/ActionableObject/Actionable.h"
+#include "Invisible/ActionableObject/Locker.h"
 #include "Invisible/Enemy/Enemy.h"
 #include "Invisible/System/MyGameInstance.h"
 #include "Invisible/System/SoundObject.h"
@@ -41,8 +42,12 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	CurrentActionMode = EPlayerActionMode::Move;
 	GetCharacterMovement()->MaxWalkSpeed = maxMoveSpeed;
+
+	//足元に飛ばすレイの無視リスト
 	param.AddIgnoredActor(this);
+	//敵の音察知コリジョンに引っかかることがあるので追加しておく
 	TArray<AActor*> enemies;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemy::StaticClass(), enemies);
 	param.AddIgnoredActors(enemies);
@@ -56,8 +61,12 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	playWalkSound(DeltaTime);
-	clampPlayerCameraPitchRotation();
+	if (CurrentActionMode == EPlayerActionMode::Move)
+	{
+		playWalkSound(DeltaTime);
+	}
+	ClampPlayerCameraPitchRotation();
+	ClampPlayerCameraYawRotation();
 
 	EnemyDetectArea->DetectAndWarn();
 }
@@ -71,7 +80,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::moveRight);
 	PlayerInputComponent->BindAxis("Turn", this, &APlayerCharacter::turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &APlayerCharacter::lookup);
-	PlayerInputComponent->BindAction("PlayerAction", EInputEvent::IE_Pressed, this, &APlayerCharacter::playerAction);
+	PlayerInputComponent->BindAction("PlayerAction", EInputEvent::IE_Pressed, this, &APlayerCharacter::InputedActionCommand);
 }
 
 void APlayerCharacter::HeardEnemyWalkOnPuddleSound(AEnemy* enemy)
@@ -97,6 +106,8 @@ void APlayerCharacter::HeardEnemyWalkOnPuddleSound(AEnemy* enemy)
 //前方向への移動
 void APlayerCharacter::moveForward(float value)
 {
+	if (CurrentActionMode != EPlayerActionMode::Move)
+		return;
 	const FVector direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
 	AddMovementInput(direction, value);
 
@@ -110,6 +121,8 @@ void APlayerCharacter::moveForward(float value)
 //右方向への移動
 void APlayerCharacter::moveRight(float value)
 {
+	if (CurrentActionMode != EPlayerActionMode::Move)
+		return;
 	const FVector direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
 	AddMovementInput(direction, value);
 
@@ -123,6 +136,10 @@ void APlayerCharacter::moveRight(float value)
 //カメラの横方向の回転処理
 void APlayerCharacter::turn(float amount)
 {
+	const bool CanTurn =
+	    (CurrentActionMode == EPlayerActionMode::Move) || (CurrentActionMode == EPlayerActionMode::IsInLocker);
+	if (!CanTurn)
+		return;
 	const float yawValue = RotateCoef * amount * GetWorld()->GetDeltaSeconds();
 	AddControllerYawInput(yawValue);
 }
@@ -130,31 +147,12 @@ void APlayerCharacter::turn(float amount)
 //カメラの上下方向の回転処理
 void APlayerCharacter::lookup(float amount)
 {
+	const bool CanLookup =
+	    (CurrentActionMode == EPlayerActionMode::Move) || (CurrentActionMode == EPlayerActionMode::IsInLocker);
+	if (!CanLookup)
+		return;
 	const float pitchValue = RotateCoef * amount * GetWorld()->GetDeltaSeconds();
 	AddControllerPitchInput(pitchValue);
-}
-
-//プレイヤーのアクションを実行する
-void APlayerCharacter::playerAction()
-{
-	//条件を満たしたオブジェクトの中で一番近いオブジェクトを対象とし、アクションを実行する
-	TArray<AActor*> actors;
-	ActionArea->GetOverlappingActors(actors);
-
-	//対象以外のオブジェクトを削除する
-	actors.RemoveAllSwap([](AActor* a) { return !a->GetClass()->ImplementsInterface(UActionable::StaticClass()); });
-
-	if (actors.Num() == 0)
-		return;
-
-	//対象との距離でソートし、一番近いオブジェクトを対象とする
-	//NOTE:ソートアルゴリズムはクイックソートで、平均O(Nlog(N))より、対象オブジェクト数が少ないので全探索と同程度の速度になると予想しソートを使用
-	//NOTE:ほんの少し、全探索より配列の再構築のオーバーヘッドがあるので改善の余地あり。
-	actors.Sort([this](auto& a, auto& b) {
-		const FVector myLocation = GetActorLocation();
-		return FVector::Dist2D(myLocation, a.GetActorLocation()) < FVector::Dist2D(myLocation, b.GetActorLocation());
-	});
-	IActionable::Execute_action(actors[0]);
 }
 
 //衝突開始時に呼ばれる
@@ -250,23 +248,120 @@ void APlayerCharacter::playWalkSound(float deltaTime)
 }
 
 //プレイヤーカメラの上下方向の回転制限
-void APlayerCharacter::clampPlayerCameraPitchRotation()
+void APlayerCharacter::ClampPlayerCameraPitchRotation()
 {
+	const bool NeedClamp =
+	    (CurrentActionMode == EPlayerActionMode::Move) || (CurrentActionMode == EPlayerActionMode::IsInLocker);
+	if (!NeedClamp)
+		return;
+
+	const FFloatRange Range = [&]() -> FFloatRange {
+		switch (CurrentActionMode)
+		{
+		case EPlayerActionMode::Move:
+			return FFloatRange{MinCameraPitch, MaxCameraPitch};
+		case EPlayerActionMode::IsInLocker:
+			return FFloatRange{MinCameraPitchWhenIsInLocker, MaxCameraPitchWhenIsInLocker};
+		default:
+			return FFloatRange{0.0f, 0.0f};
+		}
+	}();
 	FRotator rot = Controller->GetControlRotation();
-	rot.Pitch = FMath::ClampAngle(rot.Pitch, MinCameraPitch, MaxCameraPitch);
+	rot.Pitch = FMath::ClampAngle(rot.Pitch, Range.GetLowerBoundValue(), Range.GetUpperBoundValue());
 	Controller->SetControlRotation(rot);
 }
 
-void APlayerCharacter::StartedGameEvent()
+void APlayerCharacter::ClampPlayerCameraYawRotation()
 {
-	if (Cast<APlayerController>(this->Controller))
+	const bool NeedClamp =
+	    (CurrentActionMode == EPlayerActionMode::Move) || (CurrentActionMode == EPlayerActionMode::IsInLocker);
+	if (!NeedClamp)
+		return;
+
+	const FFloatRange Range = [&]() -> FFloatRange {
+		switch (CurrentActionMode)
+		{
+		case EPlayerActionMode::Move:
+			return FFloatRange{-180.0f + DELTA, 180.0f - DELTA};
+		case EPlayerActionMode::IsInLocker:
+			return FFloatRange{LockerYawRotation + MinCameraYawWhenIsInLocker, LockerYawRotation + MaxCameraYawWhenIsInLocker};
+		default:
+			return FFloatRange{0.0f, 0.0f};
+		}
+	}();
+	FRotator rot = Controller->GetControlRotation();
+	rot.Yaw = FMath::ClampAngle(rot.Yaw, Range.GetLowerBoundValue(), Range.GetUpperBoundValue());
+	Controller->SetControlRotation(rot);
+}
+
+void APlayerCharacter::ToDie()
+{
+	CurrentActionMode = EPlayerActionMode::IsDying;
+}
+
+void APlayerCharacter::InputedActionCommand()
+{
+	switch (CurrentActionMode)
 	{
-		this->DisableInput(Cast<APlayerController>(this->Controller));
+	case EPlayerActionMode::Move:
+		DoActionNearObject();
+		break;
+	case EPlayerActionMode::IsInLocker:
+		GetOutLocker();
+		break;
+	default:
+		break;
 	}
+}
+
+void APlayerCharacter::DoActionNearObject()
+{
+	//条件を満たしたオブジェクトの中で一番近いオブジェクトを対象とし、アクションを実行する
+	TArray<AActor*> actors;
+	ActionArea->GetOverlappingActors(actors);
+
+	//対象以外のオブジェクトを削除する
+	actors.RemoveAllSwap([](AActor* a) { return !a->GetClass()->ImplementsInterface(UActionable::StaticClass()); });
+
+	if (actors.Num() == 0)
+		return;
+
+	//対象との距離でソートし、一番近いオブジェクトを対象とする
+	//NOTE:ソートアルゴリズムはクイックソートで、平均O(Nlog(N))より、対象オブジェクト数が少ないので全探索と同程度の速度になると予想しソートを使用
+	//NOTE:ほんの少し、全探索より配列の再構築のオーバーヘッドがあるので改善の余地あり。
+	actors.Sort([this](auto& a, auto& b) {
+		const FVector myLocation = GetActorLocation();
+		return FVector::Dist2D(myLocation, a.GetActorLocation()) < FVector::Dist2D(myLocation, b.GetActorLocation());
+	});
+	IActionable::Execute_action(actors[0]);
+}
+
+void APlayerCharacter::GetOutLocker()
+{
+	if (!IsInLocker)
+	{
+		return;
+	}
+	CurrentActionMode = EPlayerActionMode::GetOutOfLocker;
+	FTimerHandle handle;
+	GetWorldTimerManager().SetTimer(handle, [&]() {
+		CurrentActionMode = EPlayerActionMode::Move;
+	},
+	    WaitTimeToGetOutLocker, false);
+	IsInLocker->GetOutPlayer();
 }
 
 void APlayerCharacter::IntoLocker(ALocker* Locker, const FVector& Location, const FRotator& FrontRotator)
 {
+	CurrentActionMode = EPlayerActionMode::GoingIntoLocker;
+	IsInLocker = Locker;
+	LockerYawRotation = FrontRotator.Yaw;
 	Controller->SetControlRotation(FrontRotator);
 	this->SetActorLocation(Location);
+
+	FTimerHandle handle;
+	GetWorldTimerManager().SetTimer(handle, [&]() {
+		CurrentActionMode = EPlayerActionMode::IsInLocker;
+	},
+	    WaitTimeToGoingIntoLocker, false);
 }

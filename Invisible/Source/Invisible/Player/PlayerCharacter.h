@@ -7,6 +7,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Invisible/Player/EnemyDetectArea.h"
+#include "Invisible/Player/PlayerActionMode.h"
 
 #include "PlayerCharacter.generated.h"
 
@@ -41,6 +42,12 @@ public:
     */
 	UFUNCTION(Category = "Sound")
 	void HeardEnemyWalkOnPuddleSound(AEnemy* enemy);
+	/**
+    * 現在のアクションモードを取得する
+    */
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	EPlayerActionMode GetCurrentActionMode() const { return CurrentActionMode; }
+
 	void IntoLocker(ALocker* Locker, const FVector& Location, const FRotator& FrontRotator);
 
 private:
@@ -65,11 +72,6 @@ private:
 	UFUNCTION()
 	void lookup(float amount);
 	/**
-    * プレイヤーのアクションを実行する
-    */
-	UFUNCTION()
-	void playerAction();
-	/**
     * 何かに衝突した時に呼ばれる
     */
 	UFUNCTION()
@@ -83,16 +85,25 @@ private:
     * 歩行音の再生処理
     */
 	void playWalkSound(float deltaTime);
-	/**
+    /**
     * プレイヤーカメラの上下方向に回転制限をかける
     */
-	void clampPlayerCameraPitchRotation();
+    void ClampPlayerCameraPitchRotation();
+    /**
+    * プレイヤーカメラの左右方向に回転制限をかける
+    */
+    void ClampPlayerCameraYawRotation();
 
 	/**
-    * ゲーム的なイベントが始まった
+    * 死亡する
     */
 	UFUNCTION(BlueprintCallable, Category = "Player")
-	void StartedGameEvent();
+	void ToDie();
+
+	UFUNCTION()
+	void InputedActionCommand();
+	void DoActionNearObject();
+	void GetOutLocker();
 
 private:
 	//!< 最大移動速度
@@ -120,6 +131,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	float EnemyVisibleTimeWhenEnemyWalkOnPuddle = 1.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Locker")
+	float WaitTimeToGoingIntoLocker = 0.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Locker")
+	float WaitTimeToGetOutLocker = 0.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Locker")
+	float MinCameraPitchWhenIsInLocker = -5.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Locker")
+	float MaxCameraPitchWhenIsInLocker = 5.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Locker")
+	float MinCameraYawWhenIsInLocker = -3.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Locker")
+	float MaxCameraYawWhenIsInLocker = 3.0f;
+
 public:
 	//!< プレイヤーカメラ
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
@@ -137,4 +161,9 @@ private:
 	float WalkingSecond;
 	//!< レイトレース用クエリパラメータ
 	FCollisionQueryParams param;
+	//!< プレイヤーの現在の状態
+	EPlayerActionMode CurrentActionMode;
+	//!< 今入っているロッカー
+	ALocker* IsInLocker;
+    float LockerYawRotation;
 };

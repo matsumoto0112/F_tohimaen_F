@@ -30,6 +30,7 @@ public:
     */
 	virtual void action_Implementation() override;
 
+    void GetOutPlayer();
 public:
 	//!< ロッカーのメッシュ
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
