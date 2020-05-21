@@ -11,6 +11,7 @@
 #include "PlayerCharacter.generated.h"
 
 class ASoundObject;
+class ALocker;
 
 /**
 * プレイヤーキャラクター
@@ -40,6 +41,7 @@ public:
     */
 	UFUNCTION(Category = "Sound")
 	void HeardEnemyWalkOnPuddleSound(AEnemy* enemy);
+	void IntoLocker(ALocker* Locker, const FVector& Location, const FRotator& FrontRotator);
 
 private:
 	/**
@@ -114,7 +116,7 @@ protected:
 	//!< 歩行音の再生間隔
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	float WalkingSoundPlayInterval = 0.5f;
-    //!< 敵が水たまりを踏んだ時に見えている時間
+	//!< 敵が水たまりを踏んだ時に見えている時間
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	float EnemyVisibleTimeWhenEnemyWalkOnPuddle = 1.0f;
 

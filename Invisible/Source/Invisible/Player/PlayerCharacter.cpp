@@ -81,17 +81,17 @@ void APlayerCharacter::HeardEnemyWalkOnPuddleSound(AEnemy* enemy)
 	const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue | static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyWalkOnPuddle);
 	SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
 
-    //一定時間後にステンシル値を元に戻す
+	//一定時間後にステンシル値を元に戻す
 	FTimerManager& TimerManager = GetWorldTimerManager();
 	FTimerHandle Handle;
 	TimerManager.SetTimer(Handle, [SilhouetteSkeltal]() {
-        //シーンを超えたときなどキャプチャが無効になるときの対策
+		//シーンを超えたときなどキャプチャが無効になるときの対策
 		if (!SilhouetteSkeltal)
 			return;
 		const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue & ~static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyWalkOnPuddle);
 		SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
 	},
-        EnemyVisibleTimeWhenEnemyWalkOnPuddle, false);
+	    EnemyVisibleTimeWhenEnemyWalkOnPuddle, false);
 }
 
 //前方向への移動
@@ -263,4 +263,10 @@ void APlayerCharacter::StartedGameEvent()
 	{
 		this->DisableInput(Cast<APlayerController>(this->Controller));
 	}
+}
+
+void APlayerCharacter::IntoLocker(ALocker* Locker, const FVector& Location, const FRotator& FrontRotator)
+{
+	Controller->SetControlRotation(FrontRotator);
+	this->SetActorLocation(Location);
 }
