@@ -36,21 +36,21 @@ APlayerCharacter::APlayerCharacter()
 	EnemyDetectArea->SetupAttachment(RootComponent);
 
 	//コンポーネントの衝突時イベントを追加
-	this->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::onComponentBeginOverlap);
+	this->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnComponentBeginOverlap);
 }
 
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	CurrentActionMode = EPlayerActionMode::Move;
-	GetCharacterMovement()->MaxWalkSpeed = maxMoveSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = MaxMoveSpeed;
 
 	//足元に飛ばすレイの無視リスト
-	param.AddIgnoredActor(this);
+	DetectFootObjectLinetraceQueryParams.AddIgnoredActor(this);
 	//敵の音察知コリジョンに引っかかることがあるので追加しておく
 	TArray<AActor*> enemies;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemy::StaticClass(), enemies);
-	param.AddIgnoredActors(enemies);
+	DetectFootObjectLinetraceQueryParams.AddIgnoredActors(enemies);
 }
 
 void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -64,7 +64,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	//移動中なら歩行音を再生する
 	if (CurrentActionMode == EPlayerActionMode::Move)
 	{
-		playWalkSound(DeltaTime);
+		PlayWalkSound(DeltaTime);
 	}
 
 	//回転制限
@@ -80,10 +80,10 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	//入力にバインドさせる
-	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerCharacter::moveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::moveRight);
-	PlayerInputComponent->BindAxis("Turn", this, &APlayerCharacter::turn);
-	PlayerInputComponent->BindAxis("LookUp", this, &APlayerCharacter::lookup);
+	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("Turn", this, &APlayerCharacter::Turn);
+	PlayerInputComponent->BindAxis("LookUp", this, &APlayerCharacter::Lookup);
 	PlayerInputComponent->BindAction("PlayerAction", EInputEvent::IE_Pressed, this, &APlayerCharacter::InputedActionCommand);
 }
 
@@ -108,72 +108,72 @@ void APlayerCharacter::HeardEnemyWalkOnPuddleSound(AEnemy* enemy)
 }
 
 //前方向への移動
-void APlayerCharacter::moveForward(float value)
+void APlayerCharacter::MoveForward(float Value)
 {
 	if (CurrentActionMode != EPlayerActionMode::Move)
 		return;
 	const FVector direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
-	AddMovementInput(direction, value);
+	AddMovementInput(direction, Value);
 
 	//一定値以上の移動量があれば歩いているとみなす
-	if (std::abs(value) > WalkingThreshold)
+	if (std::abs(Value) > WalkingThreshold)
 	{
 		bIsWalking = true;
 	}
 }
 
 //右方向への移動
-void APlayerCharacter::moveRight(float value)
+void APlayerCharacter::MoveRight(float Value)
 {
 	if (CurrentActionMode != EPlayerActionMode::Move)
 		return;
 	const FVector direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
-	AddMovementInput(direction, value);
+	AddMovementInput(direction, Value);
 
 	//一定値以上の移動量があれば歩いているとみなす
-	if (std::abs(value) > WalkingThreshold)
+	if (std::abs(Value) > WalkingThreshold)
 	{
 		bIsWalking = true;
 	}
 }
 
 //カメラの横方向の回転処理
-void APlayerCharacter::turn(float amount)
+void APlayerCharacter::Turn(float Amount)
 {
 	const bool CanTurn =
 	    (CurrentActionMode == EPlayerActionMode::Move) || (CurrentActionMode == EPlayerActionMode::IsInLocker);
 	if (!CanTurn)
 		return;
 
-	const float yawValue = RotateCoef * amount * GetWorld()->GetDeltaSeconds();
-	AddControllerYawInput(yawValue);
+	const float YawValue = RotateCoef * Amount * GetWorld()->GetDeltaSeconds();
+	AddControllerYawInput(YawValue);
 }
 
 //カメラの上下方向の回転処理
-void APlayerCharacter::lookup(float amount)
+void APlayerCharacter::Lookup(float Amount)
 {
 	const bool CanLookup =
 	    (CurrentActionMode == EPlayerActionMode::Move) || (CurrentActionMode == EPlayerActionMode::IsInLocker);
 	if (!CanLookup)
 		return;
-	const float pitchValue = RotateCoef * amount * GetWorld()->GetDeltaSeconds();
-	AddControllerPitchInput(pitchValue);
+	const float PitchValue = RotateCoef * Amount * GetWorld()->GetDeltaSeconds();
+	AddControllerPitchInput(PitchValue);
 }
 
 //衝突開始時に呼ばれる
-void APlayerCharacter::onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
+void APlayerCharacter::OnComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	//音オブジェクトなら音が聞こえる範囲内に入ったことを表す
 	if (Cast<ASoundObject>(OtherActor))
 	{
-		heardSound(Cast<ASoundObject>(OtherActor));
+		HeardSound(Cast<ASoundObject>(OtherActor));
 		return;
 	}
 }
 
 //音が聞こえる範囲内に入った
-void APlayerCharacter::heardSound(ASoundObject* soundObject)
+void APlayerCharacter::HeardSound(ASoundObject* soundObject)
 {
 	//聞こえた音の種類によって場合分け
 	switch (soundObject->getSoundType())
@@ -192,7 +192,7 @@ void APlayerCharacter::heardSound(ASoundObject* soundObject)
 	}
 }
 
-void APlayerCharacter::playWalkSound(float deltaTime)
+void APlayerCharacter::PlayWalkSound(float DeltaTime)
 {
 	//歩いているときに一定時間ごとに歩行音再生
 	if (bIsWalking)
@@ -200,17 +200,20 @@ void APlayerCharacter::playWalkSound(float deltaTime)
 		//次の移動の入力があるまで歩いていない状態として扱う
 		bIsWalking = false;
 
-		WalkingSecond += deltaTime;
+		WalkingSecond += DeltaTime;
 
 		//歩いている時間が一定量を超えたら再生する
 		if (WalkingSecond > WalkingSoundPlayInterval)
 		{
 			WalkingSecond -= WalkingSoundPlayInterval;
 
+            //足元にレイを飛ばし、床がなんであるか判定する
 			FHitResult hit;
-
-			if (!GetWorld()->LineTraceSingleByChannel(hit, GetActorLocation(), GetActorLocation() + FVector::DownVector * 1000.0f,
-			        ECollisionChannel::ECC_Visibility, param))
+			constexpr float LINE_LENGTH = 300.0f;
+			const FVector Start = GetActorLocation();
+			const FVector End = GetActorLocation() + FVector::DownVector * LINE_LENGTH;
+			if (!GetWorld()->LineTraceSingleByChannel(hit, Start, End,
+			        ECollisionChannel::ECC_Visibility, DetectFootObjectLinetraceQueryParams))
 				return;
 			const ESoundType sound = [&hit]() {
 				//TODO:GamePlayTagで処理するのが望ましい
@@ -222,13 +225,13 @@ void APlayerCharacter::playWalkSound(float deltaTime)
 				return ESoundType::Player_Walk;
 			}();
 
-			const FVector seLocation = [&]() {
+			const FVector SeLocation = [&]() {
 				FVector location = GetActorLocation();
 				location.Z = hit.Location.Z;
 				return location;
 			}();
 
-			UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(sound, seLocation, this);
+			UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(sound, SeLocation, this);
 		}
 	}
 	else
@@ -240,11 +243,13 @@ void APlayerCharacter::playWalkSound(float deltaTime)
 //プレイヤーカメラの上下方向の回転制限
 void APlayerCharacter::ClampPlayerCameraPitchRotation()
 {
+	//クランプが必要かどうか判定する
 	const bool NeedClamp =
 	    (CurrentActionMode == EPlayerActionMode::Move) || (CurrentActionMode == EPlayerActionMode::IsInLocker);
 	if (!NeedClamp)
 		return;
 
+	//視界の範囲は状態によって変わる
 	const FFloatRange Range = [&]() -> FFloatRange {
 		switch (CurrentActionMode)
 		{
@@ -257,22 +262,27 @@ void APlayerCharacter::ClampPlayerCameraPitchRotation()
 		}
 	}();
 
+	//新しい角度を設定する
 	FRotator NewRotation = Controller->GetControlRotation();
 	NewRotation.Pitch = FMath::ClampAngle(NewRotation.Pitch, Range.GetLowerBoundValue(), Range.GetUpperBoundValue());
 	Controller->SetControlRotation(NewRotation);
 }
 
+//プレイヤーカメラの左右方向の回転制限
 void APlayerCharacter::ClampPlayerCameraYawRotation()
 {
+	//クランプが必要かどうか判定する
 	const bool NeedClamp =
 	    (CurrentActionMode == EPlayerActionMode::Move) || (CurrentActionMode == EPlayerActionMode::IsInLocker);
 	if (!NeedClamp)
 		return;
 
+	//視界の範囲は状態によって変わる
 	const FFloatRange Range = [&]() -> FFloatRange {
 		switch (CurrentActionMode)
 		{
 		case EPlayerActionMode::Move:
+            //自由に動ける範囲
 			return FFloatRange{-180.0f + DELTA, 180.0f - DELTA};
 		case EPlayerActionMode::IsInLocker:
 			return FFloatRange{LockerYawRotation + CameraYawWhenIsInLocker.GetLowerBoundValue(), LockerYawRotation + CameraYawWhenIsInLocker.GetUpperBoundValue()};
@@ -280,16 +290,22 @@ void APlayerCharacter::ClampPlayerCameraYawRotation()
 			return FFloatRange{0.0f, 0.0f};
 		}
 	}();
+
+	//新しい角度を設定する
 	FRotator NewRotation = Controller->GetControlRotation();
 	NewRotation.Yaw = FMath::ClampAngle(NewRotation.Yaw, Range.GetLowerBoundValue(), Range.GetUpperBoundValue());
 	Controller->SetControlRotation(NewRotation);
 }
 
+//死亡する
 void APlayerCharacter::ToDie()
 {
+	//モードを変更するにとどめる
+	//あとはBPで処理する
 	CurrentActionMode = EPlayerActionMode::IsDying;
 }
 
+//入力コマンドを受け取る
 void APlayerCharacter::InputedActionCommand()
 {
 	switch (CurrentActionMode)
@@ -305,6 +321,7 @@ void APlayerCharacter::InputedActionCommand()
 	}
 }
 
+//近くにあるオブジェクトを作動させる
 void APlayerCharacter::DoActionNearObject()
 {
 	//条件を満たしたオブジェクトの中で一番近いオブジェクトを対象とし、アクションを実行する
@@ -327,13 +344,19 @@ void APlayerCharacter::DoActionNearObject()
 	IActionable::Execute_action(actors[0]);
 }
 
+//ロッカーから出る
 void APlayerCharacter::GetOutLocker()
 {
+	//ロッカーが見つからない時は何もしない
 	if (!IsInLocker)
 	{
+		UE_LOG(LogTemp, Error, TEXT("The Locker that Player is in is no exist!!"));
 		return;
 	}
+
 	CurrentActionMode = EPlayerActionMode::GetOutOfLocker;
+
+	//少しの待機時間ののち動けるようになる
 	FTimerHandle handle;
 	GetWorldTimerManager().SetTimer(handle, [&]() {
 		CurrentActionMode = EPlayerActionMode::Move;
@@ -342,14 +365,17 @@ void APlayerCharacter::GetOutLocker()
 	IsInLocker->GetOutPlayer();
 }
 
+//ロッカーに入る
 void APlayerCharacter::IntoLocker(ALocker* Locker, const FVector& Location, const FRotator& FrontRotator)
 {
 	CurrentActionMode = EPlayerActionMode::GoingIntoLocker;
+
 	IsInLocker = Locker;
 	LockerYawRotation = FrontRotator.Yaw;
 	Controller->SetControlRotation(FrontRotator);
 	this->SetActorLocation(Location);
 
+	//少しの待機時間ののち首を動かせるようになる
 	FTimerHandle handle;
 	GetWorldTimerManager().SetTimer(handle, [&]() {
 		CurrentActionMode = EPlayerActionMode::IsInLocker;

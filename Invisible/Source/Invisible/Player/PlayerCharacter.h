@@ -29,14 +29,26 @@ public:
 	APlayerCharacter();
 
 protected:
+	/**
+    * ゲーム開始時に呼ばれる
+    */
 	virtual void BeginPlay() override;
+	/**
+    * ゲーム終了時に呼ばれる
+    */
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
+	/**
+    * ゲーム更新処理
+    */
 	virtual void Tick(float DeltaTime) override;
-
+	/**
+    * 入力バインド処理
+    */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+public:
 	/**
     * 敵から発せられる音を聞いた
     */
@@ -47,7 +59,9 @@ public:
     */
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	EPlayerActionMode GetCurrentActionMode() const { return CurrentActionMode; }
-
+	/**
+    * ロッカーの中に入る
+    */
 	void IntoLocker(ALocker* Locker, const FVector& Location, const FRotator& FrontRotator);
 
 private:
@@ -55,36 +69,36 @@ private:
     * 前方向への移動処理
     */
 	UFUNCTION()
-	void moveForward(float value);
+	void MoveForward(float Value);
 	/**
     * 右方向への移動処理
     */
 	UFUNCTION()
-	void moveRight(float value);
+	void MoveRight(float Value);
 	/**
     * カメラの横方向の回転処理
     */
 	UFUNCTION()
-	void turn(float amount);
+	void Turn(float Amount);
 	/**
     * カメラの上下方向の回転処理
     */
 	UFUNCTION()
-	void lookup(float amount);
+	void Lookup(float Amount);
 	/**
     * 何かに衝突した時に呼ばれる
     */
 	UFUNCTION()
-	void onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
+	void OnComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	/**
     * 音が聞こえた
     */
-	void heardSound(ASoundObject* soundObject);
+	void HeardSound(ASoundObject* soundObject);
 	/**
     * 歩行音の再生処理
     */
-	void playWalkSound(float deltaTime);
+	void PlayWalkSound(float DeltaTime);
 	/**
     * プレイヤーカメラの上下方向に回転制限をかける
     */
@@ -100,15 +114,24 @@ private:
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	void ToDie();
 
+    /**
+    * アクションコマンドを受け取った時の処理
+    */
 	UFUNCTION()
 	void InputedActionCommand();
+    /**
+    * 近くのオブジェクトを作動させる
+    */
 	void DoActionNearObject();
+    /**
+    * ロッカーから出る
+    */
 	void GetOutLocker();
 
 private:
 	//!< 最大移動速度
 	UPROPERTY(EditDefaultsOnly, Category = "Player")
-	float maxMoveSpeed = 500.0f;
+	float MaxMoveSpeed = 500.0f;
 
 protected:
 	//!< 回転係数
@@ -158,7 +181,7 @@ private:
 	//!< 歩いている時間(秒)
 	float WalkingSecond;
 	//!< レイトレース用クエリパラメータ
-	FCollisionQueryParams param;
+	FCollisionQueryParams DetectFootObjectLinetraceQueryParams;
 	//!< プレイヤーの現在の状態
 	EPlayerActionMode CurrentActionMode;
 	//!< 今入っているロッカー
