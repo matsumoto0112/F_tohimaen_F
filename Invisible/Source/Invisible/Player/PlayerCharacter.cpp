@@ -61,13 +61,17 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//ˆÚ“®’†‚È‚ç•às‰¹‚ðÄ¶‚·‚é
 	if (CurrentActionMode == EPlayerActionMode::Move)
 	{
 		playWalkSound(DeltaTime);
 	}
+
+	//‰ñ“]§ŒÀ
 	ClampPlayerCameraPitchRotation();
 	ClampPlayerCameraYawRotation();
 
+	//“G‚ðŒŸ’m
 	EnemyDetectArea->DetectAndWarn();
 }
 
@@ -140,6 +144,7 @@ void APlayerCharacter::turn(float amount)
 	    (CurrentActionMode == EPlayerActionMode::Move) || (CurrentActionMode == EPlayerActionMode::IsInLocker);
 	if (!CanTurn)
 		return;
+
 	const float yawValue = RotateCoef * amount * GetWorld()->GetDeltaSeconds();
 	AddControllerYawInput(yawValue);
 }
@@ -173,27 +178,12 @@ void APlayerCharacter::heardSound(ASoundObject* soundObject)
 	//•·‚±‚¦‚½‰¹‚ÌŽí—Þ‚É‚æ‚Á‚Äê‡•ª‚¯
 	switch (soundObject->getSoundType())
 	{
-	case ESoundType::Valve:
-		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard valve sound"));
-		break;
-	case ESoundType::Sprinkler:
-		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard sprinkler sound"));
-		break;
-	case ESoundType::Player_Walk:
-		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk sound"));
-		break;
-	case ESoundType::Enemy_Walk:
-		//heardEnemySound(soundObject->getSoundGenerateSource());
-		break;
-	case ESoundType::Player_Walk_On_Puddle:
-		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk_On_Puddle sound"));
-		break;
 	case ESoundType::Enemy_Walk_On_Puddle:
 	{
-		auto enemy = Cast<AEnemy>(soundObject->getSoundGenerateSource());
-		if (enemy)
+		AEnemy* Enemy = Cast<AEnemy>(soundObject->getSoundGenerateSource());
+		if (Enemy)
 		{
-			HeardEnemyWalkOnPuddleSound(enemy);
+			HeardEnemyWalkOnPuddleSound(Enemy);
 		}
 	}
 	break;
@@ -259,16 +249,17 @@ void APlayerCharacter::ClampPlayerCameraPitchRotation()
 		switch (CurrentActionMode)
 		{
 		case EPlayerActionMode::Move:
-			return FFloatRange{MinCameraPitch, MaxCameraPitch};
+			return FFloatRange{NormalCameraPitch.GetLowerBoundValue(), NormalCameraPitch.GetUpperBoundValue()};
 		case EPlayerActionMode::IsInLocker:
-			return FFloatRange{MinCameraPitchWhenIsInLocker, MaxCameraPitchWhenIsInLocker};
+			return FFloatRange{CameraPitchWhenIsInLocker.GetLowerBoundValue(), CameraPitchWhenIsInLocker.GetUpperBoundValue()};
 		default:
 			return FFloatRange{0.0f, 0.0f};
 		}
 	}();
-	FRotator rot = Controller->GetControlRotation();
-	rot.Pitch = FMath::ClampAngle(rot.Pitch, Range.GetLowerBoundValue(), Range.GetUpperBoundValue());
-	Controller->SetControlRotation(rot);
+
+	FRotator NewRotation = Controller->GetControlRotation();
+	NewRotation.Pitch = FMath::ClampAngle(NewRotation.Pitch, Range.GetLowerBoundValue(), Range.GetUpperBoundValue());
+	Controller->SetControlRotation(NewRotation);
 }
 
 void APlayerCharacter::ClampPlayerCameraYawRotation()
@@ -284,14 +275,14 @@ void APlayerCharacter::ClampPlayerCameraYawRotation()
 		case EPlayerActionMode::Move:
 			return FFloatRange{-180.0f + DELTA, 180.0f - DELTA};
 		case EPlayerActionMode::IsInLocker:
-			return FFloatRange{LockerYawRotation + MinCameraYawWhenIsInLocker, LockerYawRotation + MaxCameraYawWhenIsInLocker};
+			return FFloatRange{LockerYawRotation + CameraYawWhenIsInLocker.GetLowerBoundValue(), LockerYawRotation + CameraYawWhenIsInLocker.GetUpperBoundValue()};
 		default:
 			return FFloatRange{0.0f, 0.0f};
 		}
 	}();
-	FRotator rot = Controller->GetControlRotation();
-	rot.Yaw = FMath::ClampAngle(rot.Yaw, Range.GetLowerBoundValue(), Range.GetUpperBoundValue());
-	Controller->SetControlRotation(rot);
+	FRotator NewRotation = Controller->GetControlRotation();
+	NewRotation.Yaw = FMath::ClampAngle(NewRotation.Yaw, Range.GetLowerBoundValue(), Range.GetUpperBoundValue());
+	Controller->SetControlRotation(NewRotation);
 }
 
 void APlayerCharacter::ToDie()

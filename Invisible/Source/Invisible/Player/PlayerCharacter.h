@@ -85,14 +85,14 @@ private:
     * 歩行音の再生処理
     */
 	void playWalkSound(float deltaTime);
-    /**
+	/**
     * プレイヤーカメラの上下方向に回転制限をかける
     */
-    void ClampPlayerCameraPitchRotation();
-    /**
+	void ClampPlayerCameraPitchRotation();
+	/**
     * プレイヤーカメラの左右方向に回転制限をかける
     */
-    void ClampPlayerCameraYawRotation();
+	void ClampPlayerCameraYawRotation();
 
 	/**
     * 死亡する
@@ -114,12 +114,9 @@ protected:
 	//!< 回転係数
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	float RotateCoef = 100.0f;
-	//!< カメラの上下方向の回転制限（下限）
+	//!< カメラの上下方向の回転制限
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	float MinCameraPitch = -45.0f;
-	//!< カメラの上下方向の回転制限（上限）
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	float MaxCameraPitch = 45.0f;
+	FFloatRange NormalCameraPitch;
 
 	//!< 歩いていると判断される移動量
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
@@ -131,18 +128,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	float EnemyVisibleTimeWhenEnemyWalkOnPuddle = 1.0f;
 
+	//!< ロッカーに入るまでの待機時間
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Locker")
 	float WaitTimeToGoingIntoLocker = 0.5f;
+	//!< ロッカーから出るまでの待機時間
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Locker")
 	float WaitTimeToGetOutLocker = 0.5f;
+	//ロッカーにいるときのカメラの上下方向の回転制限
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Locker")
-	float MinCameraPitchWhenIsInLocker = -5.0f;
+	FFloatRange CameraPitchWhenIsInLocker;
+	//ロッカーにいるときのカメラの左右方向の回転制限
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Locker")
-	float MaxCameraPitchWhenIsInLocker = 5.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Locker")
-	float MinCameraYawWhenIsInLocker = -3.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Locker")
-	float MaxCameraYawWhenIsInLocker = 3.0f;
+	FFloatRange CameraYawWhenIsInLocker;
 
 public:
 	//!< プレイヤーカメラ
@@ -151,6 +148,7 @@ public:
 	//!< アクション実行可能エリア
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	UBoxComponent* ActionArea;
+	//!< 敵検知エリア
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	UEnemyDetectArea* EnemyDetectArea;
 
@@ -165,5 +163,6 @@ private:
 	EPlayerActionMode CurrentActionMode;
 	//!< 今入っているロッカー
 	ALocker* IsInLocker;
-    float LockerYawRotation;
+	//!< ロッカーに入った時の回転量(Yaw)
+	float LockerYawRotation;
 };
