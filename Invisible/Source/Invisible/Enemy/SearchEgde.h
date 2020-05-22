@@ -36,4 +36,8 @@ protected:
 	float radius = 100.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<ASearchEgde*> branch;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 debugDraw = 0;
 };

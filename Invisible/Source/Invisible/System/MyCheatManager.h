@@ -31,4 +31,20 @@ public:
 	void InvisibleEnemy();
 
 	virtual void InvisibleEnemy_Implementation();
+
+	/**
+    * ’TõŒo˜H‚ğ‰Â‹‰»‚·‚é
+    */
+	UFUNCTION(BlueprintNativeEvent, exec)
+	void VisibleSearch();
+
+	virtual void VisibleSearch_Implementation();
+
+	/**
+    * ’TõŒo˜H‚ğ”ñ‰Â‹‰»‚·‚é
+    */
+	UFUNCTION(BlueprintNativeEvent, exec)
+	void InvisibleSearch();
+
+	virtual void InvisibleSearch_Implementation();
 };
