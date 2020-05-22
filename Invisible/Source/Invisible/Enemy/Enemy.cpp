@@ -487,10 +487,6 @@ void AEnemy::heardSound(ASoundObject* soundObject)
 		searchPlayer(soundObject);
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard valve sound"));
 		break;
-		//スプリンクラーの音が聞こえた
-	case ESoundType::Sprinkler:
-		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard sprinkler sound"));
-		break;
 	case ESoundType::Player_Walk:
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk sound"));
 		break;
