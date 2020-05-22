@@ -59,6 +59,9 @@ public:
 	void SetMaterial(float DeltaTime);
 	// ìßñæâªê›íË
 	void AddReflection(float add);
+
+	void DebugDraw();
+
 	// éãäoì‡Ç…Ç¢ÇÈÇ©
 	UFUNCTION(BluePrintCallable, Category = "EyeArea")
 	virtual bool IsEyeArea();
@@ -144,6 +147,9 @@ protected:
 	AActor* player;
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int debugDraw=0;
+
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Collision")
 	UCapsuleComponent* capsule;
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Collision")
