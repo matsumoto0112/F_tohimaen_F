@@ -464,7 +464,7 @@ void AEnemy::PlayerKill(AActor* OtherActor)
 		if (!(playerActiveType == EPlayerActionMode::IsInLocker))
 		{
 			auto p = Cast<APlayerCharacter>(player);
-			p->ToDie();
+			p->ToDie(this);
 			moveType = EMoveType::Kill;
 		}
 	}

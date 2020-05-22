@@ -68,7 +68,7 @@ public:
     * Ž€–S‚·‚é
     */
 	UFUNCTION(BlueprintCallable, Category = "Player")
-	void ToDie();
+	void ToDie(AActor* Killer);
 
 private:
 	/**
