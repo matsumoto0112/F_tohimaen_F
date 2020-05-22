@@ -64,6 +64,12 @@ public:
     */
 	void IntoLocker(ALocker* Locker, const FVector& Location, const FRotator& FrontRotator);
 
+	/**
+    * 死亡する
+    */
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void ToDie();
+
 private:
 	/**
     * 前方向への移動処理
@@ -107,12 +113,6 @@ private:
     * プレイヤーカメラの左右方向に回転制限をかける
     */
 	void ClampPlayerCameraYawRotation();
-
-	/**
-    * 死亡する
-    */
-	UFUNCTION(BlueprintCallable, Category = "Player")
-	void ToDie(AActor* Killer);
 
     /**
     * アクションコマンドを受け取った時の処理

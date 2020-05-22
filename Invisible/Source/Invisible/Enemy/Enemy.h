@@ -19,7 +19,7 @@ enum class EMoveType : uint8
 	Move,
 	SE_Move,
 	PlayerChase,
-	BranchRotate,
+	Kill,
 };
 
 UCLASS()
@@ -39,6 +39,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// プレイヤー殺害中
+	bool IsKill(float DeltaTime);
+	// 衝突箇所に座標設定
 	void HitMoved();
 	// 移動処理
 	void Moving(float DeltaTime);
@@ -64,6 +67,9 @@ public:
 	UFUNCTION(BluePrintCallable, Category = "Collision")
 	virtual void onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION(BluePrintCallable, Category = "Collision")
+	virtual void PlayerKill(AActor* OtherActor);
 
 	//// 衝突中に呼ばれる
 	//UFUNCTION(BluePrintCallable, Category = "Collision")
@@ -150,6 +156,6 @@ public:
 	USkeletalMeshComponent* silhouetteSkeltal;
 
 private:
-    //水をかぶった時にステンシル値を一定時間後に戻すためのタイマーハンドル
+	//水をかぶった時にステンシル値を一定時間後に戻すためのタイマーハンドル
 	FTimerHandle ReturnStencilValueWhenPutOnWaterHandle;
 };
