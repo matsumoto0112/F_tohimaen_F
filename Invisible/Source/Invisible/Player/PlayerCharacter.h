@@ -112,7 +112,7 @@ private:
     * 死亡する
     */
 	UFUNCTION(BlueprintCallable, Category = "Player")
-	void ToDie();
+	void ToDie(AActor* Killer);
 
     /**
     * アクションコマンドを受け取った時の処理
