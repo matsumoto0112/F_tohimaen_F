@@ -76,8 +76,10 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	DebugDraw();
 	SetMaterial(DeltaTime);
-	if (IsKill(DeltaTime)) return;
+	if (IsKill(DeltaTime))
+		return;
 
 	SearchCourse(DeltaTime);
 	Moving(DeltaTime);
@@ -100,6 +102,99 @@ bool AEnemy::IsKill(float DeltaTime)
 		return true;
 	}
 	return false;
+}
+
+// 移動処理
+void AEnemy::Moving(float DeltaTime)
+{
+	if (courses.Num() <= 0)
+	{
+		return;
+	}
+	if (moveType == EMoveType::None)
+	{
+		return;
+	}
+
+	// 経路更新
+	if ((courses[0] - GetActorLocation()).Size() <= searchManager->GetRadius())
+	{
+		if (2 <= courses.Num())
+		{
+			// 初期値設定
+			auto pos = GetActorLocation();
+			auto vector = (courses[1] - pos);
+			vector.Z = 0;
+			auto nor = vector.GetSafeNormal();
+
+			// 回転
+			auto r = GetActorForwardVector() + nor * DeltaTime * rotateSpeed;
+			SetActorRotation(r.Rotation());
+
+			if ((nor - r.GetSafeNormal()).Size() < 0.05f)
+			{
+				lastSearch = courses[0];
+				courses.RemoveAt(0);
+			}
+		}
+		else
+		{
+			lastSearch = courses[0];
+			courses.RemoveAt(0);
+		}
+	}
+	else
+	{
+		HitMoved();
+
+		// 初期値設定
+		auto pos = GetActorLocation();
+		auto vector = (courses[0] - pos);
+		vector.Z = 0;
+		auto nor = vector.GetSafeNormal();
+
+		//	移動値設定
+		auto speed = ((moveType == EMoveType::Move) || (moveType == EMoveType::SE_Move)) ? walkSpeed : runSpeed;
+		auto length = (speed < vector.Size()) ? speed : vector.Size();
+		auto mov = nor * speed * DeltaTime;
+
+		// 移動
+		SetActorLocation(pos + mov);
+
+		// 回転
+		auto r = GetActorForwardVector() + nor * DeltaTime * rotateSpeed;
+		SetActorRotation(r.Rotation());
+	}
+
+	if (courses.Num() <= 0)
+	{
+		if (moveType == EMoveType::PlayerChase)
+		{
+			FHitResult hit;
+			FCollisionQueryParams params;
+			params.AddIgnoredActor(this);
+			if (player != nullptr)
+			{
+				params.AddIgnoredActor(player);
+			}
+
+			auto start = GetActorLocation();
+			auto end = player->GetActorLocation();
+			start.Z = player->GetActorLocation().Z;
+			if (!GetWorld()->LineTraceSingleByChannel(hit, start, end,
+			        ECollisionChannel::ECC_Pawn, params))
+			{
+				courses.Add(player->GetActorLocation());
+				return;
+			}
+			//if (searchManager->DirectionSearch(player, lastSearch))
+			//{
+			//	courses.Add(player->GetActorLocation());
+			//	return;
+			//}
+		}
+		SetWait();
+	}
 }
 
 void AEnemy::HitMoved()
@@ -137,74 +232,6 @@ void AEnemy::HitMoved()
 	}
 }
 
-// 移動処理
-void AEnemy::Moving(float DeltaTime)
-{
-	if (courses.Num() <= 0)
-	{
-		return;
-	}
-	if (moveType == EMoveType::None)
-	{
-		return;
-	}
-
-	HitMoved();
-
-	// 初期値設定
-	auto pos = GetActorLocation();
-	auto vector = (courses[0] - pos);
-	vector.Z = 0;
-	auto speed = ((moveType == EMoveType::Move) || (moveType == EMoveType::SE_Move)) ? walkSpeed : runSpeed;
-	auto length = (speed < vector.Size()) ? speed : vector.Size();
-	auto nor = vector.GetSafeNormal();
-	auto mov = nor * speed * DeltaTime;
-
-	// 移動
-	SetActorLocation(pos + mov);
-
-	// 回転
-	auto r = GetActorForwardVector() + nor * DeltaTime * rotateSpeed;
-	SetActorRotation(r.Rotation());
-
-	// 経路更新
-	if (vector.Size() <= searchManager->GetRadius())
-	{
-		lastSearch = courses[0];
-		courses.RemoveAt(0);
-	}
-
-	if (courses.Num() <= 0)
-	{
-		if (moveType == EMoveType::PlayerChase)
-		{
-			FHitResult hit;
-			FCollisionQueryParams params;
-			params.AddIgnoredActor(this);
-			if (player != nullptr)
-			{
-				params.AddIgnoredActor(player);
-			}
-
-			auto start = GetActorLocation();
-			auto end = player->GetActorLocation();
-			start.Z = player->GetActorLocation().Z;
-			if (!GetWorld()->LineTraceSingleByChannel(hit, start, end,
-			        ECollisionChannel::ECC_Pawn, params))
-			{
-				courses.Add(player->GetActorLocation());
-				return;
-			}
-			//if (searchManager->DirectionSearch(player, lastSearch))
-			//{
-			//	courses.Add(player->GetActorLocation());
-			//	return;
-			//}
-		}
-		SetWait();
-	}
-}
-
 // 待機時間設定
 void AEnemy::SetWait()
 {
@@ -219,29 +246,6 @@ void AEnemy::SetWait()
 // 経路探索
 void AEnemy::SearchCourse(float DeltaTime)
 {
-	// ----- デバッグ文字描画 -----------------------------------------------------------------------------------------
-	auto mov = TMap<EMoveType, FString>{
-	    {EMoveType::None, "None"},
-	    {EMoveType::Move, "Move"},
-	    {EMoveType::SE_Move, "SE_Move"},
-	    {EMoveType::PlayerChase, "PlayerChase"},
-	    {EMoveType::Kill, "Kill"},
-	};
-	auto m = mov[moveType];
-	auto s = "[ " + std::to_string(courses.Num()) + " ]";
-	auto str = FString::FString(s.c_str()) + m;
-
-	str += FString::FString(("\n" + std::to_string(GetDeg_XY(GetActorForwardVector()))).c_str());
-	for (int i = 0; i < courses.Num(); i++)
-	{
-		auto num = "[ " + std::to_string(i) + " ]";
-		auto nor = "( " + std::to_string(GetDeg_XY(courses[i] - GetActorLocation())) + ") ";
-		auto c = ("\n" + FString::FString((num + nor).c_str()));
-		str += c;
-	}
-	UKismetSystemLibrary::DrawDebugString(GetWorld(), GetActorLocation(), str, nullptr, FLinearColor::Black, 0);
-	// ----------------------------------------------------------------------------------------------------------------
-
 	chasePlayer();
 
 	if (moveType == EMoveType::None)
@@ -363,6 +367,37 @@ void AEnemy::AddReflection(float add)
 {
 	reflection += add;
 	reflection = (reflection < 0) ? 0 : (1 < reflection) ? 1 : reflection;
+}
+
+void AEnemy::DebugDraw()
+{
+	if (debugDraw == 0)
+	{
+		return;
+	}
+
+	// ----- デバッグ文字描画 -----------------------------------------------------------------------------------------
+	auto mov = TMap<EMoveType, FString>{
+	    {EMoveType::None, "None"},
+	    {EMoveType::Move, "Move"},
+	    {EMoveType::SE_Move, "SE_Move"},
+	    {EMoveType::PlayerChase, "PlayerChase"},
+	    {EMoveType::Kill, "Kill"},
+	};
+	auto m = mov[moveType];
+	auto s = "[ " + std::to_string(courses.Num()) + " ]";
+	auto str = FString::FString(s.c_str()) + m;
+
+	str += FString::FString(("\n" + std::to_string(GetDeg_XY(GetActorForwardVector()))).c_str());
+	for (int i = 0; i < courses.Num(); i++)
+	{
+		auto num = "[ " + std::to_string(i) + " ]";
+		auto nor = "( " + std::to_string(GetDeg_XY(courses[i] - GetActorLocation())) + ") ";
+		auto c = ("\n" + FString::FString((num + nor).c_str()));
+		str += c;
+	}
+	UKismetSystemLibrary::DrawDebugString(GetWorld(), GetActorLocation(), str, nullptr, FLinearColor::Black, 0);
+	// ----------------------------------------------------------------------------------------------------------------
 }
 
 //	視界に入っているかどうか
