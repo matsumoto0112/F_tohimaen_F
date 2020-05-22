@@ -17,4 +17,3 @@ enum class EPlayerActionMode : uint8
     GetOutOfLocker, //!< ロッカーの中から出てくる
     IsDying, //!< 死亡中
 };
-ENUM_CLASS_FLAGS(EPlayerActionMode)

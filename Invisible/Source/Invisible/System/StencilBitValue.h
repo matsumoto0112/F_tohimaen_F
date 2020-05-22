@@ -10,10 +10,10 @@
 UENUM(BlueprintType, meta = (Bitflags))
 enum class EStencilBitValue : uint8
 {
-    Default = 0x00 UMETA(DisplayName = "Default"),
-    SilhouetteWhenEnemyWalkOnPuddle = 0x01 UMETA(DisplayName = "SilhouetteWhenEnemyWalkOnPuddle"),
-    SilhouetteWhenEnemyPutOnWater = 0x02 UMETA(DisplayName = "SilhouetteWhenEnemyPutOnWater"),
-    DebugEnemyVisible = 0x80 UMETA(DisplayName = "DebugEnemyVisible"),
+    Default = 0 UMETA(DisplayName = "Default"),
+    SilhouetteWhenEnemyWalkOnPuddle = 1 << 0 UMETA(DisplayName = "SilhouetteWhenEnemyWalkOnPuddle"),
+    SilhouetteWhenEnemyPutOnWater = 1 << 2 UMETA(DisplayName = "SilhouetteWhenEnemyPutOnWater"),
+    DebugEnemyVisible = 1 << 7 UMETA(DisplayName = "DebugEnemyVisible"),
 };
 
 ENUM_CLASS_FLAGS(EStencilBitValue)
