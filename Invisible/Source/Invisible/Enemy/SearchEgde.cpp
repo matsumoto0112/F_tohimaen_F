@@ -10,6 +10,11 @@
 // Sets default values
 ASearchEgde::ASearchEgde()
 {
+	if (branch.Contains(this))
+	{
+		branch.Remove(this);
+	}
+
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
@@ -50,10 +55,11 @@ void ASearchEgde::SetRadius(float r) {
 
 void ASearchEgde::SetBranch()
 {
-	if (branch.Contains(this))
+	if (debugDraw==0)
 	{
-		branch.Remove(this);
+		return;
 	}
+
 	for (int32 index = 0; index < branch.Num(); index++)
 	{
 		if ((branch[index] == nullptr))
