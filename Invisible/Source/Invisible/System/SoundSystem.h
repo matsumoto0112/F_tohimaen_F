@@ -20,7 +20,6 @@ UENUM(BlueprintType)
 enum class ESoundType : uint8
 {
 	Valve, //!< バルブを回す音
-	Sprinkler, //!< スプリンクラーの動作音
 	Player_Walk, //!< プレイヤーの歩行音
 	Enemy_Walk, //!< 敵の歩行音
 	Player_Walk_On_Puddle, //!< プレイヤーの歩行音（水たまり上）
@@ -28,6 +27,9 @@ enum class ESoundType : uint8
     Door_Open, //!< ドアの開く音
     Go_Into_Locker, //!< ロッカーに入る音
     Get_Out_Locker, //!< ロッカーから出る音
+	Sprinkler_Ver0, //!< スプリンクラーの動作音
+    Sprinkler_Ver1, //!< スプリンクラーの動作音
+    Sprinkler_Ver2, //!< スプリンクラーの動作音
 };
 
 /**

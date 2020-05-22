@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "Invisible/ActionableObject/Actionable.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Invisible/System/SoundSystem.h"
 
 #include "Sprinkler.generated.h"
 
@@ -64,6 +65,9 @@ protected:
 	//!< 水たまりの設置場所
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
 	TArray<ATargetPoint*> puddlePoints;
+    //!< 再生する音の種類
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
+    ESoundType SoundType =ESoundType::Sprinkler_Ver0;
 
 public:
 	//!< スプリンクラーのメッシュ
