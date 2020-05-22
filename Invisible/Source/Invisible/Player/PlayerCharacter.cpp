@@ -356,9 +356,11 @@ void APlayerCharacter::GetOutLocker()
 
 	CurrentActionMode = EPlayerActionMode::GetOutOfLocker;
 
-	//­‚µ‚Ì‘Ò‹@ŠÔ‚Ì‚Ì‚¿“®‚¯‚é‚æ‚¤‚É‚È‚é
+    //­‚µ‚Ì‘Ò‹@ŠÔ‚Ì‚Ì‚¿“®‚¯‚é‚æ‚¤‚É‚È‚é
 	FTimerHandle handle;
 	GetWorldTimerManager().SetTimer(handle, [&]() {
+        FVector Location = GetActorLocation() + GetControlRotation().Vector() * 50.0f;
+        SetActorLocation(Location);
 		CurrentActionMode = EPlayerActionMode::Move;
 	},
 	    WaitTimeToGetOutLocker, false);

@@ -14,8 +14,10 @@ ALocker::ALocker()
 	PrimaryActorTick.bCanEverTick = false;
 
 	//メッシュコンポーネントを作成する
-	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	RootComponent = MeshComponent;
+	BodyMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMesh"));
+	RootComponent = BodyMeshComponent;
+	DoorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorMesh"));
+	DoorMeshComponent->SetupAttachment(RootComponent);
 
 	PlayerStandPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
 	PlayerStandPoint->SetupAttachment(RootComponent);
@@ -41,9 +43,9 @@ void ALocker::action_Implementation()
 		return;
 	}
 
-    const ESoundType Sound = ESoundType::Go_Into_Locker;
-    const FVector Location = GetActorLocation();
-    UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(Sound, Location, this);
+	const ESoundType Sound = ESoundType::Go_Into_Locker;
+	const FVector Location = GetActorLocation();
+	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(Sound, Location, this);
 
 	const FTransform& Transform = PlayerStandPoint->GetComponentToWorld();
 	Player->IntoLocker(this, Transform.GetLocation(), Transform.Rotator());

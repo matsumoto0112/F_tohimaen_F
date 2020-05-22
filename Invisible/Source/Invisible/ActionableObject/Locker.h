@@ -32,9 +32,12 @@ public:
 
     void GetOutPlayer();
 public:
-	//!< ロッカーのメッシュ
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	UStaticMeshComponent* MeshComponent;
+    //!< ロッカーのボディメッシュ
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+    UStaticMeshComponent* BodyMeshComponent;
+    //!< ロッカーのドアメッシュ
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+    UStaticMeshComponent* DoorMeshComponent;
 
 	//!< プレイヤーの立つ場所
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
