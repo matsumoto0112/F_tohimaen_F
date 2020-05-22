@@ -298,7 +298,7 @@ void APlayerCharacter::ClampPlayerCameraYawRotation()
 }
 
 //€–S‚·‚é
-void APlayerCharacter::ToDie()
+void APlayerCharacter::ToDie(AActor* Killer)
 {
 	//ƒ‚[ƒh‚ğ•ÏX‚·‚é‚É‚Æ‚Ç‚ß‚é
 	//‚ ‚Æ‚ÍBP‚Åˆ—‚·‚é
