@@ -18,13 +18,15 @@ namespace
 	constexpr float WALKING_SOUND_PLAY_INTERVAL = 0.66f; //!< 歩行音の再生間隔
 }
 
+EPlayerActionMode playerActiveType = EPlayerActionMode::Default;
 float GetDeg_XY(FVector forward)
 {
 	auto vector = forward;
 	forward.Z = 0;
 	auto normal = forward.GetSafeNormal();
 	auto rad = FMath::Atan2(normal.Y, normal.X);
-	return FMath::RadiansToDegrees(rad);
+	auto deg = FMath::RadiansToDegrees(rad);
+	return deg;
 }
 
 // Sets default values
@@ -140,7 +142,6 @@ void AEnemy::Moving(float DeltaTime)
 	auto mov = nor * speed * DeltaTime;
 
 	// 移動
-	//mov = (mov.Size() < vector.Size()) ? mov : vector;
 	SetActorLocation(pos + mov);
 
 	// 回転
@@ -153,56 +154,36 @@ void AEnemy::Moving(float DeltaTime)
 		lastSearch = courses[0];
 		courses.RemoveAt(0);
 	}
-	//if (moveType == EMoveType::PlayerChase)
-	//{
-	//	if (player != nullptr)
-	//	{
-	//		if (courses.Num() <= 0)
-	//		{
-	//			FHitResult hit;
-	//			FCollisionQueryParams params;
-	//			params.AddIgnoredActor(this);
-	//			if (player != nullptr)
-	//			{
-	//				params.AddIgnoredActor(player);
-	//			}
 
-	//			auto start = GetActorLocation();
-	//			auto end = player->GetActorLocation();
-	//			start.Z = player->GetActorLocation().Z;
-	//			if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
-	//			        ECollisionChannel::ECC_Pawn, params))
-	//			{
-	//				if (hit.GetActor() != nullptr)
-	//				{
-	//					auto near = searchManager->NearSearchPosition(hit.ImpactPoint);
-	//					courses.Add(player->GetActorLocation());
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
 	if (courses.Num() <= 0)
 	{
 		if (moveType == EMoveType::PlayerChase)
 		{
-			if (searchManager->DirectionSearch(player, lastSearch))
+			FHitResult hit;
+			FCollisionQueryParams params;
+			params.AddIgnoredActor(this);
+			if (player != nullptr)
+			{
+				params.AddIgnoredActor(player);
+			}
+
+			auto start = GetActorLocation();
+			auto end = player->GetActorLocation();
+			start.Z = player->GetActorLocation().Z;
+			if (!GetWorld()->LineTraceSingleByChannel(hit, start, end,
+			        ECollisionChannel::ECC_Pawn, params))
 			{
 				courses.Add(player->GetActorLocation());
 				return;
 			}
+			//if (searchManager->DirectionSearch(player, lastSearch))
+			//{
+			//	courses.Add(player->GetActorLocation());
+			//	return;
+			//}
 		}
 		SetWait();
 	}
-	//for (int i = 0; i < courses.Num() - 1; i++)
-	//{
-	//	auto start = courses[i];
-	//	auto end = courses[i + 1];
-	//	start.Z = player->GetActorLocation().Z;
-	//	end.Z = player->GetActorLocation().Z;
-	//	UKismetSystemLibrary::DrawDebugLine(GetWorld(), start, end, FLinearColor::Red, 10);
-	//	UKismetSystemLibrary::DrawDebugSphere(GetWorld(), end, 50, 12, FLinearColor::Red, 0);
-	//}
 }
 
 // 待機時間設定
@@ -213,12 +194,13 @@ void AEnemy::SetWait()
 		return;
 	}
 	waitTimer = waitTime * FMath::FRandRange(0.0f, 1.0f);
-	moveType = EMoveType::None;
+	moveType = EMoveType::None; //	moveType => None
 }
 
 // 経路探索
 void AEnemy::SearchCourse(float DeltaTime)
 {
+	// ----- デバッグ文字描画 -----------------------------------------------------------------------------------------
 	auto mov = TMap<EMoveType, FString>{
 	    {EMoveType::None, "None"},
 	    {EMoveType::Move, "Move"},
@@ -239,6 +221,8 @@ void AEnemy::SearchCourse(float DeltaTime)
 		str += c;
 	}
 	UKismetSystemLibrary::DrawDebugString(GetWorld(), GetActorLocation(), str, nullptr, FLinearColor::Black, 0);
+	// ----------------------------------------------------------------------------------------------------------------
+
 	chasePlayer();
 
 	if (moveType == EMoveType::None)
@@ -270,7 +254,7 @@ void AEnemy::SearchCourse(float DeltaTime)
 	{
 		courses.Remove(lastSearch);
 	}
-	moveType = EMoveType::Move;
+	moveType = EMoveType::Move; //	moveType => Move
 }
 
 // プレイヤー探索
@@ -293,7 +277,7 @@ void AEnemy::searchPlayer(AActor* OtherActor)
 		return;
 	}
 
-	moveType = EMoveType::SE_Move;
+	moveType = EMoveType::SE_Move; //	moveType => SE_Move
 	courses.RemoveAll([](FVector) { return true; });
 	courses = searchManager->Course(this, OtherActor);
 	courses.Add(OtherActor->GetActorLocation());
@@ -309,7 +293,7 @@ void AEnemy::chasePlayer()
 	if (IsEyeArea())
 	{
 		waitTimer = 0;
-		moveType = EMoveType::PlayerChase;
+		moveType = EMoveType::PlayerChase; //	moveType => PlayerChase
 		courses.RemoveAll([](FVector) { return true; });
 		courses.Add(player->GetActorLocation());
 	}
@@ -336,7 +320,7 @@ void AEnemy::chasePlayer()
 					if (hit.GetActor() != nullptr)
 					{
 						//auto near = searchManager->NearSearchPosition(hit.ImpactPoint);
-						courses.Add(player->GetActorLocation());
+						courses.Add(hit.ImpactPoint);
 					}
 				}
 			}
@@ -362,6 +346,7 @@ void AEnemy::AddReflection(float add)
 	reflection = (reflection < 0) ? 0 : (1 < reflection) ? 1 : reflection;
 }
 
+//	視界に入っているかどうか
 bool AEnemy::IsEyeArea()
 {
 	if (player == nullptr)
@@ -369,10 +354,12 @@ bool AEnemy::IsEyeArea()
 		return false;
 	}
 
+	// ベクトルと角度の代入
 	auto vector = (player->GetActorLocation() - GetActorLocation());
 	auto e_forward_deg = GetDeg_XY(GetActorForwardVector());
 	auto ep_vector_deg = GetDeg_XY(vector);
 
+	// 視野距離にいるか判定
 	vector.Z = 0;
 	auto length = vector.Size();
 	if (eyeLength < length)
@@ -380,6 +367,7 @@ bool AEnemy::IsEyeArea()
 		return false;
 	}
 
+	// -360°～0°以下を0°～360°に変更
 	e_forward_deg = (e_forward_deg < 0) ? (e_forward_deg + 360.0f) : (e_forward_deg);
 	ep_vector_deg = (ep_vector_deg < 0) ? (ep_vector_deg + 360.0f) : (ep_vector_deg);
 
@@ -396,6 +384,7 @@ bool AEnemy::IsEyeArea()
 			params.AddIgnoredActor(player);
 		}
 
+		// プレイヤー、敵の二点間に障害物があるか判定
 		auto start = GetActorLocation();
 		auto end = player->GetActorLocation();
 		start.Z = player->GetActorLocation().Z;
@@ -403,6 +392,28 @@ bool AEnemy::IsEyeArea()
 		        ECollisionChannel::ECC_Pawn, params))
 		{
 			return false;
+		}
+
+		// ロッカーIN
+		if (Cast<APlayerCharacter>(player))
+		{
+			auto p = Cast<APlayerCharacter>(player);
+
+			if ((p->GetCurrentActionMode() == EPlayerActionMode::GetOutOfLocker) || (p->GetCurrentActionMode() == EPlayerActionMode::GoingIntoLocker))
+			{
+				playerActiveType = p->GetCurrentActionMode();
+			}
+
+			if (p->GetCurrentActionMode() == EPlayerActionMode::IsInLocker)
+			{
+				if ((playerActiveType == EPlayerActionMode::GetOutOfLocker) || (playerActiveType == EPlayerActionMode::GoingIntoLocker))
+				{
+					return true;
+				}
+				playerActiveType = p->GetCurrentActionMode();
+				return false;
+			}
+			playerActiveType = p->GetCurrentActionMode();
 		}
 		return true;
 	}
@@ -436,14 +447,6 @@ void AEnemy::heardSound(ASoundObject* soundObject)
 	{
 		//バルブの音が聞こえた
 	case ESoundType::Valve:
-		if (moveType == EMoveType::SE_Move)
-		{
-			return;
-		}
-		if (IsEyeArea())
-		{
-			return;
-		}
 		searchPlayer(soundObject);
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard valve sound"));
 		break;
@@ -498,6 +501,7 @@ void AEnemy::playWalkSound(float deltaTime)
 	}
 }
 
+// 水浴び処理
 void AEnemy::overBathing()
 {
 	TArray<AActor*> actors;
@@ -518,16 +522,16 @@ void AEnemy::overBathing()
 //水をかぶった時のステンシル値の変更
 void AEnemy::ChangeStencilValueWhenPutOnWater()
 {
-    //ステンシル値を水をかぶった時用の値で和をとる
+	//ステンシル値を水をかぶった時用の値で和をとる
 	USkeletalMeshComponent* SilhouetteSkeltal = GetSilhouetteSkeltal();
 	const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue | static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyPutOnWater);
 	SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
 
-    //最後に当たった時から有効にしたいので古いタイマーは破棄する
+	//最後に当たった時から有効にしたいので古いタイマーは破棄する
 	FTimerManager& TimerManager = GetWorldTimerManager();
 	TimerManager.ClearTimer(ReturnStencilValueWhenPutOnWaterHandle);
 	TimerManager.SetTimer(ReturnStencilValueWhenPutOnWaterHandle, [SilhouetteSkeltal]() {
-        //ゲームが終了するなどしてスケルタルが参照できない場合に備えてチェックする
+		//ゲームが終了するなどしてスケルタルが参照できない場合に備えてチェックする
 		if (!SilhouetteSkeltal)
 			return;
 		const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue & ~static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyPutOnWater);
