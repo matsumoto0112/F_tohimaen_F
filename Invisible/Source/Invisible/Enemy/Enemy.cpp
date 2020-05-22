@@ -76,11 +76,30 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	SearchCourse(DeltaTime);
 	SetMaterial(DeltaTime);
+	if (IsKill(DeltaTime)) return;
 
+	SearchCourse(DeltaTime);
 	Moving(DeltaTime);
 	playWalkSound(DeltaTime);
+}
+
+bool AEnemy::IsKill(float DeltaTime)
+{
+	if (moveType == EMoveType::Kill)
+	{
+		// 初期値設定
+		auto pos = GetActorLocation();
+		auto vector = (courses[0] - pos);
+		vector.Z = 0;
+		auto nor = vector.GetSafeNormal();
+
+		// 回転
+		auto r = GetActorForwardVector() + nor * DeltaTime * rotateSpeed;
+		SetActorRotation(r.Rotation());
+		return true;
+	}
+	return false;
 }
 
 void AEnemy::HitMoved()
@@ -206,7 +225,7 @@ void AEnemy::SearchCourse(float DeltaTime)
 	    {EMoveType::Move, "Move"},
 	    {EMoveType::SE_Move, "SE_Move"},
 	    {EMoveType::PlayerChase, "PlayerChase"},
-	    {EMoveType::BranchRotate, "BranchRotate"},
+	    {EMoveType::Kill, "Kill"},
 	};
 	auto m = mov[moveType];
 	auto s = "[ " + std::to_string(courses.Num()) + " ]";
@@ -430,6 +449,24 @@ void AEnemy::onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* Other
 	{
 		heardSound(Cast<ASoundObject>(OtherActor));
 		return;
+	}
+}
+
+// プレイヤー倒す処理
+void AEnemy::PlayerKill(AActor* OtherActor)
+{
+	if (OtherActor != player)
+	{
+		return;
+	}
+	if (IsEyeArea())
+	{
+		if (!(playerActiveType == EPlayerActionMode::IsInLocker))
+		{
+			auto p = Cast<APlayerCharacter>(player);
+			p->ToDie();
+			moveType = EMoveType::Kill;
+		}
 	}
 }
 
