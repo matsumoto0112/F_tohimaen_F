@@ -69,7 +69,6 @@ public:
     */
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	void ToDie(AActor* Killer);
-
 private:
 	/**
     * 前方向への移動処理
@@ -114,16 +113,16 @@ private:
     */
 	void ClampPlayerCameraYawRotation();
 
-    /**
+	/**
     * アクションコマンドを受け取った時の処理
     */
 	UFUNCTION()
 	void InputedActionCommand();
-    /**
+	/**
     * 近くのオブジェクトを作動させる
     */
 	void DoActionNearObject();
-    /**
+	/**
     * ロッカーから出る
     */
 	void GetOutLocker();

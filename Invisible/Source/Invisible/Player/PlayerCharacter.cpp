@@ -6,6 +6,7 @@
 #include "Invisible/ActionableObject/Actionable.h"
 #include "Invisible/ActionableObject/Locker.h"
 #include "Invisible/Enemy/Enemy.h"
+#include "Invisible/Player/PlayerDieEvent.h"
 #include "Invisible/System/MyGameInstance.h"
 #include "Invisible/System/SoundObject.h"
 #include "Invisible/System/SoundSystem.h"
@@ -207,7 +208,7 @@ void APlayerCharacter::PlayWalkSound(float DeltaTime)
 		{
 			WalkingSecond -= WalkingSoundPlayInterval;
 
-            //足元にレイを飛ばし、床がなんであるか判定する
+			//足元にレイを飛ばし、床がなんであるか判定する
 			FHitResult hit;
 			constexpr float LINE_LENGTH = 300.0f;
 			const FVector Start = GetActorLocation();
@@ -282,7 +283,7 @@ void APlayerCharacter::ClampPlayerCameraYawRotation()
 		switch (CurrentActionMode)
 		{
 		case EPlayerActionMode::Move:
-            //自由に動ける範囲
+			//自由に動ける範囲
 			return FFloatRange{-180.0f + DELTA, 180.0f - DELTA};
 		case EPlayerActionMode::IsInLocker:
 			return FFloatRange{LockerYawRotation + CameraYawWhenIsInLocker.GetLowerBoundValue(), LockerYawRotation + CameraYawWhenIsInLocker.GetUpperBoundValue()};
@@ -300,8 +301,30 @@ void APlayerCharacter::ClampPlayerCameraYawRotation()
 //死亡する
 void APlayerCharacter::ToDie(AActor* Killer)
 {
-	//モードを変更するにとどめる
-	//あとはBPで処理する
+	//加害者がEnemyでなければならない
+	AEnemy* Enemy = Cast<AEnemy>(Killer);
+	if (!Enemy)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Killer not equal Enemy!!"));
+		return;
+	}
+
+	//死亡演出はそれ用の管理者に任せる
+	APlayerDieEvent* DieEvent = Cast<APlayerDieEvent>(UGameplayStatics::GetActorOfClass(GetWorld(), APlayerDieEvent::StaticClass()));
+
+	//ロッカーで死亡したかどうか
+    //ロッカーに入るときも一緒に扱う
+	const bool bIsInLocker = CurrentActionMode == EPlayerActionMode::IsInLocker || CurrentActionMode == EPlayerActionMode::GoingIntoLocker;
+	if (bIsInLocker)
+	{
+		DieEvent->StartLockerDieEvent(this, Enemy, IsInLocker);
+	}
+	else
+	{
+		DieEvent->StartNormalDieEvent(this, Enemy);
+	}
+
+	//自分は死亡状態にしてこれから何もしないようにする
 	CurrentActionMode = EPlayerActionMode::IsDying;
 }
 
@@ -356,11 +379,11 @@ void APlayerCharacter::GetOutLocker()
 
 	CurrentActionMode = EPlayerActionMode::GetOutOfLocker;
 
-    //少しの待機時間ののち動けるようになる
+	//少しの待機時間ののち動けるようになる
 	FTimerHandle handle;
 	GetWorldTimerManager().SetTimer(handle, [&]() {
-        FVector Location = GetActorLocation() + GetControlRotation().Vector() * 50.0f;
-        SetActorLocation(Location);
+		FVector Location = GetActorLocation() + GetControlRotation().Vector() * 50.0f;
+		SetActorLocation(Location);
 		CurrentActionMode = EPlayerActionMode::Move;
 	},
 	    WaitTimeToGetOutLocker, false);
