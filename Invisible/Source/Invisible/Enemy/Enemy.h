@@ -120,6 +120,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float waitTime = 3.0f;
 	float waitTimer = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float searchWaitPercent = 50.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float searchWaitRotateTime = 1.0f;
+	float searchWaitRotateTimer = 0.0f;
 
 	// ”G‚ê”»’è
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -145,6 +150,7 @@ protected:
 	EMoveType moveType;
 
 	AActor* player;
+	TArray<AActor*> enemys;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
