@@ -43,6 +43,7 @@ private:
 	ASearchEgde* GetRandomSearch(ASearchEgde* remove) const;
 	TArray<FVector> Course(SearchCourse* start, ASearchEgde* end) const;
 
+	AActor* player;
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<ASearchEgde*> search;

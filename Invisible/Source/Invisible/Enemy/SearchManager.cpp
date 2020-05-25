@@ -3,6 +3,8 @@
 #include "SearchManager.h"
 
 #include "Components/SphereComponent.h"
+#include "Invisible/Player/PlayerCharacter.h"
+#include "Kismet/GameplayStatics.h"
 #include "SearchCourse.h"
 
 // Sets default values
@@ -21,6 +23,9 @@ ASearchManager::ASearchManager()
 void ASearchManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+	auto actor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
+	player = (actor == nullptr) ? nullptr : actor;
 }
 
 // Called every frame
@@ -135,7 +140,40 @@ bool ASearchManager::DirectionSearch(AActor* actor, ASearchEgde* near) const
 
 ASearchEgde* ASearchManager::NearSearch(AActor* actor) const
 {
-	return NearSearch(actor->GetActorLocation());
+	int resultIndex = -1;
+	for (int i = 0; i < search.Num(); i++)
+	{
+		auto aLoc = actor->GetActorLocation();
+		auto sLoc = search[i]->GetActorLocation();
+		auto length = (sLoc - aLoc).Size();
+
+		if (resultIndex < 0)
+		{
+			resultIndex = 0;
+		}
+		auto rLoc = search[resultIndex]->GetActorLocation();
+		auto rLength = (rLoc - aLoc).Size();
+		auto flag = (length < rLength);
+		if (length < rLength)
+		{
+			FHitResult hit;
+			FCollisionQueryParams params;
+			params.AddIgnoredActor(actor);
+			if (player != nullptr)
+			{
+				params.AddIgnoredActor(player);
+				aLoc.Z = player->GetActorLocation().Z;
+				sLoc.Z = player->GetActorLocation().Z;
+			}
+
+			if (!GetWorld()->LineTraceSingleByChannel(hit, aLoc, sLoc,
+			        ECollisionChannel::ECC_Pawn, params))
+			{
+				resultIndex = i;
+			}
+		}
+	}
+	return (resultIndex < 0) ? nullptr : search[resultIndex];
 }
 ASearchEgde* ASearchManager::NearSearch(FVector point) const
 {
