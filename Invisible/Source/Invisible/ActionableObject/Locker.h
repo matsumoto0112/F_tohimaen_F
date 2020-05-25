@@ -30,16 +30,31 @@ public:
     */
 	virtual void action_Implementation() override;
 
-    void GetOutPlayer();
+	void GetOutPlayer();
+
+	UFUNCTION(BlueprintCallable, Category = "Locker")
+	void OpenDoor(float OpenSecond = 0.5f);
+
+	UFUNCTION(BlueprintCallable, Category = "Locker")
+	void CloseDoor(float CloseSecond = 0.5f);
+	UFUNCTION()
+	void RotateDoor(float Value);
+
 public:
-    //!< ロッカーのボディメッシュ
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-    UStaticMeshComponent* BodyMeshComponent;
-    //!< ロッカーのドアメッシュ
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-    UStaticMeshComponent* DoorMeshComponent;
+	//!< ロッカーのボディメッシュ
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	UStaticMeshComponent* BodyMeshComponent;
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	USceneComponent* DummyDoor;
+	//!< ロッカーのドアメッシュ
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	UStaticMeshComponent* DoorMeshComponent;
 
 	//!< プレイヤーの立つ場所
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	UArrowComponent* PlayerStandPoint;
+
+private:
+	FTimerHandle TimerHandle;
 };

@@ -16,8 +16,11 @@ ALocker::ALocker()
 	//メッシュコンポーネントを作成する
 	BodyMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMesh"));
 	RootComponent = BodyMeshComponent;
+
+	DummyDoor = CreateDefaultSubobject<USceneComponent>(TEXT("DummyDoor"));
+	DummyDoor->SetupAttachment(RootComponent);
 	DoorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorMesh"));
-	DoorMeshComponent->SetupAttachment(RootComponent);
+	DoorMeshComponent->SetupAttachment(DummyDoor);
 
 	PlayerStandPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
 	PlayerStandPoint->SetupAttachment(RootComponent);
@@ -43,6 +46,7 @@ void ALocker::action_Implementation()
 		return;
 	}
 
+	OpenDoor(0.5f);
 	const ESoundType Sound = ESoundType::Go_Into_Locker;
 	const FVector Location = GetActorLocation();
 	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(Sound, Location, this);
@@ -53,7 +57,23 @@ void ALocker::action_Implementation()
 
 void ALocker::GetOutPlayer()
 {
+    CloseDoor(0.5f);
 	const ESoundType Sound = ESoundType::Get_Out_Locker;
 	const FVector Location = GetActorLocation();
 	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(Sound, Location, this);
+}
+
+void ALocker::OpenDoor(float OpenSecond)
+{
+    RotateDoor(90.0f);
+}
+
+void ALocker::CloseDoor(float CloseSecond)
+{
+    RotateDoor(-90.0f);
+}
+
+void ALocker::RotateDoor(float Value)
+{
+	DummyDoor->AddRelativeRotation(FRotator::MakeFromEuler(FVector(0, 0, Value)));
 }
