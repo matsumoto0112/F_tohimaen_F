@@ -141,8 +141,6 @@ void AEnemy::Moving(float DeltaTime)
 			{
 				return;
 			}
-
-			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, (GetName() + ": Out >> "));
 		}
 	}
 
@@ -172,8 +170,6 @@ void AEnemy::Moving(float DeltaTime)
 					rotateType = (FMath::FRandRange(0.0f, 100.0f) <= 50.0f) ?
 					    ERotateType::Right :
 					    ERotateType::Left;
-
-					GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, (GetName()+": Set"));
 				}
 			}
 		}
