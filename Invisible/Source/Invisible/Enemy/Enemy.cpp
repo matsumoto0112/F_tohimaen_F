@@ -18,6 +18,13 @@ namespace
 	constexpr float WALKING_SOUND_PLAY_INTERVAL = 0.66f; //!< ï‡çsâπÇÃçƒê∂ä‘äu
 }
 
+enum class ERotateType : uint8
+{
+	Right,
+	Left,
+};
+ERotateType rotateType = ERotateType::Right;
+
 EPlayerActionMode playerActiveType = EPlayerActionMode::Default;
 float GetDeg_XY(FVector forward)
 {
@@ -69,6 +76,8 @@ void AEnemy::BeginPlay()
 
 	auto actor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
 	player = (actor == nullptr) ? nullptr : actor;
+
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemy::StaticClass(), enemys);
 }
 
 // Called every frame
@@ -115,6 +124,27 @@ void AEnemy::Moving(float DeltaTime)
 	{
 		return;
 	}
+	if ((moveType == EMoveType::Move))
+	{
+		if (0 < searchWaitRotateTimer)
+		{
+			searchWaitRotateTimer = FMath::Max(0.0f, searchWaitRotateTimer - DeltaTime);
+
+			auto rotVec = (rotateType == ERotateType::Right) ?
+			    GetActorRightVector() :
+			    -GetActorRightVector();
+
+			// âÒì]
+			auto r = GetActorForwardVector() + rotVec * DeltaTime * 6.0f / FMath::Max(1.0f, searchWaitRotateTime);
+			SetActorRotation(r.Rotation());
+			if (0 < searchWaitRotateTimer)
+			{
+				return;
+			}
+
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, (GetName() + ": Out >> "));
+		}
+	}
 
 	// åoòHçXêV
 	if ((courses[0] - GetActorLocation()).Size() <= searchManager->GetRadius())
@@ -135,6 +165,16 @@ void AEnemy::Moving(float DeltaTime)
 			{
 				lastSearch = courses[0];
 				courses.RemoveAt(0);
+				if (FMath::FRandRange(0.0f, 100.0f) <= FMath::Clamp(searchWaitPercent, 0.0f, 100.0f))
+				{
+					searchWaitRotateTimer = FMath::Max(1.0f, searchWaitRotateTime);
+
+					rotateType = (FMath::FRandRange(0.0f, 100.0f) <= 50.0f) ?
+					    ERotateType::Right :
+					    ERotateType::Left;
+
+					GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, (GetName()+": Set"));
+				}
 			}
 		}
 		else
@@ -210,7 +250,8 @@ void AEnemy::HitMoved()
 
 	FHitResult hit;
 	FCollisionQueryParams params;
-	params.AddIgnoredActor(this);
+	//params.AddIgnoredActor(this);
+	params.AddIgnoredActors(enemys);
 	if (player != nullptr)
 	{
 		params.AddIgnoredActor(player);
@@ -300,6 +341,9 @@ void AEnemy::searchPlayer(AActor* OtherActor)
 		return;
 	}
 
+	waitTimer = 0;
+	searchWaitRotateTimer = 0;
+
 	moveType = EMoveType::SE_Move; //	moveType => SE_Move
 	courses.RemoveAll([](FVector) { return true; });
 	courses = searchManager->Course(this, OtherActor);
@@ -316,6 +360,8 @@ void AEnemy::chasePlayer()
 	if (IsEyeArea())
 	{
 		waitTimer = 0;
+		searchWaitRotateTimer = 0;
+
 		moveType = EMoveType::PlayerChase; //	moveType => PlayerChase
 		courses.RemoveAll([](FVector) { return true; });
 		courses.Add(player->GetActorLocation());
@@ -328,7 +374,8 @@ void AEnemy::chasePlayer()
 			{
 				FHitResult hit;
 				FCollisionQueryParams params;
-				params.AddIgnoredActor(this);
+				//params.AddIgnoredActor(this);
+				params.AddIgnoredActors(enemys);
 				if (player != nullptr)
 				{
 					params.AddIgnoredActor(player);
@@ -432,7 +479,8 @@ bool AEnemy::IsEyeArea()
 	{
 		FHitResult hit;
 		FCollisionQueryParams params;
-		params.AddIgnoredActor(this);
+		//params.AddIgnoredActor(this);
+		params.AddIgnoredActors(enemys);
 		if (player != nullptr)
 		{
 			params.AddIgnoredActor(player);
