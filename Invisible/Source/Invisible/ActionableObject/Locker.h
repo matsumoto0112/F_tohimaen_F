@@ -9,6 +9,14 @@
 
 #include "Locker.generated.h"
 
+UENUM(BlueprintType)
+enum class EDoorMode : uint8
+{
+    Default,
+    Open,
+    Close,
+};
+
 UCLASS()
 class INVISIBLE_API ALocker : public AActor, public IActionable
 {
@@ -30,16 +38,45 @@ public:
     */
 	virtual void action_Implementation() override;
 
-    void GetOutPlayer();
+    /**
+    * プレイヤーを出す
+    */
+	void GetOutPlayer();
+    /**
+    * ドアを開ける
+    */
+	UFUNCTION(BlueprintCallable, Category = "Locker")
+	void OpenDoor(float OpenSecond = 0.5f);
+
+    /**
+    * ドアを閉める
+    */
+	UFUNCTION(BlueprintCallable, Category = "Locker")
+	void CloseDoor(float CloseSecond = 0.5f);
+private:
+    /**
+    * ドアを回転させる
+    */
+	UFUNCTION()
+	void RotateDoor(float Value);
+
 public:
-    //!< ロッカーのボディメッシュ
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-    UStaticMeshComponent* BodyMeshComponent;
-    //!< ロッカーのドアメッシュ
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-    UStaticMeshComponent* DoorMeshComponent;
+	//!< ロッカーのボディメッシュ
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	UStaticMeshComponent* BodyMeshComponent;
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	USceneComponent* DummyDoor;
+	//!< ロッカーのドアメッシュ
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	UStaticMeshComponent* DoorMeshComponent;
 
 	//!< プレイヤーの立つ場所
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	UArrowComponent* PlayerStandPoint;
+
+private:
+    //!< 実行タスクリスト
+    DECLARE_DELEGATE_RetVal(bool, FTask);
+    TQueue<FTask> Tasks;
 };

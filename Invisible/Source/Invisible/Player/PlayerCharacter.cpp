@@ -313,7 +313,7 @@ void APlayerCharacter::ToDie(AActor* Killer)
 	APlayerDieEvent* DieEvent = Cast<APlayerDieEvent>(UGameplayStatics::GetActorOfClass(GetWorld(), APlayerDieEvent::StaticClass()));
 
 	//ロッカーで死亡したかどうか
-    //ロッカーに入るときも一緒に扱う
+	//ロッカーに入るときも一緒に扱う
 	const bool bIsInLocker = CurrentActionMode == EPlayerActionMode::IsInLocker || CurrentActionMode == EPlayerActionMode::GoingIntoLocker;
 	if (bIsInLocker)
 	{
@@ -378,15 +378,6 @@ void APlayerCharacter::GetOutLocker()
 	}
 
 	CurrentActionMode = EPlayerActionMode::GetOutOfLocker;
-
-	//少しの待機時間ののち動けるようになる
-	FTimerHandle handle;
-	GetWorldTimerManager().SetTimer(handle, [&]() {
-		FVector Location = GetActorLocation() + GetControlRotation().Vector() * 50.0f;
-		SetActorLocation(Location);
-		CurrentActionMode = EPlayerActionMode::Move;
-	},
-	    WaitTimeToGetOutLocker, false);
 	IsInLocker->GetOutPlayer();
 }
 
@@ -399,11 +390,11 @@ void APlayerCharacter::IntoLocker(ALocker* Locker, const FVector& Location, cons
 	LockerYawRotation = FrontRotator.Yaw;
 	Controller->SetControlRotation(FrontRotator);
 	this->SetActorLocation(Location);
-
-	//少しの待機時間ののち首を動かせるようになる
-	FTimerHandle handle;
-	GetWorldTimerManager().SetTimer(handle, [&]() {
-		CurrentActionMode = EPlayerActionMode::IsInLocker;
-	},
-	    WaitTimeToGoingIntoLocker, false);
+	CurrentActionMode = EPlayerActionMode::IsInLocker;
+}
+void APlayerCharacter::LockerDoorOpenedEvent()
+{
+    FVector Location = GetActorLocation() + GetControlRotation().Vector() * 100.0f;
+    SetActorLocation(Location);
+    CurrentActionMode = EPlayerActionMode::Move;
 }

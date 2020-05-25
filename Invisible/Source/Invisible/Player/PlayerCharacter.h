@@ -63,7 +63,10 @@ public:
     * ロッカーの中に入る
     */
 	void IntoLocker(ALocker* Locker, const FVector& Location, const FRotator& FrontRotator);
-
+    /**
+    * ロッカーから出るときにロッカーのドアが開いたことを知らせるイベント
+    */
+    void LockerDoorOpenedEvent();
 	/**
     * 死亡する
     */
@@ -150,12 +153,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	float EnemyVisibleTimeWhenEnemyWalkOnPuddle = 1.0f;
 
-	//!< ロッカーに入るまでの待機時間
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Locker")
-	float WaitTimeToGoingIntoLocker = 0.5f;
-	//!< ロッカーから出るまでの待機時間
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Locker")
-	float WaitTimeToGetOutLocker = 0.5f;
 	//ロッカーにいるときのカメラの上下方向の回転制限
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Locker")
 	FFloatRange CameraPitchWhenIsInLocker;
