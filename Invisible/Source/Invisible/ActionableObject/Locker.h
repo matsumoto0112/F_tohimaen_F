@@ -9,6 +9,14 @@
 
 #include "Locker.generated.h"
 
+UENUM(BlueprintType)
+enum class EDoorMode : uint8
+{
+    Default,
+    Open,
+    Close,
+};
+
 UCLASS()
 class INVISIBLE_API ALocker : public AActor, public IActionable
 {
@@ -30,13 +38,25 @@ public:
     */
 	virtual void action_Implementation() override;
 
+    /**
+    * プレイヤーを出す
+    */
 	void GetOutPlayer();
-
+    /**
+    * ドアを開ける
+    */
 	UFUNCTION(BlueprintCallable, Category = "Locker")
 	void OpenDoor(float OpenSecond = 0.5f);
 
+    /**
+    * ドアを閉める
+    */
 	UFUNCTION(BlueprintCallable, Category = "Locker")
 	void CloseDoor(float CloseSecond = 0.5f);
+private:
+    /**
+    * ドアを回転させる
+    */
 	UFUNCTION()
 	void RotateDoor(float Value);
 
@@ -56,5 +76,7 @@ public:
 	UArrowComponent* PlayerStandPoint;
 
 private:
-	FTimerHandle TimerHandle;
+    //!< 実行タスクリスト
+    DECLARE_DELEGATE_RetVal(bool, FTask);
+    TQueue<FTask> Tasks;
 };
