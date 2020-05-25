@@ -36,6 +36,12 @@ float GetDeg_XY(FVector forward)
 	return deg;
 }
 
+FVector VectorXY(FVector vector)
+{
+	vector.Z = 0;
+	return vector;
+}
+
 // Sets default values
 AEnemy::AEnemy()
 {
@@ -145,14 +151,13 @@ void AEnemy::Moving(float DeltaTime)
 	}
 
 	// 経路更新
-	if ((courses[0] - GetActorLocation()).Size() <= searchManager->GetRadius())
+	if ((VectorXY(courses[0] - GetActorLocation())).Size() <= searchManager->GetRadius())
 	{
 		if (2 <= courses.Num())
 		{
 			// 初期値設定
 			auto pos = GetActorLocation();
-			auto vector = (courses[1] - pos);
-			vector.Z = 0;
+			auto vector = VectorXY(courses[1] - pos);
 			auto nor = vector.GetSafeNormal();
 
 			// 回転
@@ -184,9 +189,8 @@ void AEnemy::Moving(float DeltaTime)
 		HitMoved();
 
 		// 初期値設定
-		auto pos = GetActorLocation();
-		auto vector = (courses[0] - pos);
-		vector.Z = 0;
+		auto pos = (GetActorLocation());
+		auto vector = VectorXY(courses[0] - pos);
 		auto nor = vector.GetSafeNormal();
 
 		//	移動値設定
@@ -343,7 +347,6 @@ void AEnemy::searchPlayer(AActor* OtherActor)
 	moveType = EMoveType::SE_Move; //	moveType => SE_Move
 	courses.RemoveAll([](FVector) { return true; });
 	courses = searchManager->Course(this, OtherActor);
-	courses.Add(OtherActor->GetActorLocation());
 }
 
 // プレイヤー追跡
@@ -360,7 +363,8 @@ void AEnemy::chasePlayer()
 
 		moveType = EMoveType::PlayerChase; //	moveType => PlayerChase
 		courses.RemoveAll([](FVector) { return true; });
-		courses.Add(player->GetActorLocation());
+		auto vector = (VectorXY(player->GetActorLocation() - GetActorLocation())).GetSafeNormal();
+		courses.Add(player->GetActorLocation() + vector * runSpeed);
 	}
 	else if (moveType == EMoveType::PlayerChase)
 	{
