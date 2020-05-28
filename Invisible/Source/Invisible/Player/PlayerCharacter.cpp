@@ -74,6 +74,8 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	//敵を検知
 	EnemyDetectArea->DetectAndWarn();
+	//ロッカーに入っているときに座標を固定する
+	FixedLocationIfInLocker();
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -381,6 +383,14 @@ void APlayerCharacter::GetOutLocker()
 	IsInLocker->GetOutPlayer();
 }
 
+void APlayerCharacter::FixedLocationIfInLocker()
+{
+    if (CurrentActionMode == EPlayerActionMode::IsInLocker)
+    {
+        this->SetActorLocation(FixedLocation);
+    }
+}
+
 //ロッカーに入る
 void APlayerCharacter::IntoLocker(ALocker* Locker, const FVector& Location, const FRotator& FrontRotator)
 {
@@ -389,12 +399,12 @@ void APlayerCharacter::IntoLocker(ALocker* Locker, const FVector& Location, cons
 	IsInLocker = Locker;
 	LockerYawRotation = FrontRotator.Yaw;
 	Controller->SetControlRotation(FrontRotator);
-	this->SetActorLocation(Location);
 	CurrentActionMode = EPlayerActionMode::IsInLocker;
+	this->FixedLocation = Location;
 }
 void APlayerCharacter::LockerDoorOpenedEvent()
 {
-    FVector Location = GetActorLocation() + GetControlRotation().Vector() * 100.0f;
-    SetActorLocation(Location);
-    CurrentActionMode = EPlayerActionMode::Move;
+	FVector Location = GetActorLocation() + GetControlRotation().Vector() * 100.0f;
+	SetActorLocation(Location);
+	CurrentActionMode = EPlayerActionMode::Move;
 }

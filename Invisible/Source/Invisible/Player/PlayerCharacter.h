@@ -134,7 +134,10 @@ private:
     * ロッカーから出る
     */
 	void GetOutLocker();
-
+    /**
+    * ロッカーに入っているときに座標を固定する
+    */
+    void FixedLocationIfInLocker();
 private:
 	//!< 最大移動速度
 	UPROPERTY(EditDefaultsOnly, Category = "Player")
@@ -189,4 +192,6 @@ private:
 	ALocker* IsInLocker;
 	//!< ロッカーに入った時の回転量(Yaw)
 	float LockerYawRotation;
+    //!< 固定する座標
+    FVector FixedLocation;
 };
