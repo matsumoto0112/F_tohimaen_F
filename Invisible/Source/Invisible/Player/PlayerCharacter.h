@@ -72,6 +72,11 @@ public:
     */
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	void ToDie(AActor* Killer);
+    /**
+    * •às’†‚©
+    */
+    UFUNCTION(BlueprintCallable,Category="Player")
+    bool IsWalking() const { return bIsWalking; }
 private:
 	/**
     * ‘O•ûŒü‚Ö‚ÌˆÚ“®ˆ—
