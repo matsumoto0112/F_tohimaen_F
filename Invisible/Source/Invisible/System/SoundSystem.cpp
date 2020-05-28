@@ -61,6 +61,9 @@ void USoundSystem::createSoundObjects(int32 num)
 		ASoundObject* spawned = GetWorld()->SpawnActor<ASoundObject>(soundObjectOrigin);
 		soundObjects.Emplace(spawned);
 	}
+	{
+		BGMObject = GetWorld()->SpawnActor<ASoundObject>(soundObjectOrigin);
+	}
 }
 
 //サウンドオブジェクトを破棄する
@@ -71,6 +74,11 @@ void USoundSystem::destroySoundObjects()
 		obj->Destroy();
 	}
 	soundObjects.Empty();
+
+	{
+		BGMObject->Destroy();
+		BGMObject = nullptr;
+	}
 }
 
 //音データを取得する
@@ -112,4 +120,21 @@ bool USoundSystem::isValid(ESoundType sound) const
 		return false;
 	}
 	return true;
+}
+
+void USoundSystem::PlayBGM(ESoundType SoundType)
+{
+	//音が有効かどうか調べる
+	if (!isValid(SoundType))
+		return;
+
+	//再生する音データを取得する
+	FSoundData* data = findSoundData(SoundType);
+
+	BGMObject->playSound(data, FVector::ZeroVector, nullptr);
+}
+
+void USoundSystem::StopBGM()
+{
+	BGMObject->Stop();
 }

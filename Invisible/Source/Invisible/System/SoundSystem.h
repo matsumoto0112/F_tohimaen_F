@@ -30,6 +30,7 @@ enum class ESoundType : uint8
 	Sprinkler_Ver0, //!< スプリンクラーの動作音
     Sprinkler_Ver1, //!< スプリンクラーの動作音
     Sprinkler_Ver2, //!< スプリンクラーの動作音
+    Chase_BGM, //!< 敵に追われているときのBGM
 };
 
 /**
@@ -80,6 +81,17 @@ public:
 	UFUNCTION()
 	void play3DSound(ESoundType sound, const FVector& location, AActor* soundGenerateSource);
 
+    /**
+    * BGMを再生する
+    */
+    UFUNCTION(BlueprintCallable,Category="Sound")
+    void PlayBGM(ESoundType SoundType);
+    /**
+    * BGMを停止する
+    */
+    UFUNCTION(BlueprintCallable, Category = "Sound")
+    void StopBGM();
+
 	UFUNCTION(BlueprintCallable, Category = "SoundSystem")
 	void createSoundObjects(int32 num);
 	UFUNCTION(BlueprintCallable, Category = "SoundSystem")
@@ -103,4 +115,6 @@ private:
 
 	//!< 使用しているサウンドオブジェクトリスト
 	TArray<ASoundObject*> soundObjects;
+    //!< BGM用オブジェクト
+    ASoundObject* BGMObject;
 };

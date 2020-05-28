@@ -70,6 +70,11 @@ void ASoundObject::playSound(FSoundData* sound, const FVector& location, AActor*
 	isPlaying = true;
 }
 
+void ASoundObject::Stop()
+{
+    this->audio->Stop();
+}
+
 //音の再生が終了したときのイベント
 void ASoundObject::onAudioFinished()
 {

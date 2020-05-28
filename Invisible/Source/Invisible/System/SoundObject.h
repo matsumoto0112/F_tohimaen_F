@@ -36,6 +36,10 @@ public:
     * ‰¹‚ğÄ¶‚·‚é
     */
 	void playSound(FSoundData* sound, const FVector& location, AActor* soundGenerateSource);
+    /**
+    * ’â~‚³‚¹‚é
+    */
+    void Stop();
 	/**
     * ‰¹‚Ìí—Ş‚ğæ“¾‚·‚é
     */
