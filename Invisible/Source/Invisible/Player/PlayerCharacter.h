@@ -63,20 +63,29 @@ public:
     * ロッカーの中に入る
     */
 	void IntoLocker(ALocker* Locker, const FVector& Location, const FRotator& FrontRotator);
-    /**
+	/**
     * ロッカーから出るときにロッカーのドアが開いたことを知らせるイベント
     */
-    void LockerDoorOpenedEvent();
+	void LockerDoorOpenedEvent();
 	/**
     * 死亡する
     */
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	void ToDie(AActor* Killer);
-    /**
+	/**
     * 歩行中か
     */
-    UFUNCTION(BlueprintCallable,Category="Player")
-    bool IsWalking() const { return bIsWalking; }
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	bool IsWalking() const { return bIsWalking; }
+    /**
+    * 今入っているロッカーを取得する
+    */
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	ALocker* GetCurrentInLocker() const
+	{
+		return IsInLocker;
+	};
+
 private:
 	/**
     * 前方向への移動処理
@@ -134,10 +143,11 @@ private:
     * ロッカーから出る
     */
 	void GetOutLocker();
-    /**
+	/**
     * ロッカーに入っているときに座標を固定する
     */
-    void FixedLocationIfInLocker();
+	void FixedLocationIfInLocker();
+
 private:
 	//!< 最大移動速度
 	UPROPERTY(EditDefaultsOnly, Category = "Player")
@@ -192,6 +202,6 @@ private:
 	ALocker* IsInLocker;
 	//!< ロッカーに入った時の回転量(Yaw)
 	float LockerYawRotation;
-    //!< 固定する座標
-    FVector FixedLocation;
+	//!< 固定する座標
+	FVector FixedLocation;
 };

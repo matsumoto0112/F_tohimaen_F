@@ -30,10 +30,14 @@ enum class ENormalEventPhase
 	SceneChange,
 };
 
+/**
+* ロッカーのイベントの進行度
+*/
 enum class ELockerEventPhase
 {
-    LockerOpen,
-    PlayerDie,
+    LockerOpen, //!< ロッカーのドアを開ける
+    WaitLockerOpen, //!< ロッカーのドアが開ききるのを待つ
+    PlayerDie, //!< プレイヤーを死亡させる
 };
 
 /**
@@ -78,6 +82,14 @@ public:
     * 徐々に敵のほうを向く処理
     */
 	void LookAtEnemyGradually();
+    /**
+    * ロッカーのドアを開く
+    */
+    void LockerOpen();
+    /**
+    * ロッカーのドアが開くのを待つ
+    */
+    void WaitLockerDoorOpen();
     /**
     * 待機処理
     */

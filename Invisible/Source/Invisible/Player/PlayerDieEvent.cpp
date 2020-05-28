@@ -3,6 +3,7 @@
 #include "PlayerDieEvent.h"
 
 #include "Engine.h"
+#include "Invisible/ActionableObject/Locker.h"
 #include "Invisible/Enemy/Enemy.h"
 #include "Invisible/Player/PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
@@ -36,6 +37,7 @@ void APlayerDieEvent::Tick(float DeltaTime)
 		UpdateNormalDieEvent();
 		break;
 	case EDieEventType::Locker:
+		UpdateLockerDieEvent();
 		break;
 	default:
 		break;
@@ -52,10 +54,10 @@ void APlayerDieEvent::StartNormalDieEvent(APlayerCharacter* Player, AEnemy* Enem
 
 void APlayerDieEvent::StartLockerDieEvent(APlayerCharacter* Player, AEnemy* Enemy, ALocker* Locker)
 {
-    this->bIsStartedEvent = true;
-    DieEventType = EDieEventType::Locker;
-    this->PlayerCharacter = Player;
-    this->Killer = Enemy;
+	this->bIsStartedEvent = true;
+	DieEventType = EDieEventType::Locker;
+	this->PlayerCharacter = Player;
+	this->Killer = Enemy;
 }
 
 void APlayerDieEvent::UpdateNormalDieEvent()
@@ -75,17 +77,20 @@ void APlayerDieEvent::UpdateNormalDieEvent()
 
 void APlayerDieEvent::UpdateLockerDieEvent()
 {
-    switch (CurrentLockerEventPhase)
-    {
-        case ELockerEventPhase::LockerOpen:
-            LookAtEnemyGradually();
-            break;
-        case ELockerEventPhase::PlayerDie:
-            Wait();
-            break;
-        default:
-            break;
-    }
+	switch (CurrentLockerEventPhase)
+	{
+	case ELockerEventPhase::LockerOpen:
+		LockerOpen();
+		break;
+	case ELockerEventPhase::WaitLockerOpen:
+		WaitLockerDoorOpen();
+		break;
+	case ELockerEventPhase::PlayerDie:
+		Wait();
+		break;
+	default:
+		break;
+	}
 }
 
 void APlayerDieEvent::LookAtEnemyGradually()
@@ -105,6 +110,33 @@ void APlayerDieEvent::LookAtEnemyGradually()
 	if (TargetRotation.Equals(PlayerCharacter->GetControlRotation(), 1.0f))
 	{
 		CurrentNormalEventPhase = ENormalEventPhase::Wait;
+	}
+}
+
+void APlayerDieEvent::LockerOpen()
+{
+	ALocker* Locker = this->PlayerCharacter->GetCurrentInLocker();
+	if (!Locker)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Called LockerDirEvent When isn`t in the locker!!"));
+		return;
+	}
+	Locker->OpenDoor(0.25f);
+	CurrentLockerEventPhase = ELockerEventPhase::WaitLockerOpen;
+}
+
+void APlayerDieEvent::WaitLockerDoorOpen()
+{
+
+    ALocker* Locker = this->PlayerCharacter->GetCurrentInLocker();
+    if (!Locker)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Called LockerDirEvent When isn`t in the locker!!"));
+        return;
+    }
+    if (Locker->IsOpenedDoor())
+	{
+		CurrentLockerEventPhase = ELockerEventPhase::PlayerDie;
 	}
 }
 
