@@ -74,6 +74,12 @@ public:
 	UFUNCTION(BluePrintCallable, Category = "Collision")
 	virtual void PlayerKill(AActor* OtherActor);
 
+	UFUNCTION(BluePrintCallable, Category="MoveType")
+	virtual bool IsMove() const;
+	UFUNCTION(BluePrintCallable, Category="MoveType")
+	virtual bool IsKill() const;
+
+
 	//// è’ìÀíÜÇ…åƒÇŒÇÍÇÈ
 	//UFUNCTION(BluePrintCallable, Category = "Collision")
 	//virtual void onComponentHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
