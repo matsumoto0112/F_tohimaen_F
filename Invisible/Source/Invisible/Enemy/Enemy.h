@@ -72,7 +72,7 @@ public:
 	    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION(BluePrintCallable, Category = "Collision")
-	virtual void PlayerKill(AActor* OtherActor);
+	virtual void PlayerKill();
 
 	UFUNCTION(BluePrintCallable, Category="MoveType")
 	virtual bool IsMove() const;
@@ -144,6 +144,7 @@ protected:
 
 	//!< •à‚¢‚Ä‚¢‚éŽžŠÔ(•b)
 	float walkingSecond;
+	bool inLocker;
 
 	// Œo˜HŠÇ—ƒNƒ‰ƒX
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
