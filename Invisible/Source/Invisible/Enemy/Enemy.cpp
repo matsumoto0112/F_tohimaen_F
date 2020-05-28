@@ -232,6 +232,8 @@ void AEnemy::Moving(float DeltaTime)
 			//	courses.Add(player->GetActorLocation());
 			//	return;
 			//}
+
+			UMyGameInstance::GetInstance()->getSoundSystem()->StopBGM();
 		}
 		SetWait();
 	}
@@ -358,6 +360,10 @@ void AEnemy::chasePlayer()
 	}
 	if (IsEyeArea())
 	{
+		if (moveType != EMoveType::PlayerChase)
+		{
+			UMyGameInstance::GetInstance()->getSoundSystem()->PlayBGM(ESoundType::Chase_BGM);
+		}
 		waitTimer = 0;
 		searchWaitRotateTimer = 0;
 
