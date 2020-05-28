@@ -370,7 +370,7 @@ void AEnemy::chasePlayer()
 		moveType = EMoveType::PlayerChase; //	moveType => PlayerChase
 		courses.RemoveAll([](FVector) { return true; });
 		auto vector = (VectorXY(player->GetActorLocation() - GetActorLocation())).GetSafeNormal();
-		courses.Add(player->GetActorLocation() + vector * runSpeed);
+		courses.Add(player->GetActorLocation() + vector * searchManager->GetRadius());
 	}
 	else if (moveType == EMoveType::PlayerChase)
 	{
@@ -445,7 +445,7 @@ void AEnemy::DebugDraw()
 	for (int i = 0; i < courses.Num(); i++)
 	{
 		auto num = "[ " + std::to_string(i) + " ]";
-		auto nor = "( " + std::to_string(GetDeg_XY(courses[i] - GetActorLocation())) + ") ";
+		auto nor = "( " + std::to_string(("(%d, %d, %d)", courses[i].X, courses[i].Y, courses[i].Z)) + ") ";
 		auto c = ("\n" + FString::FString((num + nor).c_str()));
 		str += c;
 	}
@@ -507,6 +507,11 @@ bool AEnemy::IsEyeArea()
 		{
 			auto p = Cast<APlayerCharacter>(player);
 
+			if (p->GetCurrentActionMode() == EPlayerActionMode::GetOutOfLocker)
+			{
+				return false;
+			}
+
 			if ((p->GetCurrentActionMode() == EPlayerActionMode::GetOutOfLocker) || (p->GetCurrentActionMode() == EPlayerActionMode::GoingIntoLocker))
 			{
 				playerActiveType = p->GetCurrentActionMode();
@@ -544,19 +549,24 @@ void AEnemy::onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* Other
 // プレイヤー倒す処理
 void AEnemy::PlayerKill(AActor* OtherActor)
 {
-	if (OtherActor != player)
+	if (!(playerActiveType == EPlayerActionMode::IsInLocker))
 	{
-		return;
+		auto p = Cast<APlayerCharacter>(player);
+		p->ToDie(this);
+		moveType = EMoveType::Kill;
 	}
-	if (IsEyeArea())
-	{
-		if (!(playerActiveType == EPlayerActionMode::IsInLocker))
-		{
-			auto p = Cast<APlayerCharacter>(player);
-			p->ToDie(this);
-			moveType = EMoveType::Kill;
-		}
+	else {
+
 	}
+}
+
+bool AEnemy::IsMove() const
+{
+	return ((moveType == EMoveType::Move) || (moveType == EMoveType::SE_Move) || (moveType == EMoveType::PlayerChase));
+}
+bool AEnemy::IsKill() const
+{
+	return (moveType == EMoveType::Kill);
 }
 
 //// 衝突開始時に呼ばれる
