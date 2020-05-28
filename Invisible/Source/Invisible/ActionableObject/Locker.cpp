@@ -67,18 +67,18 @@ void ALocker::action_Implementation()
 		});
 		Tasks.Enqueue(Task);
 	}
-    //入り終わったらドアを閉める
+	//入り終わったらドアを閉める
 	CloseDoor(0.25f);
 }
 
 void ALocker::GetOutPlayer()
 {
-			const ESoundType Sound = ESoundType::Get_Out_Locker;
-			const FVector Location = GetActorLocation();
-			UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(Sound, Location, this);
+	const ESoundType Sound = ESoundType::Get_Out_Locker;
+	const FVector Location = GetActorLocation();
+	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(Sound, Location, this);
 	OpenDoor(0.25f);
 
-    //ドアが開ききったらプレイヤーを外に出す
+	//ドアが開ききったらプレイヤーを外に出す
 	{
 		FTask Task;
 		Task.BindLambda([&]() {
@@ -100,8 +100,7 @@ void ALocker::OpenDoor(float OpenSecond)
 		FTask Task;
 		Task.BindLambda([&, OpenSecond]() {
 			RotateDoor(90.0f / OpenSecond * GetWorld()->GetDeltaSeconds());
-			const bool NearlyEqual = FMath::Abs(90.0f - DummyDoor->GetRelativeRotation().Yaw) <= 0.1f;
-			return NearlyEqual;
+			return IsOpenedDoor();
 		});
 		Tasks.Enqueue(Task);
 	}
@@ -119,6 +118,11 @@ void ALocker::CloseDoor(float CloseSecond)
 		});
 		Tasks.Enqueue(Task);
 	}
+}
+
+bool ALocker::IsOpenedDoor() const
+{
+    return FMath::Abs(DoorOpenAngle - DummyDoor->GetRelativeRotation().Yaw) <= 0.1f;
 }
 
 //ドアを回転させる

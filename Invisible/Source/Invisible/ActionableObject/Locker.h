@@ -53,12 +53,21 @@ public:
     */
 	UFUNCTION(BlueprintCallable, Category = "Locker")
 	void CloseDoor(float CloseSecond = 0.5f);
+    /**
+    * ロッカーのドアが開いているか
+    */
+    UFUNCTION(BlueprintCallable, Category = "Locker")
+    bool IsOpenedDoor() const;
 private:
     /**
     * ドアを回転させる
     */
 	UFUNCTION()
 	void RotateDoor(float Value);
+
+protected:
+    UPROPERTY(EditAnywhere)
+    float DoorOpenAngle = 90.0f;
 
 public:
 	//!< ロッカーのボディメッシュ

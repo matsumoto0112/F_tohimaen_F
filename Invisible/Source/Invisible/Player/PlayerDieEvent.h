@@ -30,6 +30,12 @@ enum class ENormalEventPhase
 	SceneChange,
 };
 
+enum class ELockerEventPhase
+{
+    LockerOpen,
+    PlayerDie,
+};
+
 /**
 * プレイヤー側の死亡イベント管理
 */
@@ -65,6 +71,10 @@ public:
     */
 	void UpdateNormalDieEvent();
     /**
+    * ロッカーでの死亡イベント更新処理
+    */
+    void UpdateLockerDieEvent();
+    /**
     * 徐々に敵のほうを向く処理
     */
 	void LookAtEnemyGradually();
@@ -95,6 +105,8 @@ private:
 	EDieEventType DieEventType;
     //!< 通常死亡イベントの進行度
 	ENormalEventPhase CurrentNormalEventPhase;
+    //!< ロッカーでの死亡イベントの進行度
+    ELockerEventPhase CurrentLockerEventPhase;
     //!< シーン変更までの待機時間カウンター
 	float CurrentWaitTime;
     //!< プレイヤーキャラクター

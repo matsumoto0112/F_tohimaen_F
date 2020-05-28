@@ -73,6 +73,21 @@ void APlayerDieEvent::UpdateNormalDieEvent()
 	}
 }
 
+void APlayerDieEvent::UpdateLockerDieEvent()
+{
+    switch (CurrentLockerEventPhase)
+    {
+        case ELockerEventPhase::LockerOpen:
+            LookAtEnemyGradually();
+            break;
+        case ELockerEventPhase::PlayerDie:
+            Wait();
+            break;
+        default:
+            break;
+    }
+}
+
 void APlayerDieEvent::LookAtEnemyGradually()
 {
 	auto GetLocationIgnoreZ = [](AActor* Actor) {
