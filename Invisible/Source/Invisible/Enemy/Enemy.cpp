@@ -3,6 +3,7 @@
 #include "Enemy.h"
 
 #include "Engine.h"
+#include "Invisible/ActionableObject/Locker.h"
 #include "Invisible/Player/PlayerCharacter.h"
 #include "Invisible/System/MyGameInstance.h"
 #include "Invisible/System/SoundObject.h"
@@ -40,6 +41,18 @@ FVector VectorXY(FVector vector)
 {
 	vector.Z = 0;
 	return vector;
+}
+
+bool IsInLocker()
+{
+	switch (playerActiveType)
+	{
+	case EPlayerActionMode::IsInLocker:
+	case EPlayerActionMode::GetOutOfLocker:
+	case EPlayerActionMode::GoingIntoLocker:
+		return true;
+	}
+	return false;
 }
 
 // Sets default values
@@ -103,6 +116,18 @@ void AEnemy::Tick(float DeltaTime)
 
 bool AEnemy::IsKill(float DeltaTime)
 {
+	if (IsInLocker() && (Cast<APlayerCharacter>(player)->GetCurrentInLocker()))
+	{
+		auto locker = Cast<APlayerCharacter>(player)->GetCurrentInLocker();
+		if (VectorXY(locker->GetActorLocation() - GetActorLocation()).Size() < searchManager->GetRadius())
+		{
+			if (moveType != EMoveType::Kill)
+			{
+				PlayerKill();
+			}
+		}
+	}
+
 	if (moveType == EMoveType::Kill)
 	{
 		// 初期値設定
@@ -270,6 +295,14 @@ void AEnemy::HitMoved()
 		{
 			return;
 		}
+		if (IsInLocker() && (Cast<APlayerCharacter>(player)->GetCurrentInLocker()))
+		{
+			auto locker = Cast<APlayerCharacter>(player)->GetCurrentInLocker();
+			if (locker == hit.GetActor())
+			{
+				return;
+			}
+		}
 		auto near = searchManager->NearSearchPosition(hit.ImpactPoint);
 		courses[0] = near;
 	}
@@ -370,7 +403,15 @@ void AEnemy::chasePlayer()
 		moveType = EMoveType::PlayerChase; //	moveType => PlayerChase
 		courses.RemoveAll([](FVector) { return true; });
 		auto vector = (VectorXY(player->GetActorLocation() - GetActorLocation())).GetSafeNormal();
-		courses.Add(player->GetActorLocation() + vector * searchManager->GetRadius());
+		auto pos = player->GetActorLocation() + vector * searchManager->GetRadius();
+		if (IsInLocker())
+		{
+			auto p = Cast<APlayerCharacter>(player);
+			auto locker = p->GetCurrentInLocker();
+			pos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+		}
+
+		courses.Add(pos);
 	}
 	else if (moveType == EMoveType::PlayerChase)
 	{
@@ -442,6 +483,33 @@ void AEnemy::DebugDraw()
 	auto str = FString::FString(s.c_str()) + m;
 
 	str += FString::FString(("\n" + std::to_string(GetDeg_XY(GetActorForwardVector()))).c_str());
+
+	switch (Cast<APlayerCharacter>(player)->GetCurrentActionMode())
+	{
+	case EPlayerActionMode::IsInLocker:
+		str += FString::FString("\nIsInLocker >> ");
+		break;
+	case EPlayerActionMode::GetOutOfLocker:
+		str += FString::FString("\nGetOutOfLocker >> ");
+		break;
+	case EPlayerActionMode::GoingIntoLocker:
+		str += FString::FString("\nGoingIntoLocker >> ");
+		break;
+	}
+	switch (playerActiveType)
+	{
+	case EPlayerActionMode::IsInLocker:
+		str += FString::FString("IsInLocker\n");
+		break;
+	case EPlayerActionMode::GetOutOfLocker:
+		str += FString::FString("GetOutOfLocker\n");
+		break;
+	case EPlayerActionMode::GoingIntoLocker:
+		str += FString::FString("GoingIntoLocker\n");
+		break;
+	}
+	str += FString::FString(IsInLocker() ? ">>>>>  IN  <<<<<\n" : ">>>>>  OUT  <<<<<\n");
+
 	for (int i = 0; i < courses.Num(); i++)
 	{
 		auto num = "[ " + std::to_string(i) + " ]";
@@ -449,7 +517,7 @@ void AEnemy::DebugDraw()
 		auto c = ("\n" + FString::FString((num + nor).c_str()));
 		str += c;
 	}
-	UKismetSystemLibrary::DrawDebugString(GetWorld(), GetActorLocation(), str, nullptr, FLinearColor::Black, 0);
+	UKismetSystemLibrary::DrawDebugString(GetWorld(), GetActorLocation(), str, nullptr, FLinearColor::Blue, 0);
 	// ----------------------------------------------------------------------------------------------------------------
 }
 
@@ -490,6 +558,20 @@ bool AEnemy::IsEyeArea()
 		if (player != nullptr)
 		{
 			params.AddIgnoredActor(player);
+			if (Cast<APlayerCharacter>(player))
+			{
+				auto p = Cast<APlayerCharacter>(player);
+				switch (p->GetCurrentActionMode())
+				{
+				case EPlayerActionMode::IsInLocker:
+				case EPlayerActionMode::GetOutOfLocker:
+				case EPlayerActionMode::GoingIntoLocker:
+
+					params.AddIgnoredActor(p->GetCurrentInLocker());
+
+					break;
+				}
+			}
 		}
 
 		// プレイヤー、敵の二点間に障害物があるか判定
@@ -499,7 +581,17 @@ bool AEnemy::IsEyeArea()
 		if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
 		        ECollisionChannel::ECC_Pawn, params))
 		{
-			return false;
+			if ((Cast<ALocker>(hit.GetActor()) != nullptr) && (Cast<ALocker>(hit.GetActor()) == Cast<APlayerCharacter>(player)->GetCurrentInLocker()))
+			{
+				if (IsInLocker())
+				{
+					return true;
+				}
+			}
+			else
+			{
+				return false;
+			}
 		}
 
 		// ロッカーIN
@@ -507,26 +599,11 @@ bool AEnemy::IsEyeArea()
 		{
 			auto p = Cast<APlayerCharacter>(player);
 
-			if (p->GetCurrentActionMode() == EPlayerActionMode::GetOutOfLocker)
-			{
-				return false;
-			}
-
-			if ((p->GetCurrentActionMode() == EPlayerActionMode::GetOutOfLocker) || (p->GetCurrentActionMode() == EPlayerActionMode::GoingIntoLocker))
-			{
-				playerActiveType = p->GetCurrentActionMode();
-			}
-
-			if (p->GetCurrentActionMode() == EPlayerActionMode::IsInLocker)
-			{
-				if ((playerActiveType == EPlayerActionMode::GetOutOfLocker) || (playerActiveType == EPlayerActionMode::GoingIntoLocker))
-				{
-					return true;
-				}
-				playerActiveType = p->GetCurrentActionMode();
-				return false;
-			}
 			playerActiveType = p->GetCurrentActionMode();
+			if (IsInLocker())
+			{
+				return true;
+			}
 		}
 		return true;
 	}
@@ -547,17 +624,15 @@ void AEnemy::onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* Other
 }
 
 // プレイヤー倒す処理
-void AEnemy::PlayerKill(AActor* OtherActor)
+void AEnemy::PlayerKill()
 {
-	if (!(playerActiveType == EPlayerActionMode::IsInLocker))
+	if (moveType == EMoveType::Kill)
 	{
-		auto p = Cast<APlayerCharacter>(player);
-		p->ToDie(this);
-		moveType = EMoveType::Kill;
+		return;
 	}
-	else {
-
-	}
+	auto p = Cast<APlayerCharacter>(player);
+	p->ToDie(this);
+	moveType = EMoveType::Kill;
 }
 
 bool AEnemy::IsMove() const
