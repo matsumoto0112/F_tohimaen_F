@@ -32,8 +32,10 @@ enum class ESoundType : uint8
 	Sprinkler_Ver2, //!< スプリンクラーの動作音
 	Chase_BGM, //!< 敵に追われているときのBGM
     Item_Get, //!< アイテム獲得音
+    Enemy_Shout, //!< 敵の咆哮音
     PlayerKill, //!< プレイヤー殺害音
 	System_Decision, //!< システム決定音
+    System_CursorMove, //!< システムカーソル移動音
 	System_Cansel, //!< システムキャンセル音
 };
 
