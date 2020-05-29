@@ -38,6 +38,7 @@ enum class ELockerEventPhase
     LockerOpen, //!< ロッカーのドアを開ける
     WaitLockerOpen, //!< ロッカーのドアが開ききるのを待つ
     PlayerDie, //!< プレイヤーを死亡させる
+    SceneChange,
 };
 
 /**
@@ -48,32 +49,32 @@ enum class ELockerEventPhase
 UCLASS()
 class INVISIBLE_API APlayerDieEvent : public AActor
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
-	APlayerDieEvent();
+    // Sets default values for this actor's properties
+    APlayerDieEvent();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    // Called when the game starts or when spawned
+    virtual void BeginPlay() override;
 
 public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+    // Called every frame
+    virtual void Tick(float DeltaTime) override;
 
     /**
     * 通常死亡イベント開始
     */
-	void StartNormalDieEvent(APlayerCharacter* Player, AEnemy* Enemy);
+    void StartNormalDieEvent(APlayerCharacter* Player, AEnemy* Enemy);
     /**
     * ロッカーでの死亡イベント開始
     */
-	void StartLockerDieEvent(APlayerCharacter* Player, AEnemy* Enemy, ALocker* Locker);
+    void StartLockerDieEvent(APlayerCharacter* Player, AEnemy* Enemy, ALocker* Locker);
     /**
     * 通常死亡イベント更新処理
     */
-	void UpdateNormalDieEvent();
+    void UpdateNormalDieEvent();
     /**
     * ロッカーでの死亡イベント更新処理
     */
@@ -81,7 +82,7 @@ public:
     /**
     * 徐々に敵のほうを向く処理
     */
-	void LookAtEnemyGradually();
+    void LookAtEnemyGradually();
     /**
     * ロッカーのドアを開く
     */
@@ -93,36 +94,36 @@ public:
     /**
     * 待機処理
     */
-	void Wait();
+    void Wait();
     /**
     * シーン変更処理
     * @details BPのほうでシーン変更処理を実装しているのでcppからは呼べないのでこの実装もBPでやる
     */
-	UFUNCTION(BlueprintNativeEvent)
-	void SceneChange(const FName& SceneName);
-	virtual void SceneChange_Implementation(const FName& SceneName) {}
+    UFUNCTION(BlueprintNativeEvent)
+        void SceneChange(const FName& SceneName);
+    virtual void SceneChange_Implementation(const FName& SceneName) { }
 
 protected:
     //!< 次のシーン名
-	UPROPERTY(EditAnywhere, Category = "General")
-	FName NextSceneName;
-    //!< 通常死亡時プレイヤーが敵のほうを向いてからの待機時間
-	UPROPERTY(EditAnywhere, Category = "Normal")
-	float WaitTime = 3.0f;
+    UPROPERTY(EditAnywhere, Category = "General")
+        FName NextSceneName;
+        //!< 通常死亡時プレイヤーが敵のほうを向いてからの待機時間
+    UPROPERTY(EditAnywhere, Category = "Normal")
+        float WaitTime = 3.0f;
 
 private:
     //!< 死亡イベントが開始しているか
-	bool bIsStartedEvent;
+    bool bIsStartedEvent;
     //!< 死亡イベントの種類
-	EDieEventType DieEventType;
+    EDieEventType DieEventType;
     //!< 通常死亡イベントの進行度
-	ENormalEventPhase CurrentNormalEventPhase;
+    ENormalEventPhase CurrentNormalEventPhase;
     //!< ロッカーでの死亡イベントの進行度
     ELockerEventPhase CurrentLockerEventPhase;
     //!< シーン変更までの待機時間カウンター
-	float CurrentWaitTime;
+    float CurrentWaitTime;
     //!< プレイヤーキャラクター
-	APlayerCharacter* PlayerCharacter;
+    APlayerCharacter* PlayerCharacter;
     //!< プレイヤーを殺した敵
-	AEnemy* Killer;
+    AEnemy* Killer;
 };

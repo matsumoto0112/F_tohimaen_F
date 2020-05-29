@@ -46,6 +46,7 @@ void APlayerDieEvent::Tick(float DeltaTime)
 
 void APlayerDieEvent::StartNormalDieEvent(APlayerCharacter* Player, AEnemy* Enemy)
 {
+    if (bIsStartedEvent)return;
 	this->bIsStartedEvent = true;
 	DieEventType = EDieEventType::Normal;
 	this->PlayerCharacter = Player;
@@ -54,7 +55,8 @@ void APlayerDieEvent::StartNormalDieEvent(APlayerCharacter* Player, AEnemy* Enem
 
 void APlayerDieEvent::StartLockerDieEvent(APlayerCharacter* Player, AEnemy* Enemy, ALocker* Locker)
 {
-	this->bIsStartedEvent = true;
+    if (bIsStartedEvent)return;
+    this->bIsStartedEvent = true;
 	DieEventType = EDieEventType::Locker;
 	this->PlayerCharacter = Player;
 	this->Killer = Enemy;
@@ -145,7 +147,8 @@ void APlayerDieEvent::Wait()
 	CurrentWaitTime += GetWorld()->GetDeltaSeconds();
 	if (CurrentWaitTime >= WaitTime)
 	{
-		CurrentNormalEventPhase = ENormalEventPhase::SceneChange;
-		SceneChange(NextSceneName);
+        CurrentNormalEventPhase = ENormalEventPhase::SceneChange;
+        CurrentLockerEventPhase = ELockerEventPhase::SceneChange;
+        SceneChange(NextSceneName);
 	}
 }
