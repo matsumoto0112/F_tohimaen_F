@@ -615,6 +615,8 @@ bool AEnemy::IsEyeArea()
 			switch (p->GetCurrentActionMode())
 			{
 			case EPlayerActionMode::IsInLocker:
+
+				//playerActiveType = p->GetCurrentActionMode();
 				return IsInLocker();
 
 			case EPlayerActionMode::GetOutOfLocker:
@@ -628,7 +630,10 @@ bool AEnemy::IsEyeArea()
 		return true;
 	}
 
-	playerActiveType = EPlayerActionMode::Default;
+	if (Cast<APlayerCharacter>(player)->GetCurrentActionMode() != EPlayerActionMode::IsInLocker)
+	{
+		playerActiveType = EPlayerActionMode::Default;
+	}
 	return false;
 }
 
