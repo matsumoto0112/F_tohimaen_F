@@ -7,7 +7,7 @@
 
 #include <algorithm>
 
-// Sets default values
+// コンストラクタ
 ASearchEgde::ASearchEgde()
 {
 	if (branch.Contains(this))
@@ -19,13 +19,13 @@ ASearchEgde::ASearchEgde()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-// Called when the game starts or when spawned
+// 初期設定
 void ASearchEgde::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-// Called every frame
+// 更新
 void ASearchEgde::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -34,28 +34,22 @@ void ASearchEgde::Tick(float DeltaTime)
 	SetBranch();
 }
 
-bool ASearchEgde::ShouldTickIfViewportsOnly() const
+// エリア半径設定
+void ASearchEgde::SetRadius(float r)
 {
-	return true;
+	radius = r;
 }
 
-TArray<ASearchEgde*> ASearchEgde::GetBranch() const
-{
-	return branch;
-}
-
+// エリア半径取得
 float ASearchEgde::GetRadius() const
 {
 	return radius;
 }
 
-void ASearchEgde::SetRadius(float r) {
-	radius = r;
-}
-
+// 分岐設定
 void ASearchEgde::SetBranch()
 {
-	if (debugDraw==0)
+	if (!debugDraw)
 	{
 		return;
 	}
@@ -69,7 +63,13 @@ void ASearchEgde::SetBranch()
 		auto start = GetActorLocation() + FVector::UpVector * radius;
 		auto end = branch[index]->GetActorLocation() + FVector::UpVector * radius;
 		UKismetSystemLibrary::DrawDebugLine(GetWorld(), start, end, FLinearColor::Blue, 0);
-		UKismetSystemLibrary::DrawDebugSphere(GetWorld(), GetActorLocation(), radius,12, FLinearColor::Blue, 0);
+		UKismetSystemLibrary::DrawDebugSphere(GetWorld(), GetActorLocation(), radius, 12, FLinearColor::Blue, 0);
 		//UKismetSystemLibrary::DrawDebugCapsule(GetWorld(),)
 	}
+}
+
+// 分岐先
+TArray<ASearchEgde*> ASearchEgde::GetBranch() const
+{
+	return branch;
 }

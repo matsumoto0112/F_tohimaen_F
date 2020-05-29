@@ -1,23 +1,26 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "SearchCourse.h"
 
+// コンストラクタ
 SearchCourse::SearchCourse(ASearchEgde* baseSearch)
     : baseSearch(baseSearch), parentSearch(nullptr)
 {
 }
 
+// コンストラクタ
 SearchCourse::SearchCourse(ASearchEgde* baseSearch, SearchCourse* parentSearch)
     : baseSearch(baseSearch), parentSearch(parentSearch)
 {
 }
 
+// 現在地
 ASearchEgde* SearchCourse::GetBaseSearch() const
 {
 	return baseSearch;
 }
 
+// 移動先設定
 TArray<SearchCourse*> SearchCourse::SetChild(const TArray<SearchCourse*> remove)
 {
 	if (baseSearch == nullptr)
@@ -42,7 +45,7 @@ TArray<SearchCourse*> SearchCourse::SetChild(const TArray<SearchCourse*> remove)
 			continue;
 		}
 
-		SearchCourse* course = new SearchCourse(branch[index],this);
+		SearchCourse* course = new SearchCourse(branch[index], this);
 		childs.Add(course);
 	}
 
@@ -50,12 +53,14 @@ TArray<SearchCourse*> SearchCourse::SetChild(const TArray<SearchCourse*> remove)
 	return childSearch;
 }
 
+// 経路取得
 TArray<SearchCourse*> SearchCourse::GetParents()
 {
 	TArray<SearchCourse*> parents;
 	return GetParents(parents);
 }
 
+// 原点取得
 SearchCourse* SearchCourse::MostParent()
 {
 	if (parentSearch == nullptr)
@@ -68,6 +73,7 @@ SearchCourse* SearchCourse::MostParent()
 	}
 }
 
+// 原点から現在地までの距離
 double SearchCourse::Length()
 {
 	auto parents = GetParents();
@@ -81,6 +87,7 @@ double SearchCourse::Length()
 	return length;
 }
 
+// 経路取得
 TArray<SearchCourse*> SearchCourse::GetParents(TArray<SearchCourse*> parents)
 {
 	parents.Add(this);
