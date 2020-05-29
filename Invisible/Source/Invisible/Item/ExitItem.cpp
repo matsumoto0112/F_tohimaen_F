@@ -3,6 +3,8 @@
 #include "ExitItem.h"
 
 #include "Engine.h"
+#include "Invisible/System/MyGameInstance.h"
+#include "Invisible/System/SoundSystem.h"
 
 // Sets default values
 AExitItem::AExitItem()
@@ -46,6 +48,7 @@ void AExitItem::ItemAction_Implementation()
 
 void AExitItem::Get()
 {
+	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Item_Get, this->GetActorLocation(), this);
 	isGet = true;
 	meshComponent->SetVisibility(false, true);
 }
