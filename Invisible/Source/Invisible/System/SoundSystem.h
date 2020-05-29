@@ -24,13 +24,15 @@ enum class ESoundType : uint8
 	Enemy_Walk, //!< 敵の歩行音
 	Player_Walk_On_Puddle, //!< プレイヤーの歩行音（水たまり上）
 	Enemy_Walk_On_Puddle, //!< 敵の歩行音（水たまり上）
-    Door_Open, //!< ドアの開く音
-    Go_Into_Locker, //!< ロッカーに入る音
-    Get_Out_Locker, //!< ロッカーから出る音
+	Door_Open, //!< ドアの開く音
+	Go_Into_Locker, //!< ロッカーに入る音
+	Get_Out_Locker, //!< ロッカーから出る音
 	Sprinkler_Ver0, //!< スプリンクラーの動作音
-    Sprinkler_Ver1, //!< スプリンクラーの動作音
-    Sprinkler_Ver2, //!< スプリンクラーの動作音
-    Chase_BGM, //!< 敵に追われているときのBGM
+	Sprinkler_Ver1, //!< スプリンクラーの動作音
+	Sprinkler_Ver2, //!< スプリンクラーの動作音
+	Chase_BGM, //!< 敵に追われているときのBGM
+	System_Decision, //!< システム決定音
+	System_Cansel, //!< システムキャンセル音
 };
 
 /**
@@ -78,19 +80,19 @@ public:
     * @param location 音の発生場所
     * @param soundGenerateSource 音の発生源のアクター
     */
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Sound")
 	void play3DSound(ESoundType sound, const FVector& location, AActor* soundGenerateSource);
 
-    /**
+	/**
     * BGMを再生する
     */
-    UFUNCTION(BlueprintCallable,Category="Sound")
-    void PlayBGM(ESoundType SoundType);
-    /**
+	UFUNCTION(BlueprintCallable, Category = "Sound")
+	void PlayBGM(ESoundType SoundType);
+	/**
     * BGMを停止する
     */
-    UFUNCTION(BlueprintCallable, Category = "Sound")
-    void StopBGM();
+	UFUNCTION(BlueprintCallable, Category = "Sound")
+	void StopBGM();
 
 	UFUNCTION(BlueprintCallable, Category = "SoundSystem")
 	void createSoundObjects(int32 num);
@@ -115,6 +117,6 @@ private:
 
 	//!< 使用しているサウンドオブジェクトリスト
 	TArray<ASoundObject*> soundObjects;
-    //!< BGM用オブジェクト
-    ASoundObject* BGMObject;
+	//!< BGM用オブジェクト
+	ASoundObject* BGMObject;
 };
