@@ -60,6 +60,7 @@ public:
 	// “§–¾‰»İ’è
 	void AddReflection(float add);
 
+	bool IsInLocker();
 	void DebugDraw();
 
 	// ‹Šo“à‚É‚¢‚é‚©
