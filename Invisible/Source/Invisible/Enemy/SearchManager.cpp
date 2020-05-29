@@ -7,7 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "SearchCourse.h"
 
-// Sets default values
+// コンストラクタ
 ASearchManager::ASearchManager()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -19,7 +19,7 @@ ASearchManager::ASearchManager()
 	}
 }
 
-// Called when the game starts or when spawned
+// 初期更新
 void ASearchManager::BeginPlay()
 {
 	Super::BeginPlay();
@@ -28,12 +28,13 @@ void ASearchManager::BeginPlay()
 	player = (actor == nullptr) ? nullptr : actor;
 }
 
-// Called every frame
+// 更新
 void ASearchManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
+	// 経路設定
 TArray<FVector> ASearchManager::Course(AActor* actor) const
 {
 	auto near = NearSearch(actor);
@@ -47,6 +48,7 @@ TArray<FVector> ASearchManager::Course(AActor* actor) const
 	return Course(start, end);
 }
 
+	// 経路設定
 TArray<FVector> ASearchManager::Course(AActor* start, AActor* end) const
 {
 	auto nearStart = NearSearch(start);
@@ -61,6 +63,7 @@ TArray<FVector> ASearchManager::Course(AActor* start, AActor* end) const
 	return Course(searchStart, searchEnd);
 }
 
+	// 経路設定
 TArray<FVector> ASearchManager::Course(SearchCourse* start, ASearchEgde* end) const
 {
 	auto searched = TArray<SearchCourse*>();
@@ -73,9 +76,6 @@ TArray<FVector> ASearchManager::Course(SearchCourse* start, ASearchEgde* end) co
 		{
 			searched.Add(child[c]);
 		}
-		//searched.Sort([](SearchCourse* A, SearchCourse* B) {
-		//	return A->Length() < B->Length();
-		//});
 
 		if (searched[i]->GetBaseSearch() == end)
 		{
@@ -93,15 +93,18 @@ TArray<FVector> ASearchManager::Course(SearchCourse* start, ASearchEgde* end) co
 	return TArray<FVector>();
 }
 
+	//　エリア半径取得
 float ASearchManager::GetRadius() const
 {
 	return radius;
 }
 
+	// 近辺の分岐箇所取得
 FVector ASearchManager::NearSearchPosition(AActor* actor) const
 {
 	return NearSearchPosition(actor->GetActorLocation());
 }
+// 近辺の分岐箇所取得
 FVector ASearchManager::NearSearchPosition(FVector point) const
 {
 	auto near = NearSearch(point);
@@ -112,11 +115,13 @@ FVector ASearchManager::NearSearchPosition(FVector point) const
 	return near->GetActorLocation();
 }
 
+	// 移動箇所との間に障害物があるか判定
 bool ASearchManager::DirectionSearch(AActor* actor, FVector near) const
 {
 	return DirectionSearch(actor, NearSearch(near));
 }
 
+	// 移動箇所との間に障害物があるか判定
 bool ASearchManager::DirectionSearch(AActor* actor, ASearchEgde* near) const
 {
 	auto point = actor->GetActorLocation();
@@ -138,6 +143,7 @@ bool ASearchManager::DirectionSearch(AActor* actor, ASearchEgde* near) const
 	    ECollisionChannel::ECC_Pawn, params));
 }
 
+	// 近辺の分岐箇所取得
 ASearchEgde* ASearchManager::NearSearch(AActor* actor) const
 {
 	int resultIndex = -1;
@@ -175,6 +181,7 @@ ASearchEgde* ASearchManager::NearSearch(AActor* actor) const
 	}
 	return (resultIndex < 0) ? nullptr : search[resultIndex];
 }
+// 近辺の分岐箇所取得
 ASearchEgde* ASearchManager::NearSearch(FVector point) const
 {
 	int resultIndex = -1;
@@ -199,6 +206,7 @@ ASearchEgde* ASearchManager::NearSearch(FVector point) const
 	return (resultIndex < 0) ? nullptr : search[resultIndex];
 }
 
+	// ランダムに分岐箇所取得
 ASearchEgde* ASearchManager::GetRandomSearch(ASearchEgde* remove) const
 {
 	auto s = TArray<ASearchEgde*>(search);

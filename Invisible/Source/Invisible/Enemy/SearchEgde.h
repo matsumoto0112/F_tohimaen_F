@@ -13,31 +13,38 @@ class INVISIBLE_API ASearchEgde : public AActor
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
+	// コンストラクタ
 	ASearchEgde();
 
 protected:
-	// Called when the game starts or when spawned
+	// 初期設定
 	virtual void BeginPlay() override;
 
 public:
-	// Called every frame
+	// 更新
 	virtual void Tick(float DeltaTime) override;
+	// Tickの処理をエディタ上でも行うようにする
+	virtual bool ShouldTickIfViewportsOnly() const override { return true; };
 
-	virtual bool ShouldTickIfViewportsOnly() const override;
-
-	TArray<ASearchEgde*> GetBranch() const;
-	void SetBranch();
-	float GetRadius() const;
+	// エリア半径設定
 	void SetRadius(float r);
+	// エリア半径取得
+	float GetRadius() const;
+	// 分岐設定
+	void SetBranch();
+	// 分岐先
+	TArray<ASearchEgde*> GetBranch() const;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	// 範囲半径
 	float radius = 100.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	// 分岐
 	TArray<ASearchEgde*> branch;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 debugDraw = 0;
+	// デバッグ表示
+	bool debugDraw;
 };

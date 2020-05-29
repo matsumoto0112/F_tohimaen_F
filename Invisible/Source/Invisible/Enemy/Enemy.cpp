@@ -17,42 +17,42 @@ namespace
 {
 	constexpr float WALKING_THRESHOLD = 0.5f; //!< 歩いているとみなす閾値
 	constexpr float WALKING_SOUND_PLAY_INTERVAL = 0.66f; //!< 歩行音の再生間隔
-}
 
-enum class ERotateType : uint8
-{
-	Right,
-	Left,
-};
-ERotateType rotateType = ERotateType::Right;
-
-EPlayerActionMode playerActiveType = EPlayerActionMode::Default;
-float GetDeg_XY(FVector forward)
-{
-	auto vector = forward;
-	forward.Z = 0;
-	auto normal = forward.GetSafeNormal();
-	auto rad = FMath::Atan2(normal.Y, normal.X);
-	auto deg = FMath::RadiansToDegrees(rad);
-	return deg;
-}
-
-FVector VectorXY(FVector vector)
-{
-	vector.Z = 0;
-	return vector;
-}
-
-bool IsInLocker()
-{
-	switch (playerActiveType)
+	enum class ERotateType : uint8
 	{
-	case EPlayerActionMode::IsInLocker:
-	case EPlayerActionMode::GetOutOfLocker:
-	case EPlayerActionMode::GoingIntoLocker:
-		return true;
+		Right,
+		Left,
+	};
+	ERotateType rotateType = ERotateType::Right;
+
+	EPlayerActionMode playerActiveType = EPlayerActionMode::Default;
+	float GetDeg_XY(FVector forward)
+	{
+		auto vector = forward;
+		forward.Z = 0;
+		auto normal = forward.GetSafeNormal();
+		auto rad = FMath::Atan2(normal.Y, normal.X);
+		auto deg = FMath::RadiansToDegrees(rad);
+		return deg;
 	}
-	return false;
+
+	FVector VectorXY(FVector vector)
+	{
+		vector.Z = 0;
+		return vector;
+	}
+
+	bool IsInLocker()
+	{
+		switch (playerActiveType)
+		{
+		case EPlayerActionMode::IsInLocker:
+		case EPlayerActionMode::GetOutOfLocker:
+		case EPlayerActionMode::GoingIntoLocker:
+			return true;
+		}
+		return false;
+	}
 }
 
 // Sets default values
@@ -119,7 +119,7 @@ bool AEnemy::IsKill(float DeltaTime)
 	if (IsInLocker() && (Cast<APlayerCharacter>(player)->GetCurrentInLocker()))
 	{
 		auto locker = Cast<APlayerCharacter>(player)->GetCurrentInLocker();
-		if (VectorXY(locker->GetActorLocation() - GetActorLocation()).Size() < searchManager->GetRadius())
+		if (VectorXY(locker->GetActorLocation() - GetActorLocation()).Size() < searchManager->GetRadius() * 2)
 		{
 			if (moveType != EMoveType::Kill)
 			{
@@ -132,8 +132,7 @@ bool AEnemy::IsKill(float DeltaTime)
 	{
 		// 初期値設定
 		auto pos = GetActorLocation();
-		auto vector = (courses[0] - pos);
-		vector.Z = 0;
+		auto vector = VectorXY(player->GetActorLocation() - pos);
 		auto nor = vector.GetSafeNormal();
 
 		// 回転
@@ -178,7 +177,7 @@ void AEnemy::Moving(float DeltaTime)
 	// 経路更新
 	if ((VectorXY(courses[0] - GetActorLocation())).Size() <= searchManager->GetRadius())
 	{
-		if (2 <= courses.Num())
+		if (2 <= courses.Num() && (!IsInLocker()))
 		{
 			// 初期値設定
 			auto pos = GetActorLocation();
@@ -252,6 +251,7 @@ void AEnemy::Moving(float DeltaTime)
 				courses.Add(player->GetActorLocation());
 				return;
 			}
+
 			//if (searchManager->DirectionSearch(player, lastSearch))
 			//{
 			//	courses.Add(player->GetActorLocation());
@@ -315,6 +315,12 @@ void AEnemy::SetWait()
 	{
 		return;
 	}
+
+	if (IsInLocker())
+	{
+		return;
+	}
+
 	waitTimer = waitTime * FMath::FRandRange(0.0f, 1.0f);
 	moveType = EMoveType::None; //	moveType => None
 }
@@ -451,7 +457,15 @@ void AEnemy::SetMaterial(float DeltaTime)
 	overBathing();
 
 	float thirst = (thirstSpeed <= 1.0f) ? DeltaTime : DeltaTime / thirstSpeed;
-	reflection -= thirst;
+	if (moveType == EMoveType::Kill)
+	{
+		reflection += DeltaTime;
+	}
+	else
+	{
+		reflection -= thirst;
+	}
+
 	reflection = (reflection < 0) ? 0 : (1 < reflection) ? 1 : reflection;
 	skeltal->SetScalarParameterValueOnMaterials("reflection", reflection);
 }
