@@ -52,7 +52,11 @@ void ALocker::action_Implementation()
 	const FVector Location = GetActorLocation();
 	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(Sound, Location, this);
 
-	OpenDoor(0.25f);
+    {
+        APlayerCharacter* Player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+        Player->IntoLockerReady();
+    }
+    OpenDoor(0.25f);
 
 	//ドアが開いたらプレイヤーを中に引き入れる
 	{

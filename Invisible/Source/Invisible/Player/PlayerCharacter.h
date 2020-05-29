@@ -59,6 +59,10 @@ public:
     */
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	EPlayerActionMode GetCurrentActionMode() const { return CurrentActionMode; }
+    /**
+    * ロッカーに入る準備をする
+    */
+    void IntoLockerReady();
 	/**
     * ロッカーの中に入る
     */
