@@ -391,17 +391,22 @@ void APlayerCharacter::FixedLocationIfInLocker()
     }
 }
 
+//ロッカーの中に入る準備をする
+void APlayerCharacter::IntoLockerReady()
+{
+    CurrentActionMode = EPlayerActionMode::GoingIntoLocker;
+}
+
 //ロッカーに入る
 void APlayerCharacter::IntoLocker(ALocker* Locker, const FVector& Location, const FRotator& FrontRotator)
 {
-	CurrentActionMode = EPlayerActionMode::GoingIntoLocker;
-
 	IsInLocker = Locker;
 	LockerYawRotation = FrontRotator.Yaw;
 	Controller->SetControlRotation(FrontRotator);
 	CurrentActionMode = EPlayerActionMode::IsInLocker;
 	this->FixedLocation = Location;
 }
+
 void APlayerCharacter::LockerDoorOpenedEvent()
 {
 	FVector Location = GetActorLocation() + GetControlRotation().Vector() * 100.0f;
