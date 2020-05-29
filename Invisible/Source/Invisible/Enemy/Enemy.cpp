@@ -41,18 +41,6 @@ namespace
 		vector.Z = 0;
 		return vector;
 	}
-
-	bool IsInLocker()
-	{
-		switch (playerActiveType)
-		{
-		case EPlayerActionMode::IsInLocker:
-		case EPlayerActionMode::GetOutOfLocker:
-		case EPlayerActionMode::GoingIntoLocker:
-			return true;
-		}
-		return false;
-	}
 }
 
 // Sets default values
@@ -509,6 +497,9 @@ void AEnemy::DebugDraw()
 	case EPlayerActionMode::GoingIntoLocker:
 		str += FString::FString("\nGoingIntoLocker >> ");
 		break;
+	default:
+		str += FString::FString("\nDefault >> ");
+		break;
 	}
 	switch (playerActiveType)
 	{
@@ -521,14 +512,21 @@ void AEnemy::DebugDraw()
 	case EPlayerActionMode::GoingIntoLocker:
 		str += FString::FString("GoingIntoLocker\n");
 		break;
+	default:
+		str += FString::FString("Default\n");
+		break;
 	}
-	str += FString::FString(IsInLocker() ? ">>>>>  IN  <<<<<\n" : ">>>>>  OUT  <<<<<\n");
+	str += FString::FString(IsEyeArea() ? ">>>>>  IsEyeArea_IN  <<<<<\n" : ">>>>>  IsEyeArea_OUT  <<<<<\n");
+	str += FString::FString(IsInLocker() ? ">>>>>  IsInLocker_IN  <<<<<\n" : ">>>>>  IsInLocker_OUT  <<<<<\n");
 
 	for (int i = 0; i < courses.Num(); i++)
 	{
 		auto num = "[ " + std::to_string(i) + " ]";
-		auto nor = "( " + std::to_string(("(%d, %d, %d)", courses[i].X, courses[i].Y, courses[i].Z)) + ") ";
-		auto c = ("\n" + FString::FString((num + nor).c_str()));
+		auto pos = "( " + std::to_string(courses[i].X) + ", ";
+		pos += std::to_string(courses[i].Y) + ", ";
+		pos += std::to_string(courses[i].Z) + ") ";
+
+		auto c = ("\n" + FString::FString((num + pos).c_str()));
 		str += c;
 	}
 	UKismetSystemLibrary::DrawDebugString(GetWorld(), GetActorLocation(), str, nullptr, FLinearColor::Blue, 0);
@@ -540,6 +538,7 @@ bool AEnemy::IsEyeArea()
 {
 	if (player == nullptr)
 	{
+		playerActiveType = EPlayerActionMode::Default;
 		return false;
 	}
 
@@ -553,6 +552,7 @@ bool AEnemy::IsEyeArea()
 	auto length = vector.Size();
 	if (eyeLength < length)
 	{
+		playerActiveType = EPlayerActionMode::Default;
 		return false;
 	}
 
@@ -595,18 +595,16 @@ bool AEnemy::IsEyeArea()
 		if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
 		        ECollisionChannel::ECC_Pawn, params))
 		{
-			if ((Cast<ALocker>(hit.GetActor()) != nullptr) && (Cast<ALocker>(hit.GetActor()) == Cast<APlayerCharacter>(player)->GetCurrentInLocker()))
+			if (Cast<ALocker>(hit.GetActor()))
 			{
-				if (IsInLocker())
+				if ((Cast<APlayerCharacter>(player)->GetCurrentActionMode() == EPlayerActionMode::IsInLocker)
+					&& (Cast<ALocker>(hit.GetActor()) == Cast<APlayerCharacter>(player)->GetCurrentInLocker()))
 				{
-					return true;
+					return IsInLocker();
 				}
 			}
-			else
-			{
-				playerActiveType = Cast<APlayerCharacter>(player)->GetCurrentActionMode();
-				return false;
-			}
+
+			return false;
 		}
 
 		// ロッカーIN
@@ -614,16 +612,23 @@ bool AEnemy::IsEyeArea()
 		{
 			auto p = Cast<APlayerCharacter>(player);
 
-			playerActiveType = p->GetCurrentActionMode();
-			if (IsInLocker())
+			switch (p->GetCurrentActionMode())
 			{
-				return true;
+			case EPlayerActionMode::IsInLocker:
+				return IsInLocker();
+
+			case EPlayerActionMode::GetOutOfLocker:
+			case EPlayerActionMode::GoingIntoLocker:
+
+				playerActiveType = p->GetCurrentActionMode();
+				break;
 			}
 		}
+
 		return true;
 	}
 
-	playerActiveType = Cast<APlayerCharacter>(player)->GetCurrentActionMode();
+	playerActiveType = EPlayerActionMode::Default;
 	return false;
 }
 
@@ -658,6 +663,27 @@ bool AEnemy::IsMove() const
 bool AEnemy::IsKill() const
 {
 	return (moveType == EMoveType::Kill);
+}
+
+bool AEnemy::IsInLocker()
+{
+	switch (playerActiveType)
+	{
+	//case EPlayerActionMode::IsInLocker:
+	case EPlayerActionMode::GetOutOfLocker:
+	case EPlayerActionMode::GoingIntoLocker:
+
+		if (Cast<APlayerCharacter>(player))
+		{
+			auto p = Cast<APlayerCharacter>(player);
+			switch (p->GetCurrentActionMode())
+			{
+			case EPlayerActionMode::IsInLocker:
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 //// 衝突開始時に呼ばれる
