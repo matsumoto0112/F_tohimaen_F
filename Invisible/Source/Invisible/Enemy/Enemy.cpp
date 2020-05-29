@@ -604,6 +604,7 @@ bool AEnemy::IsEyeArea()
 			}
 			else
 			{
+				playerActiveType = Cast<APlayerCharacter>(player)->GetCurrentActionMode();
 				return false;
 			}
 		}
@@ -622,6 +623,7 @@ bool AEnemy::IsEyeArea()
 		return true;
 	}
 
+	playerActiveType = Cast<APlayerCharacter>(player)->GetCurrentActionMode();
 	return false;
 }
 
