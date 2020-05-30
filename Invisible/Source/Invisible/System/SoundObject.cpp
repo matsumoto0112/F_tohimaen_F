@@ -5,11 +5,6 @@
 #include "Engine.h"
 #include "Invisible/System/SoundSystem.h"
 
-namespace
-{
-	const FString PATH = "/Game/System/SoundAttenuation.SoundAttenuation_C";
-}
-
 ASoundObject::ASoundObject()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -30,7 +25,6 @@ ASoundObject::ASoundObject()
 void ASoundObject::BeginPlay()
 {
 	Super::BeginPlay();
-	isPlaying = false;
 }
 
 void ASoundObject::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -44,40 +38,46 @@ void ASoundObject::Tick(float DeltaTime)
 }
 
 //音を再生する
-void ASoundObject::playSound(FSoundData* sound, const FVector& location, AActor* soundGenerateSource)
+void ASoundObject::PlaySound(FSoundData* SoundData, const FVector& Location, AActor* SoundGenerateSource, EPlayerHearingMode HearingMode)
 {
 	//音があるかどうかチェックする
-	if (!sound)
+	if (!SoundData)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Sound data is null!"));
 		return;
 	}
-	this->soundType = sound->soundType;
-	this->soundGenerateSourceActor = soundGenerateSource;
+	this->soundType = SoundData->SoundType;
+	this->soundGenerateSourceActor = SoundGenerateSource;
 
-	SetActorLocation(location);
+    //高い聴力状態でそれ用の減衰が設定されているならそれを使用する
+	USoundAttenuation* SoundAttenuation = [](FSoundData* Data, EPlayerHearingMode Mode) {
+		if (Mode == EPlayerHearingMode::High && Data->HighSoundAttenuation)
+		{
+			return Data->HighSoundAttenuation;
+		}
+		return Data->NormalSoundAttenuation;
+	}(SoundData, HearingMode);
+
+	SetActorLocation(Location);
 	//音をセットして再生する
-	audio->SetSound(sound->sound);
-	audio->AttenuationSettings = sound->soundAttenuation;
+	audio->SetSound(SoundData->SoundData);
+	audio->AttenuationSettings = SoundAttenuation;
 	audio->Play();
 
 	//コリジョンの半径を音の聞こえる範囲と同じようにセットする
-	const USoundAttenuation* attenuation = sound->soundAttenuation;
-	float radius = (attenuation->Attenuation.FalloffDistance + attenuation->Attenuation.AttenuationShapeExtents.Size());
+	float radius = (SoundAttenuation->Attenuation.FalloffDistance + SoundAttenuation->Attenuation.AttenuationShapeExtents.Size());
 	soundHeardArea->SetSphereRadius(radius, false);
 	soundHeardArea->SetGenerateOverlapEvents(true);
-
-	isPlaying = true;
 }
 
+//サウンドを停止する
 void ASoundObject::Stop()
 {
-    this->audio->Stop();
+	this->audio->Stop();
 }
 
 //音の再生が終了したときのイベント
 void ASoundObject::onAudioFinished()
 {
-	isPlaying = false;
 	soundHeardArea->SetGenerateOverlapEvents(false);
 }

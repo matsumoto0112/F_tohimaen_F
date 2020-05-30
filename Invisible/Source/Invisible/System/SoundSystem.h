@@ -13,6 +13,16 @@
 class ASoundObject;
 
 /**
+* プレイヤーの聴力の状態
+*/
+UENUM(BlueprintType)
+enum class EPlayerHearingMode : uint8
+{
+    Normal,
+    High,
+};
+
+/**
 * 使用する音の種類
 * @details 音を再生する時に指定する列挙型
 */
@@ -49,15 +59,18 @@ struct INVISIBLE_API FSoundData : public FTableRowBase
 
 	//!< 使用する音の種類
 	UPROPERTY(EditDefaultsOnly)
-	ESoundType soundType;
+	ESoundType SoundType;
 
 	//!< 使用する音源
 	UPROPERTY(EditDefaultsOnly)
-	USoundBase* sound;
+	USoundBase* SoundData;
 
 	//!< 音の減衰パラメータ
 	UPROPERTY(EditAnywhere)
-	USoundAttenuation* soundAttenuation;
+	USoundAttenuation* NormalSoundAttenuation;
+    //!< 音の減衰パラメータ（強化版）
+    UPROPERTY(EditAnywhere)
+    USoundAttenuation* HighSoundAttenuation;
 };
 
 /**
@@ -103,6 +116,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SoundSystem")
 	void destroySoundObjects();
 
+    void SetHearingMode(EPlayerHearingMode HearingMode){PlayerHearingMode = HearingMode;};
 private:
 	/**
     * 音データを探す
@@ -123,4 +137,6 @@ private:
 	TArray<ASoundObject*> soundObjects;
 	//!< BGM用オブジェクト
 	ASoundObject* BGMObject;
+    //!< プレイヤーの聴力の状態
+    EPlayerHearingMode PlayerHearingMode;
 };

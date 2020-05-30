@@ -33,7 +33,7 @@ void USoundSystem::play3DSound(ESoundType sound, const FVector& location, AActor
 	{
 		if (soundObjects[i]->unused())
 		{
-			soundObjects[i]->playSound(data, location, soundGenerateSource);
+			soundObjects[i]->PlaySound(data, location, soundGenerateSource, PlayerHearingMode);
 			return;
 		}
 	}
@@ -64,6 +64,9 @@ void USoundSystem::createSoundObjects(int32 num)
 	{
 		BGMObject = GetWorld()->SpawnActor<ASoundObject>(soundObjectOrigin);
 	}
+
+	//聴力の状態を通常に戻す
+	SetHearingMode(EPlayerHearingMode::Normal);
 }
 
 //サウンドオブジェクトを破棄する
@@ -89,7 +92,7 @@ FSoundData* USoundSystem::findSoundData(ESoundType sound) const
 	for (auto& name : dataTable->GetRowNames())
 	{
 		FSoundData* data = dataTable->FindRow<FSoundData>(name, contextString);
-		if (data->soundType == sound)
+		if (data->SoundType == sound)
 		{
 			return data;
 		}
@@ -131,7 +134,7 @@ void USoundSystem::PlayBGM(ESoundType SoundType)
 	//再生する音データを取得する
 	FSoundData* data = findSoundData(SoundType);
 
-	BGMObject->playSound(data, FVector::ZeroVector, nullptr);
+	BGMObject->PlaySound(data, FVector::ZeroVector, nullptr, PlayerHearingMode);
 }
 
 void USoundSystem::StopBGM()

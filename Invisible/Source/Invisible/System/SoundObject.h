@@ -35,7 +35,7 @@ public:
 	/**
     * 音を再生する
     */
-	void playSound(FSoundData* sound, const FVector& location, AActor* soundGenerateSource);
+	void PlaySound(FSoundData* SoundData, const FVector& Location, AActor* SoundGenerateSource, EPlayerHearingMode HearingMode);
     /**
     * 停止させる
     */
@@ -55,7 +55,7 @@ public:
     /**
     * 現在この音源オブジェクトが使われていないか
     */
-	bool unused() const { return !isPlaying; }
+	bool unused() const { return !audio->IsActive(); }
 
 private:
 	/**
@@ -79,6 +79,4 @@ private:
 	AActor* soundGenerateSourceActor;
 	//!< 再生している音の種類
 	ESoundType soundType;
-    //!< 音を再生しているか
-	bool isPlaying;
 };

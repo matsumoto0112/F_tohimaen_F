@@ -73,6 +73,17 @@ void ALocker::action_Implementation()
 	}
 	//入り終わったらドアを閉める
 	CloseDoor(0.25f);
+
+    //聴力を強化状態にする
+    {
+        FTask Task;
+        Task.BindLambda([&]()
+            {
+                UMyGameInstance::GetInstance()->getSoundSystem()->SetHearingMode(EPlayerHearingMode::High);
+                return true;
+            });
+        Tasks.Enqueue(Task);
+    }
 }
 
 void ALocker::GetOutPlayer()
@@ -80,7 +91,19 @@ void ALocker::GetOutPlayer()
 	const ESoundType Sound = ESoundType::Get_Out_Locker;
 	const FVector Location = GetActorLocation();
 	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(Sound, Location, this);
-	OpenDoor(0.25f);
+
+    //聴力を通常状態にする
+    {
+        FTask Task;
+        Task.BindLambda([&]()
+            {
+                UMyGameInstance::GetInstance()->getSoundSystem()->SetHearingMode(EPlayerHearingMode::Normal);
+                return true;
+            });
+        Tasks.Enqueue(Task);
+    }
+
+    OpenDoor(0.25f);
 
 	//ドアが開ききったらプレイヤーを外に出す
 	{
