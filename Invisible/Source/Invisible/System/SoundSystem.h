@@ -47,6 +47,7 @@ enum class ESoundType : uint8
 	System_Decision, //!< システム決定音
     System_CursorMove, //!< システムカーソル移動音
 	System_Cansel, //!< システムキャンセル音
+    Title_FootSteps, //!< タイトルの足音
 };
 
 /**
