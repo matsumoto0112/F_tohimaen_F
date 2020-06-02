@@ -48,6 +48,8 @@ enum class ESoundType : uint8
 	System_CursorMove, //!< システムカーソル移動音
 	System_Cansel, //!< システムキャンセル音
 	Title_FootSteps, //!< タイトルの足音
+    ConfigTest_BGM, //!< コンフィグでのテスト再生用BGM
+    ConfigTest_SE, //!< コンフィグでのテスト再生用SE
 };
 
 /**

@@ -139,5 +139,6 @@ void USoundSystem::PlayBGM(ESoundType SoundType)
 
 void USoundSystem::StopBGM()
 {
+    GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Stop BGM"));
 	BGMObject->Stop();
 }
