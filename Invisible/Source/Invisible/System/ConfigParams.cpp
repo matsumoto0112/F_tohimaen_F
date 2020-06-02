@@ -12,6 +12,8 @@ UConfigParams::UConfigParams()
 
 void UConfigParams::SetDefault()
 {
+	BGMVolume = 100.0f;
+	SEVolume = 100.0f;
 	Sensitivity = 100.0f;
 }
 
