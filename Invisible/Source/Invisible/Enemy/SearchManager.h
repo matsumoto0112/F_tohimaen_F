@@ -31,6 +31,8 @@ public:
 	TArray<FVector> Course(AActor* actor) const;
 	//経路設定
 	TArray<FVector> Course(AActor* start, AActor* end) const;
+	//経路設定
+	TArray<FVector> Course(FVector start, FVector end) const;
 	//　エリア半径取得
 	float GetRadius() const;
 

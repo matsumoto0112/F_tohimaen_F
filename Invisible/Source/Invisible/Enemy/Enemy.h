@@ -59,6 +59,8 @@ public:
 	void SetMaterial(float DeltaTime);
 	// “§–¾‰»İ’è
 	void AddReflection(float add);
+	// ƒƒbƒJ[ˆ—
+	void InLocker();
 
 	bool IsInLocker();
 	void DebugDraw();
