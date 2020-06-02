@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
 #include "Engine/GameInstance.h"
+#include "Invisible/System/ConfigParams.h"
 
 #include "MyGameInstance.generated.h"
 
@@ -44,7 +45,10 @@ public:
     * サウンドシステムを取得する
     */
 	UFUNCTION(BlueprintCallable, Category = "Singleton")
-	USoundSystem* getSoundSystem() const { return soundSystem; }
+	USoundSystem* getSoundSystem() const { return SoundSystem; }
+
+    UFUNCTION(BlueprintCallable, Category = "Singleton")
+    UConfigParams* GetConfigParams() const{ return ConfigParams; }
 
 private:
 	//!< OnHandleSystemError デリゲート登録時のハンドル
@@ -58,13 +62,15 @@ private:
 private:
 	//!< サウンドデータテーブル
 	UPROPERTY(EditDefaultsOnly, Category = "Sound")
-	UDataTable* soundData;
+	UDataTable* SoundDataTable;
     //!< 元となる音オブジェクト
 	UPROPERTY(EditDefaultsOnly, Category = "Sound")
-	TSubclassOf<AActor> soundObjectOrigin;
+	TSubclassOf<AActor> SoundObjectOrigin;
 
-private:
+protected:
 	//!< サウンドシステム
-	UPROPERTY()
-	USoundSystem* soundSystem;
+	UPROPERTY(VisibleAnywhere)
+	USoundSystem* SoundSystem;
+    UPROPERTY(VisibleAnywhere)
+    UConfigParams* ConfigParams;
 };

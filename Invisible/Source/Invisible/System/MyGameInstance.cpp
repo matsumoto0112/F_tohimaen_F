@@ -3,11 +3,13 @@
 #include "MyGameInstance.h"
 
 #include "Engine.h"
+#include "Invisible/System/ConfigParams.h"
 #include "Invisible/System/SoundSystem.h"
 
 //コンストラクタ
 UMyGameInstance::UMyGameInstance()
 {
+	SoundSystem = CreateDefaultSubobject<USoundSystem>(TEXT("Sound"));
 }
 
 void UMyGameInstance::PrintLogBlueprintCallstack()
@@ -43,13 +45,19 @@ void UMyGameInstance::Init()
 	Super::Init();
 	OnSystemErrorDelegateHandle = FCoreDelegates::OnHandleSystemError.AddUObject(this, &UMyGameInstance::OnSystemError);
 
-	if (soundSystem == nullptr)
+	SoundSystem->init(SoundDataTable, SoundObjectOrigin);
+
+	ConfigParams = Cast<UConfigParams>(UGameplayStatics::CreateSaveGameObject(UConfigParams::StaticClass()));
+	UConfigParams* Load = Cast<UConfigParams>(UGameplayStatics::LoadGameFromSlot(ConfigParams->SaveSlotName, ConfigParams->UserIndex));
+
+	if (Load)
 	{
-		soundSystem = NewObject<USoundSystem>();
-		//サウンドシステムのワールドを再設定するのに必要
-		soundSystem->Rename(nullptr, this);
+		ConfigParams = Load;
 	}
-	soundSystem->init(soundData, soundObjectOrigin);
+	else
+	{
+		ConfigParams->SetDefault();
+	}
 }
 
 void UMyGameInstance::Shutdown()
