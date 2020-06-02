@@ -63,6 +63,21 @@ TArray<FVector> ASearchManager::Course(AActor* start, AActor* end) const
 	return Course(searchStart, searchEnd);
 }
 
+// Œo˜Hİ’è
+TArray<FVector> ASearchManager::Course(FVector start, FVector end) const
+{
+	auto nearStart = NearSearch(start);
+	auto nearEnd = NearSearch(end);
+	if ((nearStart == nullptr) || (nearEnd == nullptr))
+	{
+		return TArray<FVector>();
+	}
+	auto searchStart = new SearchCourse(nearStart);
+	auto searchEnd = (new SearchCourse(nearEnd))->GetBaseSearch();
+
+	return Course(searchStart, searchEnd);
+}
+
 	// Œo˜Hİ’è
 TArray<FVector> ASearchManager::Course(SearchCourse* start, ASearchEgde* end) const
 {
