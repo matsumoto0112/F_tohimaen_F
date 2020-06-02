@@ -158,9 +158,6 @@ private:
 	float MaxMoveSpeed = 500.0f;
 
 protected:
-	//!< ‰ñ“]ŒW”
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	float RotateCoef = 100.0f;
 	//!< ƒJƒƒ‰‚Ìã‰º•ûŒü‚Ì‰ñ“]§ŒÀ
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	FFloatRange NormalCameraPitch;

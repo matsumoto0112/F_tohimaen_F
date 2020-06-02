@@ -7,6 +7,7 @@
 #include "Invisible/ActionableObject/Locker.h"
 #include "Invisible/Enemy/Enemy.h"
 #include "Invisible/Player/PlayerDieEvent.h"
+#include "Invisible/System/ConfigParams.h"
 #include "Invisible/System/MyGameInstance.h"
 #include "Invisible/System/SoundObject.h"
 #include "Invisible/System/SoundSystem.h"
@@ -148,7 +149,8 @@ void APlayerCharacter::Turn(float Amount)
 	if (!CanTurn)
 		return;
 
-	const float YawValue = RotateCoef * Amount * GetWorld()->GetDeltaSeconds();
+    const float Coef = UMyGameInstance::GetInstance()->GetConfigParams()->Sensitivity;
+	const float YawValue = Coef * Amount * GetWorld()->GetDeltaSeconds();
 	AddControllerYawInput(YawValue);
 }
 
@@ -159,7 +161,9 @@ void APlayerCharacter::Lookup(float Amount)
 	    (CurrentActionMode == EPlayerActionMode::Move) || (CurrentActionMode == EPlayerActionMode::IsInLocker);
 	if (!CanLookup)
 		return;
-	const float PitchValue = RotateCoef * Amount * GetWorld()->GetDeltaSeconds();
+
+    const float Coef = UMyGameInstance::GetInstance()->GetConfigParams()->Sensitivity;
+    const float PitchValue = Coef * Amount * GetWorld()->GetDeltaSeconds();
 	AddControllerPitchInput(PitchValue);
 }
 
@@ -385,16 +389,16 @@ void APlayerCharacter::GetOutLocker()
 
 void APlayerCharacter::FixedLocationIfInLocker()
 {
-    if (CurrentActionMode == EPlayerActionMode::IsInLocker)
-    {
-        this->SetActorLocation(FixedLocation);
-    }
+	if (CurrentActionMode == EPlayerActionMode::IsInLocker)
+	{
+		this->SetActorLocation(FixedLocation);
+	}
 }
 
 //ロッカーの中に入る準備をする
 void APlayerCharacter::IntoLockerReady()
 {
-    CurrentActionMode = EPlayerActionMode::GoingIntoLocker;
+	CurrentActionMode = EPlayerActionMode::GoingIntoLocker;
 }
 
 //ロッカーに入る

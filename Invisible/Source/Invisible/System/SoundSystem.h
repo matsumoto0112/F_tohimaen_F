@@ -18,8 +18,8 @@ class ASoundObject;
 UENUM(BlueprintType)
 enum class EPlayerHearingMode : uint8
 {
-    Normal,
-    High,
+	Normal,
+	High,
 };
 
 /**
@@ -41,13 +41,13 @@ enum class ESoundType : uint8
 	Sprinkler_Ver1, //!< スプリンクラーの動作音
 	Sprinkler_Ver2, //!< スプリンクラーの動作音
 	Chase_BGM, //!< 敵に追われているときのBGM
-    Item_Get, //!< アイテム獲得音
-    Enemy_Shout, //!< 敵の咆哮音
-    PlayerKill, //!< プレイヤー殺害音
+	Item_Get, //!< アイテム獲得音
+	Enemy_Shout, //!< 敵の咆哮音
+	PlayerKill, //!< プレイヤー殺害音
 	System_Decision, //!< システム決定音
-    System_CursorMove, //!< システムカーソル移動音
+	System_CursorMove, //!< システムカーソル移動音
 	System_Cansel, //!< システムキャンセル音
-    Title_FootSteps, //!< タイトルの足音
+	Title_FootSteps, //!< タイトルの足音
 };
 
 /**
@@ -69,9 +69,9 @@ struct INVISIBLE_API FSoundData : public FTableRowBase
 	//!< 音の減衰パラメータ
 	UPROPERTY(EditAnywhere)
 	USoundAttenuation* NormalSoundAttenuation;
-    //!< 音の減衰パラメータ（強化版）
-    UPROPERTY(EditAnywhere)
-    USoundAttenuation* HighSoundAttenuation;
+	//!< 音の減衰パラメータ（強化版）
+	UPROPERTY(EditAnywhere)
+	USoundAttenuation* HighSoundAttenuation;
 };
 
 /**
@@ -117,7 +117,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SoundSystem")
 	void destroySoundObjects();
 
-    void SetHearingMode(EPlayerHearingMode HearingMode){PlayerHearingMode = HearingMode;};
+	void SetHearingMode(EPlayerHearingMode HearingMode) { PlayerHearingMode = HearingMode; };
+
 private:
 	/**
     * 音データを探す
@@ -138,6 +139,6 @@ private:
 	TArray<ASoundObject*> soundObjects;
 	//!< BGM用オブジェクト
 	ASoundObject* BGMObject;
-    //!< プレイヤーの聴力の状態
-    EPlayerHearingMode PlayerHearingMode;
+	//!< プレイヤーの聴力の状態
+	EPlayerHearingMode PlayerHearingMode;
 };
