@@ -52,11 +52,11 @@ void ALocker::action_Implementation()
 	const FVector Location = GetActorLocation();
 	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(Sound, Location, this);
 
-    {
-        APlayerCharacter* Player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-        Player->IntoLockerReady();
-    }
-    OpenDoor(0.25f);
+	{
+		APlayerCharacter* Player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+		Player->IntoLockerReady();
+	}
+	OpenDoor(0.25f);
 
 	//ドアが開いたらプレイヤーを中に引き入れる
 	{
@@ -74,16 +74,15 @@ void ALocker::action_Implementation()
 	//入り終わったらドアを閉める
 	CloseDoor(0.25f);
 
-    //聴力を強化状態にする
-    {
-        FTask Task;
-        Task.BindLambda([&]()
-            {
-                UMyGameInstance::GetInstance()->getSoundSystem()->SetHearingMode(EPlayerHearingMode::High);
-                return true;
-            });
-        Tasks.Enqueue(Task);
-    }
+	//聴力を強化状態にする
+	{
+		FTask Task;
+		Task.BindLambda([&]() {
+			UMyGameInstance::GetInstance()->getSoundSystem()->SetHearingMode(EPlayerHearingMode::High);
+			return true;
+		});
+		Tasks.Enqueue(Task);
+	}
 }
 
 void ALocker::GetOutPlayer()
@@ -92,18 +91,17 @@ void ALocker::GetOutPlayer()
 	const FVector Location = GetActorLocation();
 	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(Sound, Location, this);
 
-    //聴力を通常状態にする
-    {
-        FTask Task;
-        Task.BindLambda([&]()
-            {
-                UMyGameInstance::GetInstance()->getSoundSystem()->SetHearingMode(EPlayerHearingMode::Normal);
-                return true;
-            });
-        Tasks.Enqueue(Task);
-    }
+	//聴力を通常状態にする
+	{
+		FTask Task;
+		Task.BindLambda([&]() {
+			UMyGameInstance::GetInstance()->getSoundSystem()->SetHearingMode(EPlayerHearingMode::Normal);
+			return true;
+		});
+		Tasks.Enqueue(Task);
+	}
 
-    OpenDoor(0.25f);
+	OpenDoor(0.25f);
 
 	//ドアが開ききったらプレイヤーを外に出す
 	{
@@ -126,8 +124,16 @@ void ALocker::OpenDoor(float OpenSecond)
 	{
 		FTask Task;
 		Task.BindLambda([&, OpenSecond]() {
-			RotateDoor(90.0f / OpenSecond * GetWorld()->GetDeltaSeconds());
+			RotateDoor(DoorOpenAngle / OpenSecond * GetWorld()->GetDeltaSeconds());
 			return IsOpenedDoor();
+		});
+		Tasks.Enqueue(Task);
+	}
+	{
+		FTask Task;
+		Task.BindLambda([&]() {
+			DummyDoor->SetRelativeRotation(FRotator::MakeFromEuler(FVector(0.0f, 0.0f, DoorOpenAngle)));
+			return true;
 		});
 		Tasks.Enqueue(Task);
 	}
@@ -140,8 +146,16 @@ void ALocker::CloseDoor(float CloseSecond)
 		FTask Task;
 		Task.BindLambda([&, CloseSecond]() {
 			RotateDoor(-90.0f / CloseSecond * GetWorld()->GetDeltaSeconds());
-			const bool NearlyEqual = FMath::Abs(DummyDoor->GetRelativeRotation().Yaw) <= 0.1f;
+			const bool NearlyEqual = FMath::Abs(DummyDoor->GetRelativeRotation().Yaw) <= 1.0f;
 			return NearlyEqual;
+		});
+		Tasks.Enqueue(Task);
+	}
+	{
+		FTask Task;
+		Task.BindLambda([&]() {
+			DummyDoor->SetRelativeRotation(FRotator::MakeFromEuler(FVector(0.0f, 0.0f, 0.0f)));
+			return true;
 		});
 		Tasks.Enqueue(Task);
 	}
@@ -149,7 +163,7 @@ void ALocker::CloseDoor(float CloseSecond)
 
 bool ALocker::IsOpenedDoor() const
 {
-    return FMath::Abs(DoorOpenAngle - DummyDoor->GetRelativeRotation().Yaw) <= 0.1f;
+	return FMath::Abs(DoorOpenAngle - DummyDoor->GetRelativeRotation().Yaw) <= 1.0f;
 }
 
 //ドアを回転させる
