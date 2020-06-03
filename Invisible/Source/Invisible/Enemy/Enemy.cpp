@@ -126,6 +126,25 @@ bool AEnemy::IsKill(float DeltaTime)
 	{
 		// èâä˙ílê›íË
 		auto pos = GetActorLocation();
+
+		switch (playerActiveType)
+		{
+		case EPlayerActionMode::GetOutOfLocker:
+		case EPlayerActionMode::GoingIntoLocker:
+			auto p = Cast<APlayerCharacter>(player);
+			if (p->GetCurrentInLocker())
+			{
+				auto locker = p->GetCurrentInLocker();
+				auto lockerForward = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+				auto vector = VectorXY(lockerForward - pos);
+				if (10 < vector.Size())
+				{
+					pos += vector.GetSafeNormal() * walkSpeed * DeltaTime;
+					SetActorLocation(pos);
+				}
+			}
+		}
+
 		auto vector = VectorXY(player->GetActorLocation() - pos);
 		auto nor = vector.GetSafeNormal();
 
@@ -386,15 +405,7 @@ void AEnemy::searchPlayer(AActor* OtherActor)
 	{
 		return;
 	}
-	if (moveType == EMoveType::SE_Move)
-	{
-		return;
-	}
 	if (moveType == EMoveType::PlayerChase)
-	{
-		return;
-	}
-	if (IsEyeArea())
 	{
 		return;
 	}
@@ -771,7 +782,7 @@ bool AEnemy::IsInLocker()
 			case EPlayerActionMode::IsInLocker:
 			case EPlayerActionMode::GetOutOfLocker:
 			case EPlayerActionMode::GoingIntoLocker:
-				return true;
+				return (p->GetCurrentInLocker() != nullptr);
 			}
 		}
 	}

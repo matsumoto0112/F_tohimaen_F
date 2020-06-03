@@ -3,6 +3,8 @@
 #include "SearchManager.h"
 
 #include "Components/SphereComponent.h"
+#include "Invisible/ActionableObject/Locker.h"
+#include "Invisible/Enemy/Enemy.h"
 #include "Invisible/Player/PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "SearchCourse.h"
@@ -26,6 +28,7 @@ void ASearchManager::BeginPlay()
 
 	auto actor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
 	player = (actor == nullptr) ? nullptr : actor;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemy::StaticClass(), enemys);
 }
 
 // çXêV
@@ -34,7 +37,7 @@ void ASearchManager::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-	// åoòHê›íË
+// åoòHê›íË
 TArray<FVector> ASearchManager::Course(AActor* actor) const
 {
 	auto near = NearSearch(actor);
@@ -48,7 +51,7 @@ TArray<FVector> ASearchManager::Course(AActor* actor) const
 	return Course(start, end);
 }
 
-	// åoòHê›íË
+// åoòHê›íË
 TArray<FVector> ASearchManager::Course(AActor* start, AActor* end) const
 {
 	auto nearStart = NearSearch(start);
@@ -60,7 +63,10 @@ TArray<FVector> ASearchManager::Course(AActor* start, AActor* end) const
 	auto searchStart = new SearchCourse(nearStart);
 	auto searchEnd = (new SearchCourse(nearEnd))->GetBaseSearch();
 
-	return Course(searchStart, searchEnd);
+	auto course = Course(searchStart, searchEnd);
+	course.Insert(start->GetActorLocation(), 0);
+	course.Add(end->GetActorLocation());
+	return course;
 }
 
 // åoòHê›íË
@@ -75,10 +81,13 @@ TArray<FVector> ASearchManager::Course(FVector start, FVector end) const
 	auto searchStart = new SearchCourse(nearStart);
 	auto searchEnd = (new SearchCourse(nearEnd))->GetBaseSearch();
 
-	return Course(searchStart, searchEnd);
+	auto course = Course(searchStart, searchEnd);
+	course.Insert(start, 0);
+	course.Add(end);
+	return course;
 }
 
-	// åoòHê›íË
+// åoòHê›íË
 TArray<FVector> ASearchManager::Course(SearchCourse* start, ASearchEgde* end) const
 {
 	auto searched = TArray<SearchCourse*>();
@@ -108,13 +117,51 @@ TArray<FVector> ASearchManager::Course(SearchCourse* start, ASearchEgde* end) co
 	return TArray<FVector>();
 }
 
-	//Å@ÉGÉäÉAîºåaéÊìæ
+// í«ê’åoòHê›íË
+TArray<FVector> ASearchManager::ChaseCourse(AActor* start, AActor* end) const
+{
+	return ChaseCourse(start->GetActorLocation(), end->GetActorLocation());
+}
+
+// í«ê’åoòHê›íË
+TArray<FVector> ASearchManager::ChaseCourse(FVector start, FVector end) const
+{
+	auto course = Course(start, end);
+	if (course.Num() <= 2)
+	{
+		return course;
+	}
+
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(player);
+	params.AddIgnoredActors(enemys);
+
+	for (int index = 0; index < course.Num(); index++)
+	{
+		if (course.Num() - 1 <= (index + 2))
+		{
+			break;
+		}
+		FHitResult hit;
+		auto start = course[index];
+		auto end = course[index + 2];
+		if (!GetWorld()->LineTraceSingleByChannel(hit, start, end,
+		        ECollisionChannel::ECC_Pawn, params))
+		{
+			course.RemoveAt(index + 1);
+			index--;
+		}
+	}
+
+	return course;
+}
+//Å@ÉGÉäÉAîºåaéÊìæ
 float ASearchManager::GetRadius() const
 {
 	return radius;
 }
 
-	// ãﬂï”ÇÃï™äÚâ”èäéÊìæ
+// ãﬂï”ÇÃï™äÚâ”èäéÊìæ
 FVector ASearchManager::NearSearchPosition(AActor* actor) const
 {
 	return NearSearchPosition(actor->GetActorLocation());
@@ -130,13 +177,13 @@ FVector ASearchManager::NearSearchPosition(FVector point) const
 	return near->GetActorLocation();
 }
 
-	// à⁄ìÆâ”èäÇ∆ÇÃä‘Ç…è·äQï®Ç™Ç†ÇÈÇ©îªíË
+// à⁄ìÆâ”èäÇ∆ÇÃä‘Ç…è·äQï®Ç™Ç†ÇÈÇ©îªíË
 bool ASearchManager::DirectionSearch(AActor* actor, FVector near) const
 {
 	return DirectionSearch(actor, NearSearch(near));
 }
 
-	// à⁄ìÆâ”èäÇ∆ÇÃä‘Ç…è·äQï®Ç™Ç†ÇÈÇ©îªíË
+// à⁄ìÆâ”èäÇ∆ÇÃä‘Ç…è·äQï®Ç™Ç†ÇÈÇ©îªíË
 bool ASearchManager::DirectionSearch(AActor* actor, ASearchEgde* near) const
 {
 	auto point = actor->GetActorLocation();
@@ -158,31 +205,42 @@ bool ASearchManager::DirectionSearch(AActor* actor, ASearchEgde* near) const
 	    ECollisionChannel::ECC_Pawn, params));
 }
 
-	// ãﬂï”ÇÃï™äÚâ”èäéÊìæ
+// ãﬂï”ÇÃï™äÚâ”èäéÊìæ
 ASearchEgde* ASearchManager::NearSearch(AActor* actor) const
 {
 	int resultIndex = -1;
+
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(player);
+	params.AddIgnoredActors(enemys);
+	switch (Cast<APlayerCharacter>(player)->GetCurrentActionMode())
+	{
+	case EPlayerActionMode::IsInLocker:
+	case EPlayerActionMode::GoingIntoLocker:
+	case EPlayerActionMode::GetOutOfLocker:
+		params.AddIgnoredActor(Cast<APlayerCharacter>(player)->GetCurrentInLocker());
+		break;
+	}
+
 	for (int i = 0; i < search.Num(); i++)
 	{
 		auto aLoc = actor->GetActorLocation();
 		auto sLoc = search[i]->GetActorLocation();
 		auto length = (sLoc - aLoc).Size();
 
-		if (resultIndex < 0)
+		auto flag = true;
+		if (0 <= resultIndex)
 		{
-			resultIndex = 0;
+			auto rLoc = search[resultIndex]->GetActorLocation();
+			auto rLength = (rLoc - aLoc).Size();
+			flag = (length < rLength);
 		}
-		auto rLoc = search[resultIndex]->GetActorLocation();
-		auto rLength = (rLoc - aLoc).Size();
-		auto flag = (length < rLength);
-		if (length < rLength)
+		if (flag)
 		{
 			FHitResult hit;
-			FCollisionQueryParams params;
-			params.AddIgnoredActor(actor);
+
 			if (player != nullptr)
 			{
-				params.AddIgnoredActor(player);
 				aLoc.Z = player->GetActorLocation().Z;
 				sLoc.Z = player->GetActorLocation().Z;
 			}
@@ -200,28 +258,53 @@ ASearchEgde* ASearchManager::NearSearch(AActor* actor) const
 ASearchEgde* ASearchManager::NearSearch(FVector point) const
 {
 	int resultIndex = -1;
+
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(player);
+	params.AddIgnoredActors(enemys);
+	switch (Cast<APlayerCharacter>(player)->GetCurrentActionMode())
+	{
+	case EPlayerActionMode::IsInLocker:
+	case EPlayerActionMode::GoingIntoLocker:
+	case EPlayerActionMode::GetOutOfLocker:
+		params.AddIgnoredActor(Cast<APlayerCharacter>(player)->GetCurrentInLocker());
+		break;
+	}
+
 	for (int i = 0; i < search.Num(); i++)
 	{
 		auto aLoc = point;
 		auto sLoc = search[i]->GetActorLocation();
 		auto length = (sLoc - aLoc).Size();
 
-		if (resultIndex < 0)
+		auto flag = true;
+		if (0 <= resultIndex)
 		{
-			resultIndex = 0;
+			auto rLoc = search[resultIndex]->GetActorLocation();
+			auto rLength = (rLoc - aLoc).Size();
+			flag = (length < rLength);
 		}
-		auto rLoc = search[resultIndex]->GetActorLocation();
-		auto rLength = (rLoc - aLoc).Size();
-		auto flag = (length < rLength);
-		if (length < rLength)
+		if (flag)
 		{
-			resultIndex = i;
+			FHitResult hit;
+
+			if (player != nullptr)
+			{
+				aLoc.Z = player->GetActorLocation().Z;
+				sLoc.Z = player->GetActorLocation().Z;
+			}
+
+			if (!GetWorld()->LineTraceSingleByChannel(hit, aLoc, sLoc,
+			        ECollisionChannel::ECC_Pawn, params))
+			{
+				resultIndex = i;
+			}
 		}
 	}
 	return (resultIndex < 0) ? nullptr : search[resultIndex];
 }
 
-	// ÉâÉìÉ_ÉÄÇ…ï™äÚâ”èäéÊìæ
+// ÉâÉìÉ_ÉÄÇ…ï™äÚâ”èäéÊìæ
 ASearchEgde* ASearchManager::GetRandomSearch(ASearchEgde* remove) const
 {
 	auto s = TArray<ASearchEgde*>(search);
