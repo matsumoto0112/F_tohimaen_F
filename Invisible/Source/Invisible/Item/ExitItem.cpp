@@ -14,13 +14,8 @@ AExitItem::AExitItem()
 
 	//メッシュコンポーネントを作成する
 	meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	meshComponent->SetGenerateOverlapEvents(true);
 	RootComponent = meshComponent;
-
-	actionableArea = CreateDefaultSubobject<USphereComponent>(TEXT("ActionableArea"));
-	actionableArea->InitSphereRadius(FMath::Abs(radius));
-	actionableArea->SetCollisionProfileName("OverlapOnlyPawn");
-	actionableArea->SetSimulatePhysics(false);
-	actionableArea->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -33,7 +28,6 @@ void AExitItem::BeginPlay()
 void AExitItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	actionableArea->InitSphereRadius(FMath::Abs(radius));
 }
 
 void AExitItem::action_Implementation()
@@ -51,7 +45,9 @@ void AExitItem::Get()
 	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Item_Get, this->GetActorLocation(), this);
 	isGet = true;
 	meshComponent->SetVisibility(false, true);
+    meshComponent->SetGenerateOverlapEvents(false);
 }
+
 void AExitItem::Use()
 {
 	isUse = true;

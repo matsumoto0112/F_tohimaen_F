@@ -46,10 +46,6 @@ private:
 public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Mesh")
 	UStaticMeshComponent* meshComponent;
-
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ActionArea")
-	USphereComponent* actionableArea;
-
 	UPROPERTY(EditAnywhere, Category = "radius")
 	float radius = 100.0f;
 };
