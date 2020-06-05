@@ -97,6 +97,10 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (UMyGameInstance::GetInstance()->getClear()) {
+		return;
+	}
+
 	InLocker();
 	DebugDraw();
 	SetMaterial(DeltaTime);
@@ -753,6 +757,10 @@ void AEnemy::onComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* Other
 void AEnemy::PlayerKill()
 {
 	if (moveType == EMoveType::Kill)
+	{
+		return;
+	}
+	if (UMyGameInstance::GetInstance()->getClear())
 	{
 		return;
 	}

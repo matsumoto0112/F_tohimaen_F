@@ -50,9 +50,16 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Singleton")
     UConfigParams* GetConfigParams() const{ return ConfigParams; }
 
+	UFUNCTION(BluePrintCallable, Category = "Clear")
+	void setClear(bool clear){ isClear = clear; }
+	UFUNCTION(BluePrintCallable, Category = "Clear")
+	bool getClear(){ return isClear; }
+
 private:
 	//!< OnHandleSystemError デリゲート登録時のハンドル
 	FDelegateHandle OnSystemErrorDelegateHandle;
+
+	bool isClear=false;
 
 	/**
     * システムエラー時に呼ばれる関数
