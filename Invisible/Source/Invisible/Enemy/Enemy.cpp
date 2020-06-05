@@ -629,6 +629,10 @@ void AEnemy::InLocker()
 		case EPlayerActionMode::GetOutOfLocker:
 		case EPlayerActionMode::GoingIntoLocker:
 
+			if (playerActiveType != p->GetCurrentActionMode())
+			{
+				courses = searchManager->ChaseCourse(GetActorLocation(), player->GetActorLocation());
+			}
 			playerActiveType = p->GetCurrentActionMode();
 			break;
 		}
@@ -752,9 +756,12 @@ void AEnemy::PlayerKill()
 	{
 		return;
 	}
+
 	auto p = Cast<APlayerCharacter>(player);
 	p->ToDie(this);
 	moveType = EMoveType::Kill;
+
+	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Enemy_Shout, GetActorLocation(), this);
 }
 
 bool AEnemy::IsMove() const
