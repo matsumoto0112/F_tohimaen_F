@@ -25,7 +25,7 @@ AExitDevice::AExitDevice()
 void AExitDevice::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
@@ -44,6 +44,15 @@ void AExitDevice::action_Implementation()
 	}
 }
 
+EActionType AExitDevice::GetActionType_Implementation() const
+{
+    if (IsGet())
+    {
+        return EActionType::Door_Open;
+    }
+    return EActionType::Door_Close;
+}
+
 void AExitDevice::DeviceAction_Implementation()
 {
 }
@@ -52,7 +61,7 @@ void AExitDevice::DeviceActionUpdate_Implementation()
 {
 }
 
-bool AExitDevice::IsGet()
+bool AExitDevice::IsGet() const
 {
 	bool flag = true;
 	for (int i = 0;i < items.Num(); i++)

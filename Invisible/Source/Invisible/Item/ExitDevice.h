@@ -29,7 +29,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void action_Implementation() override;
-    virtual EActionType GetActionType_Implementation() const override { return EActionType::Door_Close; }
+    virtual EActionType GetActionType_Implementation() const override;
 
 	UFUNCTION(BluePrintCallable, BlueprintNativeEvent, Category = "DeviceAction")
 	void DeviceAction();
@@ -40,7 +40,7 @@ public:
 	virtual void DeviceActionUpdate_Implementation();
 
 	UFUNCTION(BluePrintCallable, Category = "Get")
-	virtual bool IsGet();
+	virtual bool IsGet() const;
 
 public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Mesh")
