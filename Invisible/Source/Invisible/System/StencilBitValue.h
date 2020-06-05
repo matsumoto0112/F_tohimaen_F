@@ -12,7 +12,7 @@ enum class EStencilBitValue : uint8
 {
     Default = 0 UMETA(DisplayName = "Default"),
     SilhouetteWhenEnemyWalkOnPuddle = 1 << 0 UMETA(DisplayName = "SilhouetteWhenEnemyWalkOnPuddle"),
-    SilhouetteWhenEnemyPutOnWater = 1 << 2 UMETA(DisplayName = "SilhouetteWhenEnemyPutOnWater"),
+    SilhouetteWhenEnemyPutOnWater = 1 << 1 UMETA(DisplayName = "SilhouetteWhenEnemyPutOnWater"),
     DebugEnemyVisible = 1 << 7 UMETA(DisplayName = "DebugEnemyVisible"),
 };
 
