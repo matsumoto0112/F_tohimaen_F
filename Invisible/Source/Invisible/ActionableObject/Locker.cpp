@@ -15,11 +15,13 @@ ALocker::ALocker()
 
 	//メッシュコンポーネントを作成する
 	BodyMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMesh"));
+	BodyMeshComponent->SetGenerateOverlapEvents(true);
 	RootComponent = BodyMeshComponent;
 
 	DummyDoor = CreateDefaultSubobject<USceneComponent>(TEXT("DummyDoor"));
 	DummyDoor->SetupAttachment(RootComponent);
 	DoorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorMesh"));
+	DoorMeshComponent->SetGenerateOverlapEvents(false);
 	DoorMeshComponent->SetupAttachment(DummyDoor);
 
 	PlayerStandPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));

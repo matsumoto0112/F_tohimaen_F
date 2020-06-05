@@ -32,21 +32,19 @@ public:
     */
 	virtual void action_Implementation() override;
 
+	virtual EActionType GetActionType_Implementation() const override { return EActionType::Valve; }
+
 protected:
 	//!< 連携するスプリンクラーID
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
-	int32 sprinklerID;
+	int32 SprinklerID;
 
 public:
 	//!< バルブのメッシュ
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	UStaticMeshComponent* meshComponent;
-
-	//!< バルブを対象としたアクション実行可能エリア
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	USphereComponent* actionableArea;
+	UStaticMeshComponent* Mesh;
 
 private:
 	//!< 連携しているスプリンクラー
-	TArray<ASprinkler*> chainSprinklers;
+	TArray<ASprinkler*> ChainSprinklers;
 };

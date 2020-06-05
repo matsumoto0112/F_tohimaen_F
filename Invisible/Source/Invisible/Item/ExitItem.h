@@ -28,6 +28,8 @@ public:
 
 	virtual void action_Implementation() override;
 
+    virtual EActionType GetActionType_Implementation() const override { return EActionType::Item; }
+
 	UFUNCTION(BluePrintCallable, BlueprintNativeEvent, Category = "ItemAction")
 	void ItemAction();
 	virtual void ItemAction_Implementation();

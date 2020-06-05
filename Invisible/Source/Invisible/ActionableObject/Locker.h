@@ -12,9 +12,9 @@
 UENUM(BlueprintType)
 enum class EDoorMode : uint8
 {
-    Default,
-    Open,
-    Close,
+	Default,
+	Open,
+	Close,
 };
 
 UCLASS()
@@ -38,36 +38,39 @@ public:
     */
 	virtual void action_Implementation() override;
 
-    /**
+	virtual EActionType GetActionType_Implementation() const override { return EActionType::Locker; }
+
+	/**
     * プレイヤーを出す
     */
 	void GetOutPlayer();
-    /**
+	/**
     * ドアを開ける
     */
 	UFUNCTION(BlueprintCallable, Category = "Locker")
 	void OpenDoor(float OpenSecond = 0.5f);
 
-    /**
+	/**
     * ドアを閉める
     */
 	UFUNCTION(BlueprintCallable, Category = "Locker")
 	void CloseDoor(float CloseSecond = 0.5f);
-    /**
+	/**
     * ロッカーのドアが開いているか
     */
-    UFUNCTION(BlueprintCallable, Category = "Locker")
-    bool IsOpenedDoor() const;
+	UFUNCTION(BlueprintCallable, Category = "Locker")
+	bool IsOpenedDoor() const;
+
 private:
-    /**
+	/**
     * ドアを回転させる
     */
 	UFUNCTION()
 	void RotateDoor(float Value);
 
 protected:
-    UPROPERTY(EditAnywhere)
-    float DoorOpenAngle = 90.0f;
+	UPROPERTY(EditAnywhere)
+	float DoorOpenAngle = 90.0f;
 
 public:
 	//!< ロッカーのボディメッシュ
@@ -85,7 +88,7 @@ public:
 	UArrowComponent* PlayerStandPoint;
 
 private:
-    //!< 実行タスクリスト
-    DECLARE_DELEGATE_RetVal(bool, FTask);
-    TQueue<FTask> Tasks;
+	//!< 実行タスクリスト
+	DECLARE_DELEGATE_RetVal(bool, FTask);
+	TQueue<FTask> Tasks;
 };

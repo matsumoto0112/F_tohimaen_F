@@ -26,16 +26,11 @@ APlayerCharacter::APlayerCharacter()
 	//ポーンがカメラの回転を制御できるように
 	CameraComponent->bUsePawnControlRotation = true;
 
-	//アクション実行可能エリアを作成
-	ActionArea = CreateDefaultSubobject<UBoxComponent>(TEXT("ActionArea"));
-	ActionArea->InitBoxExtent(FVector(32.0f, 32.0f, 64.0f));
-	ActionArea->SetRelativeLocation(FVector(32.0f, 0.0f, 0.0f));
-	ActionArea->SetSimulatePhysics(false);
-	ActionArea->SetCollisionProfileName("OverlapAllDynamic");
-	ActionArea->SetupAttachment(RootComponent);
-
 	EnemyDetectArea = CreateDefaultSubobject<UEnemyDetectArea>(TEXT("EnemyDetectArea"));
 	EnemyDetectArea->SetupAttachment(RootComponent);
+
+	ActionArea = CreateDefaultSubobject<UPlayerActionArea>(TEXT("ActionArea"));
+	ActionArea->SetupAttachment(RootComponent);
 
 	//コンポーネントの衝突時イベントを追加
 	this->GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnComponentBeginOverlap);
@@ -149,7 +144,7 @@ void APlayerCharacter::Turn(float Amount)
 	if (!CanTurn)
 		return;
 
-    const float Coef = UMyGameInstance::GetInstance()->GetConfigParams()->Sensitivity;
+	const float Coef = UMyGameInstance::GetInstance()->GetConfigParams()->Sensitivity;
 	const float YawValue = Coef * Amount * GetWorld()->GetDeltaSeconds();
 	AddControllerYawInput(YawValue);
 }
@@ -162,8 +157,8 @@ void APlayerCharacter::Lookup(float Amount)
 	if (!CanLookup)
 		return;
 
-    const float Coef = UMyGameInstance::GetInstance()->GetConfigParams()->Sensitivity;
-    const float PitchValue = Coef * Amount * GetWorld()->GetDeltaSeconds();
+	const float Coef = UMyGameInstance::GetInstance()->GetConfigParams()->Sensitivity;
+	const float PitchValue = Coef * Amount * GetWorld()->GetDeltaSeconds();
 	AddControllerPitchInput(PitchValue);
 }
 
@@ -353,24 +348,25 @@ void APlayerCharacter::InputedActionCommand()
 //近くにあるオブジェクトを作動させる
 void APlayerCharacter::DoActionNearObject()
 {
-	//条件を満たしたオブジェクトの中で一番近いオブジェクトを対象とし、アクションを実行する
-	TArray<AActor*> actors;
-	ActionArea->GetOverlappingActors(actors);
+	ActionArea->DoAction();
+	////条件を満たしたオブジェクトの中で一番近いオブジェクトを対象とし、アクションを実行する
+	//TArray<AActor*> actors;
+	//ActionArea->GetOverlappingActors(actors);
 
-	//対象以外のオブジェクトを削除する
-	actors.RemoveAllSwap([](AActor* a) { return !a->GetClass()->ImplementsInterface(UActionable::StaticClass()); });
+	////対象以外のオブジェクトを削除する
+	//actors.RemoveAllSwap([](AActor* a) { return !a->GetClass()->ImplementsInterface(UActionable::StaticClass()); });
 
-	if (actors.Num() == 0)
-		return;
+	//if (actors.Num() == 0)
+	//	return;
 
-	//対象との距離でソートし、一番近いオブジェクトを対象とする
-	//NOTE:ソートアルゴリズムはクイックソートで、平均O(Nlog(N))より、対象オブジェクト数が少ないので全探索と同程度の速度になると予想しソートを使用
-	//NOTE:ほんの少し、全探索より配列の再構築のオーバーヘッドがあるので改善の余地あり。
-	actors.Sort([this](auto& a, auto& b) {
-		const FVector myLocation = GetActorLocation();
-		return FVector::Dist2D(myLocation, a.GetActorLocation()) < FVector::Dist2D(myLocation, b.GetActorLocation());
-	});
-	IActionable::Execute_action(actors[0]);
+	////対象との距離でソートし、一番近いオブジェクトを対象とする
+	////NOTE:ソートアルゴリズムはクイックソートで、平均O(Nlog(N))より、対象オブジェクト数が少ないので全探索と同程度の速度になると予想しソートを使用
+	////NOTE:ほんの少し、全探索より配列の再構築のオーバーヘッドがあるので改善の余地あり。
+	//actors.Sort([this](auto& a, auto& b) {
+	//	const FVector myLocation = GetActorLocation();
+	//	return FVector::Dist2D(myLocation, a.GetActorLocation()) < FVector::Dist2D(myLocation, b.GetActorLocation());
+	//});
+	//IActionable::Execute_action(actors[0]);
 }
 
 //ロッカーから出る

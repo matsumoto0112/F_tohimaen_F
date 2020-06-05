@@ -7,6 +7,17 @@
 
 #include "Actionable.generated.h"
 
+UENUM(BlueprintType)
+enum class EActionType : uint8
+{
+    None,
+	Valve,
+	Locker,
+	Item,
+	Door_Close,
+	Door_Open,
+};
+
 /**
 * 動作可能なオブジェクトインターフェース
 */
@@ -29,4 +40,7 @@ public:
     */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void action();
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+    EActionType GetActionType() const;
 };

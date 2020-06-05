@@ -7,6 +7,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Invisible/Player/EnemyDetectArea.h"
+#include "Invisible/Player/PlayerActionArea.h"
 #include "Invisible/Player/PlayerActionMode.h"
 
 #include "PlayerCharacter.generated.h"
@@ -59,10 +60,10 @@ public:
     */
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	EPlayerActionMode GetCurrentActionMode() const { return CurrentActionMode; }
-    /**
+	/**
     * ロッカーに入る準備をする
     */
-    void IntoLockerReady();
+	void IntoLockerReady();
 	/**
     * ロッカーの中に入る
     */
@@ -81,7 +82,7 @@ public:
     */
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	bool IsWalking() const { return bIsWalking; }
-    /**
+	/**
     * 今入っているロッカーを取得する
     */
 	UFUNCTION(BlueprintCallable, Category = "Player")
@@ -183,12 +184,11 @@ public:
 	//!< プレイヤーカメラ
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	UCameraComponent* CameraComponent;
-	//!< アクション実行可能エリア
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	UBoxComponent* ActionArea;
 	//!< 敵検知エリア
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	UEnemyDetectArea* EnemyDetectArea;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	UPlayerActionArea* ActionArea;
 
 private:
 	//!< 今歩いているか
