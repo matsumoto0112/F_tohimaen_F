@@ -97,7 +97,8 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (UMyGameInstance::GetInstance()->getClear()) {
+	if (UMyGameInstance::GetInstance()->getClear())
+	{
 		return;
 	}
 
@@ -766,6 +767,10 @@ void AEnemy::PlayerKill()
 	}
 
 	auto p = Cast<APlayerCharacter>(player);
+	if (p->GetCurrentActionMode() == EPlayerActionMode::IsDying)
+	{
+		return;
+	}
 	p->ToDie(this);
 	moveType = EMoveType::Kill;
 
