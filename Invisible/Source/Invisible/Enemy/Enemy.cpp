@@ -634,10 +634,10 @@ void AEnemy::InLocker()
 		case EPlayerActionMode::GetOutOfLocker:
 		case EPlayerActionMode::GoingIntoLocker:
 
-			if (playerActiveType != p->GetCurrentActionMode())
-			{
-				courses = searchManager->ChaseCourse(GetActorLocation(), player->GetActorLocation());
-			}
+			//if (playerActiveType != p->GetCurrentActionMode())
+			//{
+			//	courses = searchManager->ChaseCourse(GetActorLocation(), player->GetActorLocation());
+			//}
 			playerActiveType = p->GetCurrentActionMode();
 			break;
 		}
@@ -665,10 +665,6 @@ bool AEnemy::IsEyeArea()
 		playerActiveType = EPlayerActionMode::Default;
 		return false;
 	}
-	if (length < 500)
-	{
-		return true;
-	}
 
 	// -360‹`0‹ˆÈ‰º‚ð0‹`360‹‚É•ÏX
 	e_forward_deg = (e_forward_deg < 0) ? (e_forward_deg + 360.0f) : (e_forward_deg);
@@ -676,34 +672,32 @@ bool AEnemy::IsEyeArea()
 
 	auto deg = FMath::Abs(ep_vector_deg - e_forward_deg);
 	deg = (180.0f < deg) ? (FMath::Abs(deg - 360.0f)) : (deg);
-
-	if (deg <= FMath::Abs(eyeDeg / 2.0f))
+	
+	FHitResult hit;
+	FCollisionQueryParams params;
+	params.AddIgnoredActors(enemys);
+	if (player != nullptr)
 	{
-		FHitResult hit;
-		FCollisionQueryParams params;
-
-		params.AddIgnoredActors(enemys);
-		if (player != nullptr)
+		params.AddIgnoredActor(player);
+		if (IsInLocker())
 		{
-			params.AddIgnoredActor(player);
-			if (IsInLocker())
+			if (Cast<APlayerCharacter>(player))
 			{
-				if (Cast<APlayerCharacter>(player))
+				auto p = Cast<APlayerCharacter>(player);
+				switch (p->GetCurrentActionMode())
 				{
-					auto p = Cast<APlayerCharacter>(player);
-					switch (p->GetCurrentActionMode())
-					{
-					case EPlayerActionMode::IsInLocker:
-					case EPlayerActionMode::GetOutOfLocker:
-					case EPlayerActionMode::GoingIntoLocker:
+				case EPlayerActionMode::IsInLocker:
+				case EPlayerActionMode::GetOutOfLocker:
+				case EPlayerActionMode::GoingIntoLocker:
 
-						params.AddIgnoredActor(p->GetCurrentInLocker());
-
-						break;
-					}
+					params.AddIgnoredActor(p->GetCurrentInLocker());
 				}
 			}
 		}
+	}
+
+	if ((length < 500)||(deg <= FMath::Abs(eyeDeg / 2.0f)))
+	{
 
 		// ƒvƒŒƒCƒ„[A“G‚Ì“ñ“_ŠÔ‚ÉáŠQ•¨‚ª‚ ‚é‚©”»’è
 		auto start = GetActorLocation();
