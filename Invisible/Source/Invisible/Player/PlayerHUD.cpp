@@ -31,6 +31,7 @@ void APlayerHUD::DrawHUD()
 	UTexture2D* Texture = ActionTextures[CurrentType];
 	const FVector2D TestTexturePosition = center - FVector2D(Texture->GetSurfaceWidth() * 0.5f, Texture->GetSurfaceHeight() * 0.5f) + TestTextureOffset;
 	FCanvasTileItem Item(TestTexturePosition, Texture->Resource, FLinearColor::White);
+	Item.BlendMode = SE_BLEND_Translucent;
 	Canvas->DrawItem(Item);
 }
 
