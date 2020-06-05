@@ -456,7 +456,7 @@ void AEnemy::chasePlayer()
 	{
 		if (player != nullptr)
 		{
-			if (courses.Num() <= 0)
+			if (courses.Num() <= 1)
 			{
 				FHitResult hit;
 				FCollisionQueryParams params;
@@ -469,21 +469,21 @@ void AEnemy::chasePlayer()
 
 				auto start = GetActorLocation();
 				auto end = player->GetActorLocation();
+				start = (courses.Num() <= 0) ? start : courses[0];
 				start.Z = Height();
 				end.Z = Height();
 
 				if (!GetWorld()->LineTraceSingleByChannel(hit, start, end,
 				        ECollisionChannel::ECC_Pawn, params))
 				{
-					courses.RemoveAll([](FVector) { return true; });
-					courses = searchManager->Course(this, player);
+					courses = searchManager->ChaseCourse(start, end);
 				}
 				else if (IsInLocker())
 				{
 					auto p = Cast<APlayerCharacter>(player);
 					auto locker = p->GetCurrentInLocker();
-					auto pos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
-					courses.Add(pos);
+					end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+					courses = searchManager->ChaseCourse(start, end);
 				}
 			}
 		}
