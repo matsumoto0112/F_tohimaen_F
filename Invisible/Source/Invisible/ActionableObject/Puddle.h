@@ -30,5 +30,5 @@ public:
 public:
 	//!< …‚½‚Ü‚è‚ÌƒƒbƒVƒ…
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	UStaticMeshComponent* meshComponent;
+	UStaticMeshComponent* Mesh;
 };

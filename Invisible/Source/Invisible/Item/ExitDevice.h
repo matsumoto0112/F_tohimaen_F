@@ -29,6 +29,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void action_Implementation() override;
+    virtual EActionType GetActionType_Implementation() const override { return EActionType::Door_Close; }
 
 	UFUNCTION(BluePrintCallable, BlueprintNativeEvent, Category = "DeviceAction")
 	void DeviceAction();

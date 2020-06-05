@@ -11,16 +11,11 @@
 AValve::AValve()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
-	meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	RootComponent = meshComponent;
-
-	actionableArea = CreateDefaultSubobject<USphereComponent>(TEXT("ActionableArea"));
-	actionableArea->InitSphereRadius(50.0f);
-	actionableArea->SetCollisionProfileName("OverlapOnlyPawn");
-	actionableArea->SetSimulatePhysics(false);
-	actionableArea->SetupAttachment(RootComponent);
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	Mesh->SetGenerateOverlapEvents(true);
+	RootComponent = Mesh;
 }
 
 // Called when the game starts or when spawned
@@ -29,14 +24,14 @@ void AValve::BeginPlay()
 	Super::BeginPlay();
 
 	//連携しているスプリンクラーを探す
-	TArray<AActor*> sprinklers;
-	UGameplayStatics::GetAllActorsOfClass(this->GetWorld(), ASprinkler::StaticClass(), sprinklers);
-	for (auto&& aSprinker : sprinklers)
+	TArray<AActor*> Sprinklers;
+	UGameplayStatics::GetAllActorsOfClass(this->GetWorld(), ASprinkler::StaticClass(), Sprinklers);
+	for (auto&& sp : Sprinklers)
 	{
-		ASprinkler* sprinkler = Cast<ASprinkler>(aSprinker);
-		if (sprinkler->GetSprinklerID() == sprinklerID)
+		ASprinkler* Sprinkler = Cast<ASprinkler>(sp);
+		if (Sprinkler->GetSprinklerID() == SprinklerID)
 		{
-			chainSprinklers.Add(sprinkler);
+            ChainSprinklers.Add(Sprinkler);
 		}
 	}
 }
@@ -50,12 +45,12 @@ void AValve::Tick(float DeltaTime)
 //スプリンクラーを動作させる
 void AValve::action_Implementation()
 {
-	   //対応するすべてのスプリンクラーを作動させる
-	for (auto&& sp : chainSprinklers)
+	//対応するすべてのスプリンクラーを作動させる
+	for (auto&& sp : ChainSprinklers)
 	{
 		IActionable::Execute_action(sp);
 	}
 
 	//バルブ音再生
-	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Valve, GetActorLocation(),this);
+	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Valve, GetActorLocation(), this);
 }

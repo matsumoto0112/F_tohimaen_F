@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "Invisible/ActionableObject/Actionable.h"
 
 #include "PlayerHUD.generated.h"
 
@@ -16,13 +17,22 @@ class INVISIBLE_API APlayerHUD : public AHUD
 	GENERATED_BODY()
 
 public:
+	virtual void BeginPlay() override;
 	/**
     * HUD‚Ì•`‰æ
     */
 	virtual void DrawHUD() override;
 
+	void SetCurrentNearlyObject(EActionType Type);
+
 private:
 	//!< ƒNƒƒXƒwƒA‚Ì‰æ‘œ
 	UPROPERTY(EditDefaultsOnly, Category = "Texture")
 	UTexture2D* crossHairTexture;
+	UPROPERTY(EditDefaultsOnly, Category = "Texture")
+	TMap<EActionType, UTexture2D*> ActionTextures;
+	UPROPERTY(EditDefaultsOnly, Category = "Texture")
+	FVector2D TestTextureOffset;
+	UPROPERTY()
+	EActionType CurrentType;
 };
