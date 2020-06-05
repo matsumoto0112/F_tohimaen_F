@@ -43,6 +43,7 @@ void UMyGameInstance::OnSystemError()
 void UMyGameInstance::Init()
 {
 	Super::Init();
+	isClear=false;
 	OnSystemErrorDelegateHandle = FCoreDelegates::OnHandleSystemError.AddUObject(this, &UMyGameInstance::OnSystemError);
 
 	SoundSystem->init(SoundDataTable, SoundObjectOrigin);
