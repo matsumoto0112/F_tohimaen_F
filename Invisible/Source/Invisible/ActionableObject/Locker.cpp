@@ -121,8 +121,12 @@ void ALocker::GetOutPlayer()
 }
 
 //ƒhƒA‚ðŠJ‚­
-void ALocker::OpenDoor(float OpenSecond)
+void ALocker::OpenDoor(float OpenSecond, bool OverrideTask)
 {
+	if (OverrideTask)
+	{
+		Tasks.Empty();
+	}
 	{
 		FTask Task;
 		Task.BindLambda([&, OpenSecond]() {

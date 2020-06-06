@@ -2,7 +2,6 @@
 
 #include "PlayerDieEvent.h"
 
-#include "Engine.h"
 #include "Invisible/ActionableObject/Locker.h"
 #include "Invisible/Enemy/Enemy.h"
 #include "Invisible/Player/PlayerCharacter.h"
@@ -21,134 +20,168 @@ void APlayerDieEvent::BeginPlay()
 {
 	Super::BeginPlay();
 	bIsStartedEvent = false;
-	CurrentWaitTime = 0.0f;
+	TaskManager.Clear();
 }
 
 // Called every frame
 void APlayerDieEvent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (!bIsStartedEvent)
-		return;
-
-	switch (DieEventType)
-	{
-	case EDieEventType::Normal:
-		UpdateNormalDieEvent();
-		break;
-	case EDieEventType::Locker:
-		UpdateLockerDieEvent();
-		break;
-	default:
-		break;
-	}
+	TaskManager.Update();
 }
 
 void APlayerDieEvent::StartNormalDieEvent(APlayerCharacter* Player, AEnemy* Enemy)
 {
-    if (bIsStartedEvent)return;
+	auto MakeTimer = [&](float Time) {
+		return [&, time = Time]() mutable {
+			time -= GetWorld()->GetDeltaSeconds();
+			return time;
+		};
+	};
+
+	if (bIsStartedEvent)
+		return;
 	this->bIsStartedEvent = true;
-	DieEventType = EDieEventType::Normal;
-	this->PlayerCharacter = Player;
-	this->Killer = Enemy;
+
+	//通常死亡イベントのプレイヤー側の流れ
+	//1.敵のほうを徐々に向く
+	{
+		const FVector PlayerLocation = Player->GetActorLocation();
+		const FVector EnemyLocation = Enemy->GetActorLocation() + FVector(0.0f, 0.0f, -50.0f);
+		const FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, EnemyLocation);
+
+		QueueTaskManager::FTask Task;
+		Task.BindLambda([&, Player, TargetRotation]() {
+			const float DeltaTime = GetWorld()->GetDeltaSeconds();
+			const FRotator Rotation = FMath::RInterpTo(Player->GetControlRotation(), TargetRotation, DeltaTime, 3.0f);
+			Player->Controller->SetControlRotation(Rotation);
+			return TargetRotation.Equals(Player->GetControlRotation(), 1.0f);
+		});
+		TaskManager.AddTask(Task);
+	}
+	//2.敵のアニメーション待機
+	{
+		QueueTaskManager::FTask Task;
+		Task.BindLambda([&, Timer = MakeTimer(2.0f)]() mutable {
+			return Timer() <= 0.0f;
+		});
+		TaskManager.AddTask(Task);
+	}
+	//3.敵のKillアニメーション時にネガポジ反転
+	{
+		QueueTaskManager::FTask Task;
+		Task.BindLambda([&]() {
+			APostProcessVolume* Post = Cast<APostProcessVolume>(UGameplayStatics::GetActorOfClass(GetWorld(), APostProcessVolume::StaticClass()));
+			if (!Post)
+				return false;
+			Post->Settings.WeightedBlendables.Array.Emplace(1.0f, NegaPosiFlip);
+			return true;
+		});
+		TaskManager.AddTask(Task);
+	}
+	//4.待機
+	{
+		QueueTaskManager::FTask Task;
+		Task.BindLambda([&, Timer = MakeTimer(1.0f)]() mutable {
+			return Timer() <= 0.0f;
+		});
+		TaskManager.AddTask(Task);
+	}
+	//5.シーン遷移
+	{
+		QueueTaskManager::FTask Task;
+		Task.BindLambda([&]() {
+			SceneChange(NextSceneName);
+			return true;
+		});
+		TaskManager.AddTask(Task);
+	}
 }
 
 void APlayerDieEvent::StartLockerDieEvent(APlayerCharacter* Player, AEnemy* Enemy, ALocker* Locker)
 {
-    if (bIsStartedEvent)return;
-    this->bIsStartedEvent = true;
-	DieEventType = EDieEventType::Locker;
-	this->PlayerCharacter = Player;
-	this->Killer = Enemy;
-}
-
-void APlayerDieEvent::UpdateNormalDieEvent()
-{
-	switch (CurrentNormalEventPhase)
-	{
-	case ENormalEventPhase::ToLookEnemy:
-		LookAtEnemyGradually();
-		break;
-	case ENormalEventPhase::Wait:
-		Wait();
-		break;
-	default:
-		break;
-	}
-}
-
-void APlayerDieEvent::UpdateLockerDieEvent()
-{
-	switch (CurrentLockerEventPhase)
-	{
-	case ELockerEventPhase::LockerOpen:
-		LockerOpen();
-		break;
-	case ELockerEventPhase::WaitLockerOpen:
-		WaitLockerDoorOpen();
-		break;
-	case ELockerEventPhase::PlayerDie:
-		Wait();
-		break;
-	default:
-		break;
-	}
-}
-
-void APlayerDieEvent::LookAtEnemyGradually()
-{
-	auto GetLocationIgnoreZ = [](AActor* Actor) {
-		FVector Location = Actor->GetActorLocation();
-		return FVector(Location.X, Location.Y, 0.0f);
+	auto MakeTimer = [&](float Time) {
+		return [&, time = Time]() mutable {
+			time -= GetWorld()->GetDeltaSeconds();
+			return time;
+		};
 	};
 
-	const FVector PlayerLocation = GetLocationIgnoreZ(PlayerCharacter);
-	const FVector EnemyLocation = GetLocationIgnoreZ(Killer);
-
-	const FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, EnemyLocation);
-	const float DeltaTime = GetWorld()->GetDeltaSeconds();
-	const FRotator Rotation = FMath::RInterpTo(PlayerCharacter->GetControlRotation(), TargetRotation, DeltaTime, 3.0f);
-	PlayerCharacter->Controller->SetControlRotation(Rotation);
-	if (TargetRotation.Equals(PlayerCharacter->GetControlRotation(), 1.0f))
-	{
-		CurrentNormalEventPhase = ENormalEventPhase::Wait;
-	}
-}
-
-void APlayerDieEvent::LockerOpen()
-{
-	ALocker* Locker = this->PlayerCharacter->GetCurrentInLocker();
-	if (!Locker)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Called LockerDirEvent When isn`t in the locker!!"));
+	if (bIsStartedEvent)
 		return;
-	}
-	Locker->OpenDoor(0.25f);
-	CurrentLockerEventPhase = ELockerEventPhase::WaitLockerOpen;
-}
+	this->bIsStartedEvent = true;
 
-void APlayerDieEvent::WaitLockerDoorOpen()
-{
-
-    ALocker* Locker = this->PlayerCharacter->GetCurrentInLocker();
-    if (!Locker)
-    {
-        UE_LOG(LogTemp, Error, TEXT("Called LockerDirEvent When isn`t in the locker!!"));
-        return;
-    }
-    if (Locker->IsOpenedDoor())
+	//ロッカー時の死亡イベント
+	//1.ロッカーのドアを開く
 	{
-		CurrentLockerEventPhase = ELockerEventPhase::PlayerDie;
+		QueueTaskManager::FTask Task;
+		Task.BindLambda([&, Locker]() {
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Open"));
+			Locker->OpenDoor(0.25f, true);
+			return true;
+		});
+		TaskManager.AddTask(Task);
 	}
-}
-
-void APlayerDieEvent::Wait()
-{
-	CurrentWaitTime += GetWorld()->GetDeltaSeconds();
-	if (CurrentWaitTime >= WaitTime)
+    //2.敵のほうを向く
 	{
-        CurrentNormalEventPhase = ENormalEventPhase::SceneChange;
-        CurrentLockerEventPhase = ELockerEventPhase::SceneChange;
-        SceneChange(NextSceneName);
+		const FVector PlayerLocation = Player->GetActorLocation();
+		const FVector EnemyLocation = Enemy->GetActorLocation() + FVector(0.0f, 0.0f, -50.0f);
+		const FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, EnemyLocation);
+
+		QueueTaskManager::FTask Task;
+		Task.BindLambda([&, Player, TargetRotation]() {
+			const float DeltaTime = GetWorld()->GetDeltaSeconds();
+			const FRotator Rotation = FMath::RInterpTo(Player->GetControlRotation(), TargetRotation, DeltaTime, 3.0f);
+			Player->Controller->SetControlRotation(Rotation);
+			return TargetRotation.Equals(Player->GetControlRotation(), 1.0f);
+		});
+		TaskManager.AddTask(Task);
+	}
+
+	//3.開くまで待機
+	{
+		QueueTaskManager::FTask Task;
+		Task.BindLambda([&, Locker]() {
+            GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Wait Open"));
+            return Locker->IsOpenedDoor();
+		});
+		TaskManager.AddTask(Task);
+	}
+	//4.敵のKillアニメーションまで待機
+	{
+		QueueTaskManager::FTask Task;
+		Task.BindLambda([&, Timer = MakeTimer(1.5f)]() mutable {
+			return Timer() <= 0.0f;
+		});
+		TaskManager.AddTask(Task);
+	}
+	//5.敵のKillアニメーション時にネガポジ反転
+	{
+		QueueTaskManager::FTask Task;
+		Task.BindLambda([&]() {
+			APostProcessVolume* Post = Cast<APostProcessVolume>(UGameplayStatics::GetActorOfClass(GetWorld(), APostProcessVolume::StaticClass()));
+			if (!Post)
+				return false;
+			Post->Settings.WeightedBlendables.Array.Emplace(1.0f, NegaPosiFlip);
+			return true;
+		});
+		TaskManager.AddTask(Task);
+	}
+	//6.待機
+	{
+		QueueTaskManager::FTask Task;
+		Task.BindLambda([&, Timer = MakeTimer(1.0f)]() mutable {
+			return Timer() <= 0.0f;
+		});
+		TaskManager.AddTask(Task);
+	}
+	//7.シーン遷移
+	{
+		QueueTaskManager::FTask Task;
+		Task.BindLambda([&]() {
+			SceneChange(NextSceneName);
+			return true;
+		});
+		TaskManager.AddTask(Task);
 	}
 }

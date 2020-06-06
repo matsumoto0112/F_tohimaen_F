@@ -48,7 +48,7 @@ public:
     * ドアを開ける
     */
 	UFUNCTION(BlueprintCallable, Category = "Locker")
-	void OpenDoor(float OpenSecond = 0.5f);
+	void OpenDoor(float OpenSecond = 0.5f,bool OverrideTask = false);
 
 	/**
     * ドアを閉める

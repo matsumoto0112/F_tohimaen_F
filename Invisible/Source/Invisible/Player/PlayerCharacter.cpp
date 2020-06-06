@@ -310,12 +310,15 @@ void APlayerCharacter::ToDie(AActor* Killer)
 		return;
 	}
 
+
 	//死亡演出はそれ用の管理者に任せる
 	APlayerDieEvent* DieEvent = Cast<APlayerDieEvent>(UGameplayStatics::GetActorOfClass(GetWorld(), APlayerDieEvent::StaticClass()));
 
 	//ロッカーで死亡したかどうか
 	//ロッカーに入るときも一緒に扱う
 	const bool bIsInLocker = CurrentActionMode == EPlayerActionMode::IsInLocker || CurrentActionMode == EPlayerActionMode::GoingIntoLocker;
+	//自分は死亡状態にしてこれから何もしないようにする
+	CurrentActionMode = EPlayerActionMode::IsDying;
 	if (bIsInLocker)
 	{
 		DieEvent->StartLockerDieEvent(this, Enemy, IsInLocker);
@@ -324,9 +327,14 @@ void APlayerCharacter::ToDie(AActor* Killer)
 	{
 		DieEvent->StartNormalDieEvent(this, Enemy);
 	}
+}
 
-	//自分は死亡状態にしてこれから何もしないようにする
-	CurrentActionMode = EPlayerActionMode::IsDying;
+void APlayerCharacter::SetCurrentActionMode(EPlayerActionMode Next)
+{
+	//死亡状態ならどの状態にも変化しない
+	if (CurrentActionMode == EPlayerActionMode::IsDying)
+		return;
+	CurrentActionMode = Next;
 }
 
 //入力コマンドを受け取る
@@ -348,25 +356,11 @@ void APlayerCharacter::InputedActionCommand()
 //近くにあるオブジェクトを作動させる
 void APlayerCharacter::DoActionNearObject()
 {
+	if (CurrentActionMode == EPlayerActionMode::IsDying ||
+	    CurrentActionMode == EPlayerActionMode::GetOutOfLocker ||
+	    CurrentActionMode == EPlayerActionMode::GoingIntoLocker)
+		return;
 	ActionArea->DoAction();
-	////条件を満たしたオブジェクトの中で一番近いオブジェクトを対象とし、アクションを実行する
-	//TArray<AActor*> actors;
-	//ActionArea->GetOverlappingActors(actors);
-
-	////対象以外のオブジェクトを削除する
-	//actors.RemoveAllSwap([](AActor* a) { return !a->GetClass()->ImplementsInterface(UActionable::StaticClass()); });
-
-	//if (actors.Num() == 0)
-	//	return;
-
-	////対象との距離でソートし、一番近いオブジェクトを対象とする
-	////NOTE:ソートアルゴリズムはクイックソートで、平均O(Nlog(N))より、対象オブジェクト数が少ないので全探索と同程度の速度になると予想しソートを使用
-	////NOTE:ほんの少し、全探索より配列の再構築のオーバーヘッドがあるので改善の余地あり。
-	//actors.Sort([this](auto& a, auto& b) {
-	//	const FVector myLocation = GetActorLocation();
-	//	return FVector::Dist2D(myLocation, a.GetActorLocation()) < FVector::Dist2D(myLocation, b.GetActorLocation());
-	//});
-	//IActionable::Execute_action(actors[0]);
 }
 
 //ロッカーから出る
@@ -379,7 +373,7 @@ void APlayerCharacter::GetOutLocker()
 		return;
 	}
 
-	CurrentActionMode = EPlayerActionMode::GetOutOfLocker;
+	SetCurrentActionMode(EPlayerActionMode::GetOutOfLocker);
 	IsInLocker->GetOutPlayer();
 }
 
@@ -394,7 +388,7 @@ void APlayerCharacter::FixedLocationIfInLocker()
 //ロッカーの中に入る準備をする
 void APlayerCharacter::IntoLockerReady()
 {
-	CurrentActionMode = EPlayerActionMode::GoingIntoLocker;
+	SetCurrentActionMode(EPlayerActionMode::GoingIntoLocker);
 }
 
 //ロッカーに入る
@@ -403,7 +397,7 @@ void APlayerCharacter::IntoLocker(ALocker* Locker, const FVector& Location, cons
 	IsInLocker = Locker;
 	LockerYawRotation = FrontRotator.Yaw;
 	Controller->SetControlRotation(FrontRotator);
-	CurrentActionMode = EPlayerActionMode::IsInLocker;
+	SetCurrentActionMode(EPlayerActionMode::IsInLocker);
 	this->FixedLocation = Location;
 }
 
@@ -411,5 +405,5 @@ void APlayerCharacter::LockerDoorOpenedEvent()
 {
 	FVector Location = GetActorLocation() + GetControlRotation().Vector() * 100.0f;
 	SetActorLocation(Location);
-	CurrentActionMode = EPlayerActionMode::Move;
+	SetCurrentActionMode(EPlayerActionMode::Move);
 }

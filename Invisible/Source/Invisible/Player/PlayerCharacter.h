@@ -60,6 +60,11 @@ public:
     */
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	EPlayerActionMode GetCurrentActionMode() const { return CurrentActionMode; }
+    /**
+    * アクションモードを設定する
+    * @details 現在の状態がIsDyingなら変化させない（バグ対策）
+    */
+	void SetCurrentActionMode(EPlayerActionMode Next);
 	/**
     * ロッカーに入る準備をする
     */
