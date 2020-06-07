@@ -60,7 +60,7 @@ public:
     */
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	EPlayerActionMode GetCurrentActionMode() const { return CurrentActionMode; }
-    /**
+	/**
     * アクションモードを設定する
     * @details 現在の状態がIsDyingなら変化させない（バグ対策）
     */
@@ -150,10 +150,6 @@ private:
     */
 	void DoActionNearObject();
 	/**
-    * ロッカーから出る
-    */
-	void GetOutLocker();
-	/**
     * ロッカーに入っているときに座標を固定する
     */
 	void FixedLocationIfInLocker();
@@ -162,11 +158,14 @@ private:
 	//!< 最大移動速度
 	UPROPERTY(EditDefaultsOnly, Category = "Player")
 	float MaxMoveSpeed = 500.0f;
+	//!< ロッカーから出るときの座標のオフセット値
+	UPROPERTY(EditDefaultsOnly, Category = "Locker")
+	float OffsetLockerGetOutLength = 100.0f;
 
 protected:
 	//!< カメラの上下方向の回転制限
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	FFloatRange NormalCameraPitch;
+	FFloatRange NormalCameraPitch = FFloatRange(-45.0f, 45.0f);
 
 	//!< 歩いていると判断される移動量
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
@@ -184,6 +183,9 @@ protected:
 	//ロッカーにいるときのカメラの左右方向の回転制限
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Locker")
 	FFloatRange CameraYawWhenIsInLocker;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FFloatRange Rag = FFloatRange(3.0f, 4.0f);
 
 public:
 	//!< プレイヤーカメラ

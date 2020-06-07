@@ -38,17 +38,20 @@ public:
     */
 	virtual void action_Implementation() override;
 
-	virtual EActionType GetActionType_Implementation() const override { return EActionType::Locker; }
-
-	/**
-    * プレイヤーを出す
+	virtual EActionType GetActionType_Implementation() const override;
+    /**
+    * プレイヤーを引き入れる
     */
-	void GetOutPlayer();
+    void PullInPlayer();
+    /**
+    * プレイヤーを外に出す
+    */
+    void PullOutPlayer();
 	/**
     * ドアを開ける
     */
 	UFUNCTION(BlueprintCallable, Category = "Locker")
-	void OpenDoor(float OpenSecond = 0.5f,bool OverrideTask = false);
+	void OpenDoor(float OpenSecond = 0.5f, bool OverrideTask = false);
 
 	/**
     * ドアを閉める
@@ -91,4 +94,6 @@ private:
 	//!< 実行タスクリスト
 	DECLARE_DELEGATE_RetVal(bool, FTask);
 	TQueue<FTask> Tasks;
+	//!< プレイヤーが入っているか
+	bool bIsInPlayer;
 };

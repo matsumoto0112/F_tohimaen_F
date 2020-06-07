@@ -32,6 +32,7 @@ ALocker::ALocker()
 void ALocker::BeginPlay()
 {
 	Super::BeginPlay();
+	bIsInPlayer = false;
 }
 
 // Called every frame
@@ -49,6 +50,19 @@ void ALocker::Tick(float DeltaTime)
 }
 
 void ALocker::action_Implementation()
+{
+	if (bIsInPlayer)
+		PullOutPlayer();
+	else
+		PullInPlayer();
+}
+
+EActionType ALocker::GetActionType_Implementation() const
+{
+	return bIsInPlayer ? EActionType::Locker_IsInPlayer : EActionType::Locker;
+}
+
+void ALocker::PullInPlayer()
 {
 	const ESoundType Sound = ESoundType::Go_Into_Locker;
 	const FVector Location = GetActorLocation();
@@ -69,6 +83,7 @@ void ALocker::action_Implementation()
 				return false;
 			const FTransform& Transform = PlayerStandPoint->GetComponentToWorld();
 			Player->IntoLocker(this, Transform.GetLocation(), Transform.Rotator());
+			bIsInPlayer = true;
 			return true;
 		});
 		Tasks.Enqueue(Task);
@@ -87,21 +102,16 @@ void ALocker::action_Implementation()
 	}
 }
 
-void ALocker::GetOutPlayer()
+void ALocker::PullOutPlayer()
 {
 	const ESoundType Sound = ESoundType::Get_Out_Locker;
 	const FVector Location = GetActorLocation();
 	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(Sound, Location, this);
-
-	//’®—Í‚ð’Êíó‘Ô‚É‚·‚é
 	{
-		FTask Task;
-		Task.BindLambda([&]() {
-			UMyGameInstance::GetInstance()->getSoundSystem()->SetHearingMode(EPlayerHearingMode::Normal);
-			return true;
-		});
-		Tasks.Enqueue(Task);
-	}
+		APlayerCharacter* Player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+		Player->SetCurrentActionMode(EPlayerActionMode::GetOutOfLocker);
+        UMyGameInstance::GetInstance()->getSoundSystem()->SetHearingMode(EPlayerHearingMode::Normal);
+    }
 
 	OpenDoor(0.25f);
 
@@ -113,6 +123,7 @@ void ALocker::GetOutPlayer()
 			if (!Player)
 				return false;
 			Player->LockerDoorOpenedEvent();
+			bIsInPlayer = false;
 			return true;
 		});
 		Tasks.Enqueue(Task);

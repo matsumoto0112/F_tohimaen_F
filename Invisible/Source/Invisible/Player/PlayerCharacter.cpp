@@ -310,7 +310,6 @@ void APlayerCharacter::ToDie(AActor* Killer)
 		return;
 	}
 
-
 	//死亡演出はそれ用の管理者に任せる
 	APlayerDieEvent* DieEvent = Cast<APlayerDieEvent>(UGameplayStatics::GetActorOfClass(GetWorld(), APlayerDieEvent::StaticClass()));
 
@@ -343,10 +342,8 @@ void APlayerCharacter::InputedActionCommand()
 	switch (CurrentActionMode)
 	{
 	case EPlayerActionMode::Move:
-		DoActionNearObject();
-		break;
 	case EPlayerActionMode::IsInLocker:
-		GetOutLocker();
+		DoActionNearObject();
 		break;
 	default:
 		break;
@@ -363,20 +360,7 @@ void APlayerCharacter::DoActionNearObject()
 	ActionArea->DoAction();
 }
 
-//ロッカーから出る
-void APlayerCharacter::GetOutLocker()
-{
-	//ロッカーが見つからない時は何もしない
-	if (!IsInLocker)
-	{
-		UE_LOG(LogTemp, Error, TEXT("The Locker that Player is in is no exist!!"));
-		return;
-	}
-
-	SetCurrentActionMode(EPlayerActionMode::GetOutOfLocker);
-	IsInLocker->GetOutPlayer();
-}
-
+//ロッカー内にいるときに座標を固定させる
 void APlayerCharacter::FixedLocationIfInLocker()
 {
 	if (CurrentActionMode == EPlayerActionMode::IsInLocker)
@@ -401,9 +385,10 @@ void APlayerCharacter::IntoLocker(ALocker* Locker, const FVector& Location, cons
 	this->FixedLocation = Location;
 }
 
+//ロッカーのドアが開くイベント
 void APlayerCharacter::LockerDoorOpenedEvent()
 {
-	FVector Location = GetActorLocation() + GetControlRotation().Vector() * 100.0f;
+	FVector Location = GetActorLocation() + GetControlRotation().Vector() * OffsetLockerGetOutLength;
 	SetActorLocation(Location);
 	SetCurrentActionMode(EPlayerActionMode::Move);
 }

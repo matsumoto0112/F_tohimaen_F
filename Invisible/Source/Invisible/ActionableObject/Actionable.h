@@ -10,9 +10,10 @@
 UENUM(BlueprintType)
 enum class EActionType : uint8
 {
-    None,
+	None,
 	Valve,
 	Locker,
+	Locker_IsInPlayer,
 	Item,
 	Door_Close,
 	Door_Open,
@@ -41,6 +42,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void action();
 
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-    EActionType GetActionType() const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	EActionType GetActionType() const;
 };
