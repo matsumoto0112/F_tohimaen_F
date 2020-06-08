@@ -420,7 +420,7 @@ void AEnemy::searchPlayer(AActor* OtherActor)
 
 	moveType = EMoveType::SE_Move; //	moveType => SE_Move
 	courses.RemoveAll([](FVector) { return true; });
-	courses = searchManager->Course(this, OtherActor);
+	courses = searchManager->ChaseCourse(this, OtherActor);
 }
 
 // プレイヤー追跡
@@ -672,7 +672,7 @@ bool AEnemy::IsEyeArea()
 
 	auto deg = FMath::Abs(ep_vector_deg - e_forward_deg);
 	deg = (180.0f < deg) ? (FMath::Abs(deg - 360.0f)) : (deg);
-	
+
 	FHitResult hit;
 	FCollisionQueryParams params;
 	params.AddIgnoredActors(enemys);
@@ -696,9 +696,8 @@ bool AEnemy::IsEyeArea()
 		}
 	}
 
-	if ((length < 500)||(deg <= FMath::Abs(eyeDeg / 2.0f)))
+	if ((length < 500) || (deg <= FMath::Abs(eyeDeg / 2.0f)))
 	{
-
 		// プレイヤー、敵の二点間に障害物があるか判定
 		auto start = GetActorLocation();
 		auto end = player->GetActorLocation();
@@ -765,6 +764,11 @@ void AEnemy::PlayerKill()
 	{
 		return;
 	}
+
+	auto pos = player->GetActorLocation() + (VectorXY(GetActorLocation() - player->GetActorLocation())).GetSafeNormal() * searchManager->GetRadius();
+	pos.Z = 100;
+	SetActorLocation(pos);
+
 	p->ToDie(this);
 	moveType = EMoveType::Kill;
 
