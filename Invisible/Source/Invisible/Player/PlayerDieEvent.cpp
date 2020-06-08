@@ -30,6 +30,14 @@ void APlayerDieEvent::Tick(float DeltaTime)
 	TaskManager.Update();
 }
 
+void APlayerDieEvent::InitPostProcess()
+{
+	APostProcessVolume* Post = Cast<APostProcessVolume>(UGameplayStatics::GetActorOfClass(GetWorld(), APostProcessVolume::StaticClass()));
+	Post->Settings.WeightedBlendables.Array.Emplace(1.0f, PostProcessMaterial);
+
+	SetPostProcessParametersWithDelay();
+}
+
 void APlayerDieEvent::StartNormalDieEvent(APlayerCharacter* Player, AEnemy* Enemy)
 {
 	auto MakeTimer = [&](float Time) {
@@ -42,6 +50,7 @@ void APlayerDieEvent::StartNormalDieEvent(APlayerCharacter* Player, AEnemy* Enem
 	if (bIsStartedEvent)
 		return;
 	this->bIsStartedEvent = true;
+	InitPostProcess();
 
 	//通常死亡イベントのプレイヤー側の流れ
 	//1.敵のほうを徐々に向く
@@ -62,32 +71,12 @@ void APlayerDieEvent::StartNormalDieEvent(APlayerCharacter* Player, AEnemy* Enem
 	//2.敵のアニメーション待機
 	{
 		QueueTaskManager::FTask Task;
-		Task.BindLambda([&, Timer = MakeTimer(2.0f)]() mutable {
+		Task.BindLambda([&, Timer = MakeTimer(WaitTime)]() mutable {
 			return Timer() <= 0.0f;
 		});
 		TaskManager.AddTask(Task);
 	}
-	//3.敵のKillアニメーション時にネガポジ反転
-	{
-		QueueTaskManager::FTask Task;
-		Task.BindLambda([&]() {
-			APostProcessVolume* Post = Cast<APostProcessVolume>(UGameplayStatics::GetActorOfClass(GetWorld(), APostProcessVolume::StaticClass()));
-			if (!Post)
-				return false;
-			Post->Settings.WeightedBlendables.Array.Emplace(1.0f, NegaPosiFlip);
-			return true;
-		});
-		TaskManager.AddTask(Task);
-	}
-	//4.待機
-	{
-		QueueTaskManager::FTask Task;
-		Task.BindLambda([&, Timer = MakeTimer(1.0f)]() mutable {
-			return Timer() <= 0.0f;
-		});
-		TaskManager.AddTask(Task);
-	}
-	//5.シーン遷移
+	//3.シーン遷移
 	{
 		QueueTaskManager::FTask Task;
 		Task.BindLambda([&]() {
@@ -110,6 +99,7 @@ void APlayerDieEvent::StartLockerDieEvent(APlayerCharacter* Player, AEnemy* Enem
 	if (bIsStartedEvent)
 		return;
 	this->bIsStartedEvent = true;
+	InitPostProcess();
 
 	//ロッカー時の死亡イベント
 	//1.ロッカーのドアを開く
@@ -122,60 +112,24 @@ void APlayerDieEvent::StartLockerDieEvent(APlayerCharacter* Player, AEnemy* Enem
 		});
 		TaskManager.AddTask(Task);
 	}
-    //2.敵のほうを向く
-	{
-		const FVector PlayerLocation = Player->GetActorLocation();
-		const FVector EnemyLocation = Enemy->GetActorLocation() + FVector(0.0f, 0.0f, -50.0f);
-		const FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, EnemyLocation);
-
-		QueueTaskManager::FTask Task;
-		Task.BindLambda([&, Player, TargetRotation]() {
-			const float DeltaTime = GetWorld()->GetDeltaSeconds();
-			const FRotator Rotation = FMath::RInterpTo(Player->GetControlRotation(), TargetRotation, DeltaTime, 3.0f);
-			Player->Controller->SetControlRotation(Rotation);
-			return TargetRotation.Equals(Player->GetControlRotation(), 1.0f);
-		});
-		TaskManager.AddTask(Task);
-	}
-
-	//3.開くまで待機
+	//2.開くまで待機
 	{
 		QueueTaskManager::FTask Task;
 		Task.BindLambda([&, Locker]() {
-            GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Wait Open"));
-            return Locker->IsOpenedDoor();
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Wait Open"));
+			return Locker->IsOpenedDoor();
 		});
 		TaskManager.AddTask(Task);
 	}
-	//4.敵のKillアニメーションまで待機
+	//3.敵のKillアニメーションまで待機
 	{
 		QueueTaskManager::FTask Task;
-		Task.BindLambda([&, Timer = MakeTimer(1.5f)]() mutable {
+		Task.BindLambda([&, Timer = MakeTimer(WaitTime)]() mutable {
 			return Timer() <= 0.0f;
 		});
 		TaskManager.AddTask(Task);
 	}
-	//5.敵のKillアニメーション時にネガポジ反転
-	{
-		QueueTaskManager::FTask Task;
-		Task.BindLambda([&]() {
-			APostProcessVolume* Post = Cast<APostProcessVolume>(UGameplayStatics::GetActorOfClass(GetWorld(), APostProcessVolume::StaticClass()));
-			if (!Post)
-				return false;
-			Post->Settings.WeightedBlendables.Array.Emplace(1.0f, NegaPosiFlip);
-			return true;
-		});
-		TaskManager.AddTask(Task);
-	}
-	//6.待機
-	{
-		QueueTaskManager::FTask Task;
-		Task.BindLambda([&, Timer = MakeTimer(1.0f)]() mutable {
-			return Timer() <= 0.0f;
-		});
-		TaskManager.AddTask(Task);
-	}
-	//7.シーン遷移
+	//4.シーン遷移
 	{
 		QueueTaskManager::FTask Task;
 		Task.BindLambda([&]() {

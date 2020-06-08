@@ -12,6 +12,17 @@ class APlayerCharacter;
 class AEnemy;
 class ALocker;
 
+USTRUCT(BlueprintType)
+struct FMaterialParameter
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere)
+	float DelayTime;
+	UPROPERTY(EditAnywhere)
+	float Value;
+};
+
 /**
 * プレイヤー側の死亡イベント管理
 */
@@ -29,6 +40,15 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	/**
+* @brief ポストプロセスの初期設定
+*/
+	void InitPostProcess();
+	/**
+    * @brief マテリアルのパラメータを時間に合わせて変更
+    */
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "PlayerDieEvent")
+	void SetPostProcessParametersWithDelay();
 
 public:
 	// Called every frame
@@ -57,9 +77,9 @@ protected:
 	//!< 通常死亡時プレイヤーが敵のほうを向いてからの待機時間
 	UPROPERTY(EditAnywhere, Category = "Normal")
 	float WaitTime = 3.0f;
-	//!< ネガポジ反転ポストプロセスマテリアル
-	UPROPERTY(EditAnywhere, Category = "Normal")
-	UMaterial* NegaPosiFlip;
+	//!< ポストプロセスマテリアル
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Normal")
+	UMaterial* PostProcessMaterial;
 
 private:
 	//!< 死亡イベントが開始しているか
