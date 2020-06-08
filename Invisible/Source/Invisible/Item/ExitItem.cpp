@@ -45,7 +45,8 @@ void AExitItem::Get()
 	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(ESoundType::Item_Get, this->GetActorLocation(), this);
 	isGet = true;
 	meshComponent->SetVisibility(false, true);
-    meshComponent->SetGenerateOverlapEvents(false);
+	meshComponent->SetGenerateOverlapEvents(false);
+	meshComponent->UpdateOverlaps();
 }
 
 void AExitItem::Use()
