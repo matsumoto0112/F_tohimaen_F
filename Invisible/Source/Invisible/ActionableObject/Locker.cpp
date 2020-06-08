@@ -70,7 +70,7 @@ void ALocker::PullInPlayer()
 
 	{
 		APlayerCharacter* Player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-		Player->IntoLockerReady();
+		Player->IntoLockerReady(this);
 	}
 	OpenDoor(0.25f);
 
@@ -82,7 +82,7 @@ void ALocker::PullInPlayer()
 			if (!Player)
 				return false;
 			const FTransform& Transform = PlayerStandPoint->GetComponentToWorld();
-			Player->IntoLocker(this, Transform.GetLocation(), Transform.Rotator());
+			Player->IntoLocker(Transform.GetLocation(), Transform.Rotator());
 			bIsInPlayer = true;
 			return true;
 		});

@@ -68,11 +68,11 @@ public:
 	/**
     * ロッカーに入る準備をする
     */
-	void IntoLockerReady();
+	void IntoLockerReady(ALocker* Locker);
 	/**
     * ロッカーの中に入る
     */
-	void IntoLocker(ALocker* Locker, const FVector& Location, const FRotator& FrontRotator);
+	void IntoLocker(const FVector& Location, const FRotator& FrontRotator);
 	/**
     * ロッカーから出るときにロッカーのドアが開いたことを知らせるイベント
     */
