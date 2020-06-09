@@ -55,4 +55,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "radius")
 	float radius=100.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Gate")
+	bool isGate = true;
 };

@@ -47,16 +47,21 @@ void AExitDevice::action_Implementation()
 
 EActionType AExitDevice::GetActionType_Implementation() const
 {
-	if (UMyGameInstance::GetInstance()->getClear())
+	if (isGate)
 	{
-		return EActionType::None;
-	}
-	if (IsGet())
-	{
-		return EActionType::Door_Open;
+		if (UMyGameInstance::GetInstance()->getClear())
+		{
+			return EActionType::None;
+		}
+		if (IsGet())
+		{
+			return EActionType::Door_Open;
+		}
+
+		return EActionType::Door_Close;
 	}
 
-	return EActionType::Door_Close;
+	return EActionType::None;
 }
 
 void AExitDevice::DeviceAction_Implementation()

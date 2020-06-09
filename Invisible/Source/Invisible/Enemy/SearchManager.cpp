@@ -93,9 +93,13 @@ TArray<FVector> ASearchManager::Course(SearchCourse* start, ASearchEgde* end) co
 	auto searched = TArray<SearchCourse*>();
 	searched.Add(start);
 
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(player);
+	params.AddIgnoredActors(enemys);
+
 	for (int i = 0; i < searched.Num(); i++)
 	{
-		auto child = searched[i]->SetChild(searched);
+		auto child = searched[i]->SetChild(searched, params);
 		for (int c = 0; c < child.Num(); c++)
 		{
 			searched.Add(child[c]);

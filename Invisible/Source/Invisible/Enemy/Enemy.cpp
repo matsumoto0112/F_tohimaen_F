@@ -108,6 +108,7 @@ void AEnemy::Tick(float DeltaTime)
 	if (IsKill(DeltaTime))
 		return;
 
+	chaseTimer = std::fmax(0.0f, chaseTimer - DeltaTime);
 	SearchCourse(DeltaTime);
 	Moving(DeltaTime);
 	playWalkSound(DeltaTime);
@@ -170,6 +171,7 @@ void AEnemy::Moving(float DeltaTime)
 	}
 	if (moveType == EMoveType::None)
 	{
+		chaseTimer = 0.0f;
 		return;
 	}
 	if ((moveType == EMoveType::Move))
@@ -223,7 +225,10 @@ void AEnemy::Moving(float DeltaTime)
 				if (!GetWorld()->LineTraceSingleByChannel(hit, start, end,
 				        ECollisionChannel::ECC_Pawn, params))
 				{
-					courses.RemoveAll([](FVector) { return true; });
+					courses = searchManager->Course(start, end);
+				}
+				else if (0 < chaseTimer)
+				{
 					courses = searchManager->Course(start, end);
 				}
 			}
@@ -438,6 +443,7 @@ void AEnemy::chasePlayer()
 		}
 		waitTimer = 0;
 		searchWaitRotateTimer = 0;
+		chaseTimer = chaseTime;
 
 		moveType = EMoveType::PlayerChase; //	moveType => PlayerChase
 		courses.RemoveAll([](FVector) { return true; });
@@ -483,6 +489,10 @@ void AEnemy::chasePlayer()
 					auto p = Cast<APlayerCharacter>(player);
 					auto locker = p->GetCurrentInLocker();
 					end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+					courses = searchManager->ChaseCourse(start, end);
+				}
+				else if (0 < chaseTimer)
+				{
 					courses = searchManager->ChaseCourse(start, end);
 				}
 			}
@@ -580,6 +590,9 @@ void AEnemy::DebugDraw()
 		auto c = ("\n" + FString::FString((num + pos).c_str()));
 		str += c;
 	}
+
+	str += "\n" + FString::FString((std::to_string(chaseTimer)).c_str());
+	str += " / " + FString::FString((std::to_string(chaseTime)).c_str());
 	UKismetSystemLibrary::DrawDebugString(GetWorld(), GetActorLocation(), str, nullptr, FLinearColor::Blue, 0);
 	// ----------------------------------------------------------------------------------------------------------------
 }
@@ -800,6 +813,7 @@ bool AEnemy::IsInLocker()
 			case EPlayerActionMode::IsInLocker:
 			case EPlayerActionMode::GetOutOfLocker:
 			case EPlayerActionMode::GoingIntoLocker:
+				chaseTimer = 0.0f;
 				return (p->GetCurrentInLocker() != nullptr);
 			}
 		}
