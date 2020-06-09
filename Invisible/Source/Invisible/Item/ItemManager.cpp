@@ -31,9 +31,12 @@ int32 AItemManager::GetItemCount() const
 	int count = 0;
 	for (int32 i = 0; i < items.Num(); i++)
 	{
-		if (items[i]->IsGet() && !items[i]->IsUse())
+		if ((items[i]->IsGet()) && (!items[i]->IsUse()))
 		{
-			count++;
+			if (items[i]->IsItemAction())
+			{
+				count++;
+			}
 		}
 	}
 
@@ -42,13 +45,22 @@ int32 AItemManager::GetItemCount() const
 
 int32 AItemManager::AllItemCount() const
 {
-	return items.Num();
+	int count = 0;
+	for (int32 i = 0; i < items.Num(); i++)
+	{
+		if (items[i]->IsItemAction())
+		{
+			count++;
+		}
+	}
+
+	return count;
 }
 
 FString AItemManager::ItemCountView() const
 {
 	auto count = std::to_string(GetItemCount());
 	auto allCount = std::to_string(AllItemCount());
-	auto result = count +" / "+ allCount;
+	auto result = count + " / " + allCount;
 	return FString::FString(result.c_str());
 }

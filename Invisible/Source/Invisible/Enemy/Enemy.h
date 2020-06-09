@@ -135,6 +135,10 @@ protected:
 	float searchWaitRotateTime = 1.0f;
 	float searchWaitRotateTimer = 0.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float chaseTime = 5.0f;
+	float chaseTimer = 0.0f;
+
 	// ”G‚ê”»’è
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float reflection = 1;

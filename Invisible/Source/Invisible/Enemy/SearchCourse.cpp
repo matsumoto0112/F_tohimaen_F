@@ -2,6 +2,10 @@
 
 #include "SearchCourse.h"
 
+#include "Kismet/GameplayStatics.h"
+
+#include <Engine.h>
+
 // コンストラクタ
 SearchCourse::SearchCourse(ASearchEgde* baseSearch)
     : baseSearch(baseSearch), parentSearch(nullptr)
@@ -21,7 +25,7 @@ ASearchEgde* SearchCourse::GetBaseSearch() const
 }
 
 // 移動先設定
-TArray<SearchCourse*> SearchCourse::SetChild(const TArray<SearchCourse*> remove)
+TArray<SearchCourse*> SearchCourse::SetChild(const TArray<SearchCourse*> remove, FCollisionQueryParams params)
 {
 	if (baseSearch == nullptr)
 	{
@@ -41,6 +45,19 @@ TArray<SearchCourse*> SearchCourse::SetChild(const TArray<SearchCourse*> remove)
 			}
 		}
 		if (isrem)
+		{
+			continue;
+		}
+
+		FHitResult hit;
+		auto world = baseSearch->GetWorld();
+		auto start = GetBaseSearch()->GetActorLocation();
+		auto end = branch[index]->GetActorLocation();
+		start.Z = 50;
+		end.Z = 50;
+
+		if (world->LineTraceSingleByChannel(hit, start, end,
+		        ECollisionChannel::ECC_Pawn, params))
 		{
 			continue;
 		}
