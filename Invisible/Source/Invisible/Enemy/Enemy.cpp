@@ -174,7 +174,7 @@ void AEnemy::Moving(float DeltaTime)
 		chaseTimer = 0.0f;
 		return;
 	}
-	if ((moveType == EMoveType::Move))
+	if (moveType == EMoveType::Move)
 	{
 		if (0 < searchWaitRotateTimer)
 		{
@@ -202,38 +202,7 @@ void AEnemy::Moving(float DeltaTime)
 			lastSearch = courses[0];
 			courses.RemoveAt(0);
 
-			if ((1 == courses.Num()) && (moveType == EMoveType::PlayerChase))
-			{
-				FHitResult hit;
-				FCollisionQueryParams params;
-
-				params.AddIgnoredActors(enemys);
-				if (player != nullptr)
-				{
-					params.AddIgnoredActor(player);
-				}
-				if (IsInLocker() && (Cast<APlayerCharacter>(player)->GetCurrentInLocker() != nullptr))
-				{
-					params.AddIgnoredActor(Cast<APlayerCharacter>(player)->GetCurrentInLocker());
-				}
-
-				auto start = courses[0];
-				auto end = player->GetActorLocation();
-				start.Z = Height();
-				end.Z = Height();
-
-				if (!GetWorld()->LineTraceSingleByChannel(hit, start, end,
-				        ECollisionChannel::ECC_Pawn, params))
-				{
-					courses = searchManager->Course(start, end);
-				}
-				else if (0 < chaseTimer)
-				{
-					courses = searchManager->Course(start, end);
-				}
-			}
-
-			if ((0 <= courses.Num()) && (FMath::FRandRange(0.0f, 100.0f) <= FMath::Clamp(searchWaitPercent, 0.0f, 100.0f)))
+			if ((moveType == EMoveType::Move) && (0 <= courses.Num()) && (FMath::FRandRange(0.0f, 100.0f) <= FMath::Clamp(searchWaitPercent, 0.0f, 100.0f)))
 			{
 				searchWaitRotateTimer = FMath::Max(1.0f, searchWaitRotateTime);
 
@@ -282,7 +251,6 @@ void AEnemy::Moving(float DeltaTime)
 			{
 				FHitResult hit;
 				FCollisionQueryParams params;
-
 				params.AddIgnoredActors(enemys);
 				if (player != nullptr)
 				{
@@ -301,7 +269,20 @@ void AEnemy::Moving(float DeltaTime)
 					return;
 				}
 
-				UMyGameInstance::GetInstance()->getSoundSystem()->StopBGM();
+				auto playSECount = 0;
+				for (int i = 0; i < enemys.Num(); i++)
+				{
+					auto e = Cast<AEnemy>(enemys[i]);
+					if (e->moveType == EMoveType::PlayerChase)
+					{
+						playSECount++;
+					}
+				}
+
+				if (playSECount <= 1)
+				{
+					UMyGameInstance::GetInstance()->getSoundSystem()->StopBGM();
+				}
 			}
 		}
 		SetWait();
@@ -439,7 +420,19 @@ void AEnemy::chasePlayer()
 	{
 		if (moveType != EMoveType::PlayerChase)
 		{
-			UMyGameInstance::GetInstance()->getSoundSystem()->PlayBGM(ESoundType::Chase_BGM);
+			auto playSECount = 0;
+			for (int i = 0; i < enemys.Num(); i++)
+			{
+				auto e = Cast<AEnemy>(enemys[i]);
+				if (e->moveType == EMoveType::PlayerChase)
+				{
+					playSECount++;
+				}
+			}
+			if (playSECount <= 0)
+			{
+				UMyGameInstance::GetInstance()->getSoundSystem()->PlayBGM(ESoundType::Chase_BGM);
+			}
 		}
 		waitTimer = 0;
 		searchWaitRotateTimer = 0;
@@ -468,10 +461,7 @@ void AEnemy::chasePlayer()
 				FCollisionQueryParams params;
 
 				params.AddIgnoredActors(enemys);
-				if (player != nullptr)
-				{
-					params.AddIgnoredActor(player);
-				}
+				params.AddIgnoredActor(player);
 
 				auto start = GetActorLocation();
 				auto end = player->GetActorLocation();
@@ -491,7 +481,7 @@ void AEnemy::chasePlayer()
 					end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
 					courses = searchManager->ChaseCourse(start, end);
 				}
-				else if (0 < chaseTimer)
+				else if ((0 < chaseTimer) && (Cast<APlayerCharacter>(player)->GetCurrentInLocker() == nullptr))
 				{
 					courses = searchManager->ChaseCourse(start, end);
 				}
