@@ -212,51 +212,7 @@ bool ASearchManager::DirectionSearch(AActor* actor, ASearchEgde* near) const
 // ãﬂï”ÇÃï™äÚâ”èäéÊìæ
 ASearchEgde* ASearchManager::NearSearch(AActor* actor) const
 {
-	int resultIndex = -1;
-
-	FCollisionQueryParams params;
-	params.AddIgnoredActor(player);
-	params.AddIgnoredActors(enemys);
-	switch (Cast<APlayerCharacter>(player)->GetCurrentActionMode())
-	{
-	case EPlayerActionMode::IsInLocker:
-	case EPlayerActionMode::GoingIntoLocker:
-	case EPlayerActionMode::GetOutOfLocker:
-		params.AddIgnoredActor(Cast<APlayerCharacter>(player)->GetCurrentInLocker());
-		break;
-	}
-
-	for (int i = 0; i < search.Num(); i++)
-	{
-		auto aLoc = actor->GetActorLocation();
-		auto sLoc = search[i]->GetActorLocation();
-		auto length = (sLoc - aLoc).Size();
-
-		auto flag = true;
-		if (0 <= resultIndex)
-		{
-			auto rLoc = search[resultIndex]->GetActorLocation();
-			auto rLength = (rLoc - aLoc).Size();
-			flag = (length < rLength);
-		}
-		if (flag)
-		{
-			FHitResult hit;
-
-			if (player != nullptr)
-			{
-				aLoc.Z = player->GetActorLocation().Z;
-				sLoc.Z = player->GetActorLocation().Z;
-			}
-
-			if (!GetWorld()->LineTraceSingleByChannel(hit, aLoc, sLoc,
-			        ECollisionChannel::ECC_Pawn, params))
-			{
-				resultIndex = i;
-			}
-		}
-	}
-	return (resultIndex < 0) ? nullptr : search[resultIndex];
+	return NearSearch(actor->GetActorLocation());
 }
 // ãﬂï”ÇÃï™äÚâ”èäéÊìæ
 ASearchEgde* ASearchManager::NearSearch(FVector point) const
@@ -266,6 +222,7 @@ ASearchEgde* ASearchManager::NearSearch(FVector point) const
 	FCollisionQueryParams params;
 	params.AddIgnoredActor(player);
 	params.AddIgnoredActors(enemys);
+
 	switch (Cast<APlayerCharacter>(player)->GetCurrentActionMode())
 	{
 	case EPlayerActionMode::IsInLocker:
@@ -275,28 +232,27 @@ ASearchEgde* ASearchManager::NearSearch(FVector point) const
 		break;
 	}
 
+	auto aLoc = point;
+	aLoc.Z = 50;
 	for (int i = 0; i < search.Num(); i++)
 	{
-		auto aLoc = point;
 		auto sLoc = search[i]->GetActorLocation();
-		auto length = (sLoc - aLoc).Size();
+		sLoc.Z = 50;
 
+		auto length = (sLoc - aLoc).Size();
 		auto flag = true;
+
 		if (0 <= resultIndex)
 		{
 			auto rLoc = search[resultIndex]->GetActorLocation();
+			rLoc.Z = 50;
+
 			auto rLength = (rLoc - aLoc).Size();
 			flag = (length < rLength);
 		}
 		if (flag)
 		{
 			FHitResult hit;
-
-			if (player != nullptr)
-			{
-				aLoc.Z = player->GetActorLocation().Z;
-				sLoc.Z = player->GetActorLocation().Z;
-			}
 
 			if (!GetWorld()->LineTraceSingleByChannel(hit, aLoc, sLoc,
 			        ECollisionChannel::ECC_Pawn, params))
