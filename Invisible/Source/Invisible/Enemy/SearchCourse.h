@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
 #include "SearchEgde.h"
 
 /**
@@ -19,7 +20,7 @@ public:
 	// Œ»İ’n
 	ASearchEgde* GetBaseSearch() const;
 	// ˆÚ“®æİ’è
-	TArray<SearchCourse*> SetChild(const TArray<SearchCourse*> remove);
+	TArray<SearchCourse*> SetChild(const TArray<SearchCourse*> remove, FCollisionQueryParams params);
 	// Œo˜Hæ“¾
 	TArray<SearchCourse*> GetParents();
 	// Œ´“_æ“¾

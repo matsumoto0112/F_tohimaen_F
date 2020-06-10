@@ -28,7 +28,9 @@ public:
 
 	virtual void action_Implementation() override;
 
-    virtual EActionType GetActionType_Implementation() const override { return EActionType::Item; }
+	virtual EActionType GetActionType_Implementation() const override { return actionType; }
+
+	bool IsItemAction() { return (actionType==EActionType::Item); }
 
 	UFUNCTION(BluePrintCallable, BlueprintNativeEvent, Category = "ItemAction")
 	void ItemAction();
@@ -48,4 +50,6 @@ public:
 	UStaticMeshComponent* meshComponent;
 	UPROPERTY(EditAnywhere, Category = "radius")
 	float radius = 100.0f;
+	UPROPERTY(EditAnywhere, Category = "Item")
+	EActionType actionType = EActionType::Item;
 };
