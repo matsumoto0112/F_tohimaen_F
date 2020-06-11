@@ -265,8 +265,24 @@ void AEnemy::Moving(float DeltaTime)
 				if (!GetWorld()->LineTraceSingleByChannel(hit, start, end,
 				        ECollisionChannel::ECC_Pawn, params))
 				{
-					courses.Add(player->GetActorLocation());
+					courses = searchManager->ChaseCourse(start, end);
 					return;
+				}
+				else if (0 < chaseTimer)
+				{
+					if (Cast<APlayerCharacter>(player)->GetCurrentInLocker() == nullptr)
+					{
+						courses = searchManager->Course(start, end);
+						return;
+					}
+					else if ((chaseTime / 2.0f) <= chaseTimer)
+					{
+						auto p = Cast<APlayerCharacter>(player);
+						auto locker = p->GetCurrentInLocker();
+						end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+						courses = searchManager->Course(start, end);
+						return;
+					}
 				}
 
 				auto playSECount = 0;
@@ -405,7 +421,6 @@ void AEnemy::searchPlayer(AActor* OtherActor)
 	searchWaitRotateTimer = 0;
 
 	moveType = EMoveType::SE_Move; //	moveType => SE_Move
-	courses.RemoveAll([](FVector) { return true; });
 	courses = searchManager->ChaseCourse(this, OtherActor);
 }
 
@@ -479,10 +494,6 @@ void AEnemy::chasePlayer()
 					auto p = Cast<APlayerCharacter>(player);
 					auto locker = p->GetCurrentInLocker();
 					end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
-					courses = searchManager->ChaseCourse(start, end);
-				}
-				else if ((0 < chaseTimer) && (Cast<APlayerCharacter>(player)->GetCurrentInLocker() == nullptr))
-				{
 					courses = searchManager->ChaseCourse(start, end);
 				}
 			}
