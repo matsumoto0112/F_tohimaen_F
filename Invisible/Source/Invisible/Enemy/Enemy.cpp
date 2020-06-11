@@ -270,17 +270,17 @@ void AEnemy::Moving(float DeltaTime)
 				}
 				else if (0 < chaseTimer)
 				{
-					if (Cast<APlayerCharacter>(player)->GetCurrentInLocker() == nullptr)
+					auto p = Cast<APlayerCharacter>(player);
+					if (p->GetCurrentInLocker() == nullptr)
 					{
 						courses = searchManager->Course(start, end);
 						return;
 					}
-					else if ((chaseTime / 2.0f) <= chaseTimer)
+					else if ((chaseTime * 0.75f) <= chaseTimer)
 					{
-						auto p = Cast<APlayerCharacter>(player);
 						auto locker = p->GetCurrentInLocker();
 						end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
-						courses = searchManager->Course(start, end);
+						courses = searchManager->ChaseCourse(start, end);
 						playerActiveType = EPlayerActionMode::GoingIntoLocker;
 						return;
 					}
@@ -558,21 +558,23 @@ void AEnemy::DebugDraw()
 
 	str += FString::FString(("\n" + std::to_string(GetDeg_XY(GetActorForwardVector()))).c_str());
 
+	str += FString::FString("\ncurrent: ");
 	switch (Cast<APlayerCharacter>(player)->GetCurrentActionMode())
 	{
 	case EPlayerActionMode::IsInLocker:
-		str += FString::FString("\nIsInLocker >> ");
+		str += FString::FString("IsInLocker >> ");
 		break;
 	case EPlayerActionMode::GetOutOfLocker:
-		str += FString::FString("\nGetOutOfLocker >> ");
+		str += FString::FString("GetOutOfLocker >> ");
 		break;
 	case EPlayerActionMode::GoingIntoLocker:
-		str += FString::FString("\nGoingIntoLocker >> ");
+		str += FString::FString("GoingIntoLocker >> ");
 		break;
 	default:
-		str += FString::FString("\nDefault >> ");
+		str += FString::FString("Default >> ");
 		break;
 	}
+	str += FString::FString("active: ");
 	switch (playerActiveType)
 	{
 	case EPlayerActionMode::IsInLocker:
@@ -602,7 +604,7 @@ void AEnemy::DebugDraw()
 		str += c;
 	}
 
-	str += "\n" + FString::FString((std::to_string(chaseTimer)).c_str());
+	str += "\nChaseTime: " + FString::FString((std::to_string(chaseTimer)).c_str());
 	str += " / " + FString::FString((std::to_string(chaseTime)).c_str());
 	UKismetSystemLibrary::DrawDebugString(GetWorld(), GetActorLocation(), str, nullptr, FLinearColor::Blue, 0);
 	// ----------------------------------------------------------------------------------------------------------------
