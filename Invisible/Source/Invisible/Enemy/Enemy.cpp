@@ -281,6 +281,7 @@ void AEnemy::Moving(float DeltaTime)
 						auto locker = p->GetCurrentInLocker();
 						end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
 						courses = searchManager->Course(start, end);
+						playerActiveType = EPlayerActionMode::GoingIntoLocker;
 						return;
 					}
 				}
@@ -363,6 +364,14 @@ void AEnemy::SetWait()
 	{
 		return;
 	}
+
+
+	searchWaitRotateTimer = FMath::Max(1.0f, searchWaitRotateTime);
+
+	rotateType = (FMath::FRandRange(0.0f, 100.0f) <= 50.0f) ?
+		ERotateType::Right :
+		ERotateType::Left;
+
 
 	waitTimer = waitTime * FMath::FRandRange(0.0f, 1.0f);
 	moveType = EMoveType::None; //	moveType => None
@@ -836,11 +845,10 @@ void AEnemy::heardSound(ASoundObject* soundObject)
 	{
 		//ƒoƒ‹ƒu‚Ì‰¹‚ª•·‚±‚¦‚½
 	case ESoundType::Valve:
+	case ESoundType::Item_Get:
+	case ESoundType::Player_Walk_On_Puddle:
 		searchPlayer(soundObject);
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard valve sound"));
-		break;
-	case ESoundType::Player_Walk:
-		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard Player_Walk sound"));
 		break;
 	default:
 		break;
