@@ -315,7 +315,7 @@ void APlayerCharacter::ToDie(AActor* Killer)
 
 	//ロッカーで死亡したかどうか
 	//ロッカーに入るときも一緒に扱う
-	const bool bIsInLocker = CurrentActionMode == EPlayerActionMode::IsInLocker || CurrentActionMode == EPlayerActionMode::GoingIntoLocker;
+	const bool bIsInLocker = CurrentActionMode == EPlayerActionMode::IsInLocker;
 	//自分は死亡状態にしてこれから何もしないようにする
 	CurrentActionMode = EPlayerActionMode::IsDying;
 	if (bIsInLocker)
@@ -372,12 +372,12 @@ void APlayerCharacter::FixedLocationIfInLocker()
 //ロッカーの中に入る準備をする
 void APlayerCharacter::IntoLockerReady(ALocker* Locker)
 {
-    IsInLocker = Locker;
-    SetCurrentActionMode(EPlayerActionMode::GoingIntoLocker);
+	IsInLocker = Locker;
+	SetCurrentActionMode(EPlayerActionMode::GoingIntoLocker);
 }
 
 //ロッカーに入る
-void APlayerCharacter::IntoLocker( const FVector& Location, const FRotator& FrontRotator)
+void APlayerCharacter::IntoLocker(const FVector& Location, const FRotator& FrontRotator)
 {
 	LockerYawRotation = FrontRotator.Yaw;
 	Controller->SetControlRotation(FrontRotator);
