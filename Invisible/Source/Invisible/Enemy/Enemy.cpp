@@ -16,7 +16,7 @@
 namespace
 {
 	constexpr float WALKING_THRESHOLD = 0.5f; //!< •à‚¢‚Ä‚¢‚é‚Æ‚Ý‚È‚·è‡’l
-	constexpr float WALKING_SOUND_PLAY_INTERVAL = 0.66f; //!< •às‰¹‚ÌÄ¶ŠÔŠu
+	constexpr float WALKING_SOUND_PLAY_INTERVAL = 0.5f; //!< •às‰¹‚ÌÄ¶ŠÔŠu
 
 	enum class ERotateType : uint8
 	{
@@ -871,7 +871,9 @@ void AEnemy::playWalkSound(float deltaTime)
 			FHitResult hit;
 			FCollisionQueryParams params;
 			params.AddIgnoredActor(this);
-			if (!GetWorld()->LineTraceSingleByChannel(hit, GetActorLocation() + FVector(0, 0, 100), GetActorLocation() + FVector::DownVector * 1000.0f,
+			const FVector Start = GetActorLocation() + FVector(0, 0, 100);
+			const FVector End = GetActorLocation() + FVector::DownVector * 1000.0f;
+			if (!GetWorld()->LineTraceSingleByChannel(hit, Start, End,
 			        ECollisionChannel::ECC_Visibility, params))
 				return;
 			const ESoundType sound = [&hit]() {
