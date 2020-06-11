@@ -77,11 +77,10 @@ public:
 	UFUNCTION(BluePrintCallable, Category = "Collision")
 	virtual void PlayerKill();
 
-	UFUNCTION(BluePrintCallable, Category="MoveType")
+	UFUNCTION(BluePrintCallable, Category = "MoveType")
 	virtual bool IsMove() const;
-	UFUNCTION(BluePrintCallable, Category="MoveType")
+	UFUNCTION(BluePrintCallable, Category = "MoveType")
 	virtual bool IsKill() const;
-
 
 	//// è’ìÀíÜÇ…åƒÇŒÇÍÇÈ
 	//UFUNCTION(BluePrintCallable, Category = "Collision")
@@ -168,7 +167,7 @@ protected:
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int debugDraw=0;
+	int debugDraw = 0;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Collision")
 	UCapsuleComponent* capsule;

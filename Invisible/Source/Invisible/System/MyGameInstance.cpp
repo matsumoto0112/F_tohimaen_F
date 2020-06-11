@@ -10,6 +10,7 @@
 UMyGameInstance::UMyGameInstance()
 {
 	SoundSystem = CreateDefaultSubobject<USoundSystem>(TEXT("Sound"));
+	ControllerVibration = CreateDefaultSubobject<UControllerVibration>(TEXT("ControllerVibration"));
 }
 
 void UMyGameInstance::PrintLogBlueprintCallstack()
@@ -43,7 +44,7 @@ void UMyGameInstance::OnSystemError()
 void UMyGameInstance::Init()
 {
 	Super::Init();
-	isClear=false;
+	isClear = false;
 	OnSystemErrorDelegateHandle = FCoreDelegates::OnHandleSystemError.AddUObject(this, &UMyGameInstance::OnSystemError);
 
 	SoundSystem->init(SoundDataTable, SoundObjectOrigin);

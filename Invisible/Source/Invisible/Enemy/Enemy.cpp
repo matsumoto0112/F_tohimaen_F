@@ -365,13 +365,11 @@ void AEnemy::SetWait()
 		return;
 	}
 
-
 	searchWaitRotateTimer = FMath::Max(1.0f, searchWaitRotateTime);
 
 	rotateType = (FMath::FRandRange(0.0f, 100.0f) <= 50.0f) ?
-		ERotateType::Right :
-		ERotateType::Left;
-
+	    ERotateType::Right :
+	    ERotateType::Left;
 
 	waitTimer = waitTime * FMath::FRandRange(0.0f, 1.0f);
 	moveType = EMoveType::None; //	moveType => None
@@ -455,6 +453,9 @@ void AEnemy::chasePlayer()
 			}
 			if (playSECount <= 0)
 			{
+				//ƒRƒ“ƒgƒ[ƒ‰‚ÌU“®‚ð’Ç‚¢‚©‚¯‚ç‚ê‚éBGMÄ¶Žž‚É”­¶‚³‚¹‚é
+				constexpr float VIBRATION_DURATION = 1.5f;
+				UMyGameInstance::GetInstance()->GetControllerVibration()->StartVibration(VIBRATION_DURATION, 1.0f);
 				UMyGameInstance::GetInstance()->getSoundSystem()->PlayBGM(ESoundType::Chase_BGM);
 			}
 		}

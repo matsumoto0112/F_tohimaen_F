@@ -6,6 +6,7 @@
 #include "Engine/DataTable.h"
 #include "Engine/GameInstance.h"
 #include "Invisible/System/ConfigParams.h"
+#include "Invisible/System/ControllerVibration.h"
 
 #include "MyGameInstance.generated.h"
 
@@ -47,19 +48,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Singleton")
 	USoundSystem* getSoundSystem() const { return SoundSystem; }
 
-    UFUNCTION(BlueprintCallable, Category = "Singleton")
-    UConfigParams* GetConfigParams() const{ return ConfigParams; }
+	UFUNCTION(BlueprintCallable, Category = "Singleton")
+	UConfigParams* GetConfigParams() const { return ConfigParams; }
+	UFUNCTION(BlueprintCallable, Category = "Singleton")
+	UControllerVibration* GetControllerVibration() const { return ControllerVibration; }
 
 	UFUNCTION(BluePrintCallable, Category = "Clear")
-	void setClear(bool clear){ isClear = clear; }
+	void setClear(bool clear) { isClear = clear; }
 	UFUNCTION(BluePrintCallable, Category = "Clear")
-	bool getClear(){ return isClear; }
+	bool getClear() { return isClear; }
 
 private:
 	//!< OnHandleSystemError デリゲート登録時のハンドル
 	FDelegateHandle OnSystemErrorDelegateHandle;
 
-	bool isClear=false;
+	bool isClear = false;
 
 	/**
     * システムエラー時に呼ばれる関数
@@ -70,7 +73,7 @@ private:
 	//!< サウンドデータテーブル
 	UPROPERTY(EditDefaultsOnly, Category = "Sound")
 	UDataTable* SoundDataTable;
-    //!< 元となる音オブジェクト
+	//!< 元となる音オブジェクト
 	UPROPERTY(EditDefaultsOnly, Category = "Sound")
 	TSubclassOf<AActor> SoundObjectOrigin;
 
@@ -78,6 +81,8 @@ protected:
 	//!< サウンドシステム
 	UPROPERTY(VisibleAnywhere)
 	USoundSystem* SoundSystem;
-    UPROPERTY(VisibleAnywhere)
-    UConfigParams* ConfigParams;
+	UPROPERTY(VisibleAnywhere)
+	UConfigParams* ConfigParams;
+	UPROPERTY(VisibleAnywhere)
+	UControllerVibration* ControllerVibration;
 };
