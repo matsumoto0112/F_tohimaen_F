@@ -266,7 +266,7 @@ void AEnemy::Moving(float DeltaTime)
 				if (!GetWorld()->LineTraceSingleByChannel(hit, start, end,
 				        ECollisionChannel::ECC_Visibility, params))
 				{
-					courses = searchManager->ChaseCourse(start, end);
+					courses = searchManager->Course(start, end);
 					return;
 				}
 				else if (0 < chaseTimer)
@@ -281,7 +281,7 @@ void AEnemy::Moving(float DeltaTime)
 					{
 						auto locker = p->GetCurrentInLocker();
 						end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
-						courses = searchManager->ChaseCourse(start, end);
+						courses = searchManager->Course(start, end);
 						playerActiveType = EPlayerActionMode::GoingIntoLocker;
 						return;
 					}
@@ -478,11 +478,11 @@ void AEnemy::chasePlayer()
 		ePos.Z = 50;
 		pos.Z = 50;
 
-		if (GetWorld()->LineTraceSingleByChannel(hit, ePos, pos,
-		        ECollisionChannel::ECC_Visibility, params))
-		{
-			pos = VectorXY(hit.ImpactPoint + (ePos - pos).GetSafeNormal() * 10);
-		}
+		//if (GetWorld()->LineTraceSingleByChannel(hit, ePos, pos,
+		//        ECollisionChannel::ECC_Visibility, params))
+		//{
+		//	pos = VectorXY(hit.ImpactPoint + (ePos - pos).GetSafeNormal() * 10);
+		//}
 		if (IsInLocker())
 		{
 			auto p = Cast<APlayerCharacter>(player);
@@ -540,7 +540,7 @@ void AEnemy::chasePlayer()
 					auto p = Cast<APlayerCharacter>(player);
 					auto locker = p->GetCurrentInLocker();
 					end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
-					courses = searchManager->ChaseCourse(start, end);
+					courses = searchManager->Course(start, end);
 				}
 			}
 		}
