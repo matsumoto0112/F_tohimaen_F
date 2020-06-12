@@ -864,8 +864,8 @@ void AEnemy::heardSound(ASoundObject* soundObject)
 	{
 		//ƒoƒ‹ƒu‚Ì‰¹‚ª•·‚±‚¦‚½
 	case ESoundType::Valve:
-	case ESoundType::Item_Get:
-	case ESoundType::Player_Walk_On_Puddle:
+	//case ESoundType::Item_Get:
+	//case ESoundType::Player_Walk_On_Puddle:
 		searchPlayer(soundObject);
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard valve sound"));
 		break;
@@ -927,8 +927,8 @@ void AEnemy::overBathing()
 	{
 		if (actors[i]->ActorHasTag(TEXT("Sprinkler")))
 		{
-			extern ENGINE_API float GAverageFPS;
-			AddReflection(1.0f / GAverageFPS);
+			//extern ENGINE_API float GAverageFPS;
+			AddReflection(1.0f /*/ GAverageFPS*/);
 			ChangeStencilValueWhenPutOnWater();
 		}
 	}
