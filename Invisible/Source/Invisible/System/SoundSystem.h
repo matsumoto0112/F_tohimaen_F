@@ -50,6 +50,7 @@ enum class ESoundType : uint8
 	Title_FootSteps, //!< タイトルの足音
     ConfigTest_BGM, //!< コンフィグでのテスト再生用BGM
     ConfigTest_SE, //!< コンフィグでのテスト再生用SE
+    Goal, //!< ゴール音
 };
 
 /**
