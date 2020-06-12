@@ -263,7 +263,7 @@ void AEnemy::Moving(float DeltaTime)
 				end.Z = Height();
 
 				if (!GetWorld()->LineTraceSingleByChannel(hit, start, end,
-				        ECollisionChannel::ECC_Pawn, params))
+				        ECollisionChannel::ECC_Visibility, params))
 				{
 					courses = searchManager->ChaseCourse(start, end);
 					return;
@@ -336,7 +336,7 @@ void AEnemy::HitMoved()
 	end.Z = (player == nullptr) ? 100 : player->GetActorLocation().Z;
 
 	if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
-	        ECollisionChannel::ECC_Pawn, params))
+	        ECollisionChannel::ECC_Visibility, params))
 	{
 		if (hit.GetActor() == nullptr)
 		{
@@ -495,7 +495,7 @@ void AEnemy::chasePlayer()
 				end.Z = Height();
 
 				if (!GetWorld()->LineTraceSingleByChannel(hit, start, end,
-				        ECollisionChannel::ECC_Pawn, params))
+				        ECollisionChannel::ECC_Visibility, params))
 				{
 					courses = searchManager->ChaseCourse(start, end);
 				}
@@ -645,7 +645,7 @@ void AEnemy::InLocker()
 	}
 
 	if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
-	        ECollisionChannel::ECC_Pawn, params))
+	        ECollisionChannel::ECC_Visibility, params))
 	{
 		return;
 	}
@@ -731,7 +731,7 @@ bool AEnemy::IsEyeArea()
 		end.Z = Height();
 
 		if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
-		        ECollisionChannel::ECC_Pawn, params))
+		        ECollisionChannel::ECC_Visibility, params))
 		{
 			if (Cast<ALocker>(hit.GetActor()))
 			{

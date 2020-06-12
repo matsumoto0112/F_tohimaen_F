@@ -113,7 +113,7 @@ void ALocker::PullOutPlayer()
         UMyGameInstance::GetInstance()->getSoundSystem()->SetHearingMode(EPlayerHearingMode::Normal);
     }
 
-	OpenDoor(0.25f);
+	OpenDoor(0.1f);
 
 	//ドアが開ききったらプレイヤーを外に出す
 	{
