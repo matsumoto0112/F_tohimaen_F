@@ -16,4 +16,5 @@ enum class EPlayerActionMode : uint8
     GoingIntoLocker, //!< ロッカーの中に入っていく
     GetOutOfLocker, //!< ロッカーの中から出てくる
     IsDying, //!< 死亡中
+    IsClear, //!< クリアした
 };

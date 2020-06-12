@@ -58,6 +58,9 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (CurrentActionMode == EPlayerActionMode::IsDying || CurrentActionMode == EPlayerActionMode::IsClear)
+		return;
+
 	//ˆÚ“®’†‚È‚ç•às‰¹‚ðÄ¶‚·‚é
 	if (CurrentActionMode == EPlayerActionMode::Move)
 	{
@@ -355,7 +358,8 @@ void APlayerCharacter::DoActionNearObject()
 {
 	if (CurrentActionMode == EPlayerActionMode::IsDying ||
 	    CurrentActionMode == EPlayerActionMode::GetOutOfLocker ||
-	    CurrentActionMode == EPlayerActionMode::GoingIntoLocker)
+	    CurrentActionMode == EPlayerActionMode::GoingIntoLocker ||
+	    CurrentActionMode == EPlayerActionMode::IsClear)
 		return;
 	ActionArea->DoAction();
 }

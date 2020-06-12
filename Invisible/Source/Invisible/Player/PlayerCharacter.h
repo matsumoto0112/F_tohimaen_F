@@ -96,6 +96,12 @@ public:
 		return IsInLocker;
 	};
 
+    /**
+    * クリアフラグを立てる
+    */
+    UFUNCTION(BlueprintCallable, Category = "Player")
+    void SetClearFlag() { CurrentActionMode = EPlayerActionMode::IsClear; }
+
 private:
 	/**
     * 前方向への移動処理
