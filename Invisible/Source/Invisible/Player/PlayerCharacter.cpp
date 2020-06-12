@@ -91,22 +91,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::HeardEnemyWalkOnPuddleSound(AEnemy* enemy)
 {
-	//敵が水たまりを踏んだ時用のステンシル値を設定する
-	auto SilhouetteSkeltal = enemy->GetSilhouetteSkeltal();
-	const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue | static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyWalkOnPuddle);
-	SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
-
-	//一定時間後にステンシル値を元に戻す
-	FTimerManager& TimerManager = GetWorldTimerManager();
-	FTimerHandle Handle;
-	TimerManager.SetTimer(Handle, [SilhouetteSkeltal]() {
-		//シーンを超えたときなどキャプチャが無効になるときの対策
-		if (!SilhouetteSkeltal)
-			return;
-		const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue & ~static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyWalkOnPuddle);
-		SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
-	},
-	    EnemyVisibleTimeWhenEnemyWalkOnPuddle, false);
+	enemy->ChangeStencilValueWhenWalkOnPuddle();
 }
 
 //前方向への移動

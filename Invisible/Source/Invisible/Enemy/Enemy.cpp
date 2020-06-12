@@ -468,7 +468,6 @@ void AEnemy::chasePlayer()
 		auto vector = (VectorXY(player->GetActorLocation() - GetActorLocation())).GetSafeNormal();
 		auto pos = VectorXY(player->GetActorLocation() + vector * searchManager->GetRadius());
 
-		
 		FHitResult hit;
 		FCollisionQueryParams params;
 		params.AddIgnoredActors(enemys);
@@ -864,8 +863,8 @@ void AEnemy::heardSound(ASoundObject* soundObject)
 	{
 		//バルブの音が聞こえた
 	case ESoundType::Valve:
-	//case ESoundType::Item_Get:
-	//case ESoundType::Player_Walk_On_Puddle:
+		//case ESoundType::Item_Get:
+		//case ESoundType::Player_Walk_On_Puddle:
 		searchPlayer(soundObject);
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard valve sound"));
 		break;
@@ -953,4 +952,23 @@ void AEnemy::ChangeStencilValueWhenPutOnWater()
 		SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
 	},
 	    VisibleTimeWhenEnemyPutOnWater, false);
+}
+
+void AEnemy::ChangeStencilValueWhenWalkOnPuddle()
+{
+	USkeletalMeshComponent* SilhouetteSkeltal = GetSilhouetteSkeltal();
+	const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue | static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyWalkOnPuddle);
+	SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
+
+	//最後に当たった時から有効にしたいので古いタイマーは破棄する
+	FTimerManager& TimerManager = GetWorldTimerManager();
+	TimerManager.ClearTimer(ReturnStencilValueWhenWalkOnPuddle);
+	TimerManager.SetTimer(ReturnStencilValueWhenWalkOnPuddle, [SilhouetteSkeltal]() {
+		//ゲームが終了するなどしてスケルタルが参照できない場合に備えてチェックする
+		if (!SilhouetteSkeltal)
+			return;
+		const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue & ~static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyWalkOnPuddle);
+		SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
+	},
+        VisibleTimeWhenEnemyWalkOnPuddle, false);
 }

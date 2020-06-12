@@ -103,6 +103,8 @@ public:
 		return silhouetteSkeltal;
 	}
 
+	void ChangeStencilValueWhenWalkOnPuddle();
+
 private:
 	//水をかぶった時のステンシル値の変更処理
 	void ChangeStencilValueWhenPutOnWater();
@@ -147,6 +149,9 @@ protected:
 	//水がかかった時に見えているようになる時間
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float VisibleTimeWhenEnemyPutOnWater = 10.0f;
+	//水たまりを踏んだ時に見えている時間
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float VisibleTimeWhenEnemyWalkOnPuddle = 20.0f;
 
 	//!< 歩いている時間(秒)
 	float walkingSecond;
@@ -183,4 +188,6 @@ public:
 private:
 	//水をかぶった時にステンシル値を一定時間後に戻すためのタイマーハンドル
 	FTimerHandle ReturnStencilValueWhenPutOnWaterHandle;
+	//水たまりを踏んだ時にステンシル値を戻すためのタイマーハンドル
+	FTimerHandle ReturnStencilValueWhenWalkOnPuddle;
 };
