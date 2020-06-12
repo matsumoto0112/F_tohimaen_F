@@ -167,10 +167,12 @@ void AEnemy::Moving(float DeltaTime)
 {
 	if (courses.Num() <= 0)
 	{
+		SetWait();
 		return;
 	}
 	if (moveType == EMoveType::None)
 	{
+		courses.RemoveAll([](FVector) { return true; });
 		chaseTimer = 0.0f;
 		return;
 	}
