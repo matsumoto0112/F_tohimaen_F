@@ -496,6 +496,23 @@ void AEnemy::chasePlayer()
 		{
 			if (chaseTimer <= 0) {
 				courses.RemoveAll([](FVector) { return true; });
+
+				auto playSECount = 0;
+				for (int i = 0; i < enemys.Num(); i++)
+				{
+					auto e = Cast<AEnemy>(enemys[i]);
+					if (e->moveType == EMoveType::PlayerChase)
+					{
+						playSECount++;
+					}
+				}
+
+				if (playSECount <= 1)
+				{
+					UMyGameInstance::GetInstance()->getSoundSystem()->StopBGM();
+				}
+
+				SetWait();
 			}
 			if (courses.Num() <= 1)
 			{
