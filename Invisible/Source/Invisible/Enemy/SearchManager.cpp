@@ -149,6 +149,9 @@ TArray<FVector> ASearchManager::ChaseCourse(FVector start, FVector end) const
 		FHitResult hit;
 		auto start = course[index];
 		auto end = course[index + 2];
+		start.Z = 50;
+		end.Z = 50;
+
 		if (!GetWorld()->LineTraceSingleByChannel(hit, start, end,
 		        ECollisionChannel::ECC_Pawn, params))
 		{

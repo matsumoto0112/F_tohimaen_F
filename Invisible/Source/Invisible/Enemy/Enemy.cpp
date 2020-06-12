@@ -466,7 +466,23 @@ void AEnemy::chasePlayer()
 		moveType = EMoveType::PlayerChase; //	moveType => PlayerChase
 		courses.RemoveAll([](FVector) { return true; });
 		auto vector = (VectorXY(player->GetActorLocation() - GetActorLocation())).GetSafeNormal();
-		auto pos = player->GetActorLocation() + vector * searchManager->GetRadius();
+		auto pos = VectorXY(player->GetActorLocation() + vector * searchManager->GetRadius());
+
+		
+		FHitResult hit;
+		FCollisionQueryParams params;
+		params.AddIgnoredActors(enemys);
+		params.AddIgnoredActor(player);
+
+		auto ePos = VectorXY(GetActorLocation());
+		ePos.Z = 50;
+		pos.Z = 50;
+
+		if (GetWorld()->LineTraceSingleByChannel(hit, ePos, pos,
+		        ECollisionChannel::ECC_Visibility, params))
+		{
+			pos = VectorXY(hit.ImpactPoint + (ePos - pos).GetSafeNormal() * 10);
+		}
 		if (IsInLocker())
 		{
 			auto p = Cast<APlayerCharacter>(player);
@@ -872,7 +888,8 @@ void AEnemy::playWalkSound(float deltaTime)
 
 			FHitResult hit;
 			FCollisionQueryParams params;
-			params.AddIgnoredActor(this);
+			params.AddIgnoredActor(player);
+			params.AddIgnoredActors(enemys);
 			const FVector Start = GetActorLocation() + FVector(0, 0, 100);
 			const FVector End = GetActorLocation() + FVector::DownVector * 1000.0f;
 			if (!GetWorld()->LineTraceSingleByChannel(hit, Start, End,
