@@ -244,7 +244,6 @@ void AEnemy::Moving(float DeltaTime)
 				auto locker = p->GetCurrentInLocker();
 				auto pos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
 
-				courses.RemoveAll([](FVector) { return true; });
 				courses = searchManager->Course(GetActorLocation(), pos);
 			}
 			else
@@ -276,7 +275,7 @@ void AEnemy::Moving(float DeltaTime)
 						courses = searchManager->ChaseCourse(start, end);
 						return;
 					}
-					else if ((chaseTime * 0.75f) <= chaseTimer)
+					else if ((chaseTime * (1.0f - FMath::Clamp(chaseSearchTime, 0.0f, 1.0f))) <= chaseTimer)
 					{
 						auto locker = p->GetCurrentInLocker();
 						end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
@@ -495,6 +494,9 @@ void AEnemy::chasePlayer()
 	{
 		if (player != nullptr)
 		{
+			if (chaseTimer <= 0) {
+				courses.RemoveAll([](FVector) { return true; });
+			}
 			if (courses.Num() <= 1)
 			{
 				FHitResult hit;

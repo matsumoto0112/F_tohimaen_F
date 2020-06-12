@@ -140,6 +140,9 @@ protected:
 	float chaseTime = 5.0f;
 	float chaseTimer = 0.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float chaseSearchTime = 0.3f;
+
 	// ”G‚ê”»’è
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float reflection = 1;
