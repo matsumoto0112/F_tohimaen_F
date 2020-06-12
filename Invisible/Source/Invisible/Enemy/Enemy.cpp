@@ -273,7 +273,7 @@ void AEnemy::Moving(float DeltaTime)
 					auto p = Cast<APlayerCharacter>(player);
 					if (p->GetCurrentInLocker() == nullptr)
 					{
-						courses = searchManager->Course(start, end);
+						courses = searchManager->ChaseCourse(start, end);
 						return;
 					}
 					else if ((chaseTime * 0.75f) <= chaseTimer)
@@ -442,16 +442,16 @@ void AEnemy::chasePlayer()
 	{
 		if (moveType != EMoveType::PlayerChase)
 		{
-			auto playSECount = 0;
-			for (int i = 0; i < enemys.Num(); i++)
-			{
-				auto e = Cast<AEnemy>(enemys[i]);
-				if (e->moveType == EMoveType::PlayerChase)
-				{
-					playSECount++;
-				}
-			}
-			if (playSECount <= 0)
+			//auto playSECount = 0;
+			//for (int i = 0; i < enemys.Num(); i++)
+			//{
+			//	auto e = Cast<AEnemy>(enemys[i]);
+			//	if (e->moveType == EMoveType::PlayerChase)
+			//	{
+			//		playSECount++;
+			//	}
+			//}
+			//if (playSECount <= 0)
 			{
 				//ƒRƒ“ƒgƒ[ƒ‰‚ÌU“®‚ð’Ç‚¢‚©‚¯‚ç‚ê‚éBGMÄ¶Žž‚É”­¶‚³‚¹‚é
 				constexpr float VIBRATION_DURATION = 1.5f;
