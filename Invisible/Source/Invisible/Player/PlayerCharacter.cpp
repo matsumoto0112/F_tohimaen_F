@@ -72,7 +72,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	ClampPlayerCameraYawRotation();
 
 	//敵を検知
-	EnemyDetectArea->DetectAndWarn();
+	//EnemyDetectArea->DetectAndWarn();
 	//ロッカーに入っているときに座標を固定する
 	FixedLocationIfInLocker();
 }
