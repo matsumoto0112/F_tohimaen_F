@@ -116,7 +116,7 @@ void AEnemy::Tick(float DeltaTime)
 
 bool AEnemy::IsKill(float DeltaTime)
 {
-	if (IsInLocker())
+	//if (IsInLocker())
 	{
 		auto pos = VectorXY(player->GetActorLocation());
 		if (Cast<APlayerCharacter>(player)->GetCurrentInLocker())
@@ -124,7 +124,7 @@ bool AEnemy::IsKill(float DeltaTime)
 			auto locker = Cast<APlayerCharacter>(player)->GetCurrentInLocker();
 			pos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
 		}
-		if (VectorXY(pos - GetActorLocation()).Size() < searchManager->GetRadius() * 2)
+		if (VectorXY(pos - VectorXY(GetActorLocation())).Size() < searchManager->GetRadius())
 		{
 			if (moveType != EMoveType::Kill)
 			{
@@ -148,13 +148,15 @@ bool AEnemy::IsKill(float DeltaTime)
 			{
 				auto locker = p->GetCurrentInLocker();
 				point = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+				point.Z = p->GetActorLocation().Z;
 			}
-			auto vector = VectorXY(point - pos);
-			if (10 < vector.Size())
-			{
-				pos += vector.GetSafeNormal() * walkSpeed * DeltaTime;
-				SetActorLocation(pos);
-			}
+			SetActorLocation(point);
+			//auto vector = VectorXY(point - pos);
+			//if (10 < vector.Size())
+			//{
+			//	pos += vector.GetSafeNormal() * walkSpeed * DeltaTime;
+			//	SetActorLocation(pos);
+			//}
 		}
 
 		auto vector = VectorXY(player->GetActorLocation() - pos);
@@ -206,13 +208,14 @@ void AEnemy::Moving(float DeltaTime)
 	{
 		auto locker = Cast<APlayerCharacter>(player)->GetCurrentInLocker();
 		auto lockerPos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
-		auto ePos = VectorXY(GetActorLocation());
-		auto vector = VectorXY(lockerPos - ePos);
+		auto vector = VectorXY(lockerPos - GetActorLocation());
 		if (vector.Size() < searchManager->GetRadius() * 2)
 		{
-			auto mov = ePos + vector.GetSafeNormal() * runSpeed * DeltaTime;
+			auto mov = GetActorLocation() + vector.GetSafeNormal() * runSpeed * DeltaTime;
 			mov.Z = GetActorLocation().Z;
-			SetActorLocation(mov);
+			lockerPos.Z = GetActorLocation().Z;
+			SetActorLocation(lockerPos);
+			return;
 		}
 	}
 
@@ -338,6 +341,10 @@ void AEnemy::HitMoved()
 		return;
 	}
 	if (courses.Num() <= 0)
+	{
+		return;
+	}
+	if (IsInLocker())
 	{
 		return;
 	}
@@ -600,7 +607,7 @@ void AEnemy::chasePlayer()
 						auto locker = p->GetCurrentInLocker();
 						end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
 					}
-					courses = searchManager->Course(start, end);
+					courses = searchManager->ChaseCourse(start, end);
 				}
 			}
 		}
@@ -730,7 +737,8 @@ void AEnemy::InLocker()
 		if (Cast<APlayerCharacter>(player))
 		{
 			auto p = Cast<APlayerCharacter>(player);
-			switch (p->GetCurrentActionMode())
+			auto action = p->GetCurrentActionMode();
+			switch (action)
 			{
 			case EPlayerActionMode::IsInLocker:
 			case EPlayerActionMode::GetOutOfLocker:
@@ -747,28 +755,15 @@ void AEnemy::InLocker()
 	if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
 	        ECollisionChannel::ECC_Visibility, params))
 	{
-		if ((moveType == EMoveType::PlayerChase) && (0 < courses.Num()))
-		{
-			start = courses[0];
-			start.Z = Height();
-			if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
-			        ECollisionChannel::ECC_Visibility, params))
-			{
-				return;
-			}
-		}
-		else
-		{
-			return;
-		}
+		return;
 	}
 
 	// ÉçÉbÉJÅ[IN
 	if (Cast<APlayerCharacter>(player))
 	{
 		auto p = Cast<APlayerCharacter>(player);
-
-		switch (p->GetCurrentActionMode())
+		auto action = Cast<APlayerCharacter>(player)->GetCurrentActionMode();
+		switch (action)
 		{
 		case EPlayerActionMode::GetOutOfLocker:
 		case EPlayerActionMode::GoingIntoLocker:
@@ -848,7 +843,8 @@ bool AEnemy::IsEyeArea()
 		return true;
 	}
 
-	switch (Cast<APlayerCharacter>(player)->GetCurrentActionMode())
+	auto action = Cast<APlayerCharacter>(player)->GetCurrentActionMode();
+	switch (action)
 	{
 	case EPlayerActionMode::IsInLocker:
 	case EPlayerActionMode::GetOutOfLocker:
@@ -922,7 +918,8 @@ bool AEnemy::IsInLocker()
 		if (Cast<APlayerCharacter>(player))
 		{
 			auto p = Cast<APlayerCharacter>(player);
-			switch (p->GetCurrentActionMode())
+			auto action = p->GetCurrentActionMode();
+			switch (action)
 			{
 			case EPlayerActionMode::IsInLocker:
 			case EPlayerActionMode::GetOutOfLocker:
