@@ -18,6 +18,9 @@ class INVISIBLE_API UControllerVibration : public UObject
 public:
 	void StartVibration(float Duration, float Power);
 
+    UFUNCTION(BlueprintCallable, Category = "ControllerVibration")
+        void StopVibration();
+
 private:
 	//!< コントローラの振動ハンドル
 	FDynamicForceFeedbackHandle DynamicForceFeedbackHandle;
