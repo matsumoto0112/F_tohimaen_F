@@ -116,10 +116,15 @@ void AEnemy::Tick(float DeltaTime)
 
 bool AEnemy::IsKill(float DeltaTime)
 {
-	if (IsInLocker() && (Cast<APlayerCharacter>(player)->GetCurrentInLocker()))
+	if (IsInLocker())
 	{
-		auto locker = Cast<APlayerCharacter>(player)->GetCurrentInLocker();
-		if (VectorXY(locker->GetActorLocation() - GetActorLocation()).Size() < searchManager->GetRadius() * 2)
+		auto pos = VectorXY(player->GetActorLocation());
+		if (Cast<APlayerCharacter>(player)->GetCurrentInLocker())
+		{
+			auto locker = Cast<APlayerCharacter>(player)->GetCurrentInLocker();
+			pos = locker->GetActorLocation();
+		}
+		if (VectorXY(pos - GetActorLocation()).Size() < searchManager->GetRadius() * 2)
 		{
 			if (moveType != EMoveType::Kill)
 			{
@@ -138,16 +143,17 @@ bool AEnemy::IsKill(float DeltaTime)
 		case EPlayerActionMode::GetOutOfLocker:
 		case EPlayerActionMode::GoingIntoLocker:
 			auto p = Cast<APlayerCharacter>(player);
+			auto point = p->GetActorLocation();
 			if (p->GetCurrentInLocker())
 			{
 				auto locker = p->GetCurrentInLocker();
-				auto lockerForward = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
-				auto vector = VectorXY(lockerForward - pos);
-				if (10 < vector.Size())
-				{
-					pos += vector.GetSafeNormal() * walkSpeed * DeltaTime;
-					SetActorLocation(pos);
-				}
+				point = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+			}
+			auto vector = VectorXY(point - pos);
+			if (10 < vector.Size())
+			{
+				pos += vector.GetSafeNormal() * walkSpeed * DeltaTime;
+				SetActorLocation(pos);
 			}
 		}
 
@@ -243,8 +249,12 @@ void AEnemy::Moving(float DeltaTime)
 			if (IsInLocker())
 			{
 				auto p = Cast<APlayerCharacter>(player);
-				auto locker = p->GetCurrentInLocker();
-				auto pos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+				auto pos = player->GetActorLocation();
+				if (p->GetCurrentInLocker())
+				{
+					auto locker = p->GetCurrentInLocker();
+					pos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+				}
 
 				courses = searchManager->Course(GetActorLocation(), pos);
 			}
@@ -486,8 +496,11 @@ void AEnemy::chasePlayer()
 		if (IsInLocker())
 		{
 			auto p = Cast<APlayerCharacter>(player);
-			auto locker = p->GetCurrentInLocker();
-			pos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+			if (p->GetCurrentInLocker())
+			{
+				auto locker = p->GetCurrentInLocker();
+				pos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+			}
 		}
 
 		courses.Add(pos);
@@ -496,7 +509,8 @@ void AEnemy::chasePlayer()
 	{
 		if (player != nullptr)
 		{
-			if (chaseTimer <= 0) {
+			if (chaseTimer <= 0)
+			{
 				courses.RemoveAll([](FVector) { return true; });
 
 				auto playSECount = 0;
@@ -538,8 +552,11 @@ void AEnemy::chasePlayer()
 				else if (IsInLocker())
 				{
 					auto p = Cast<APlayerCharacter>(player);
-					auto locker = p->GetCurrentInLocker();
-					end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+					if (p->GetCurrentInLocker())
+					{
+						auto locker = p->GetCurrentInLocker();
+						end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+					}
 					courses = searchManager->Course(start, end);
 				}
 			}
@@ -675,15 +692,29 @@ void AEnemy::InLocker()
 			case EPlayerActionMode::GetOutOfLocker:
 			case EPlayerActionMode::GoingIntoLocker:
 
-				params.AddIgnoredActor(p->GetCurrentInLocker());
+				if (p->GetCurrentInLocker())
+				{
+					params.AddIgnoredActor(p->GetCurrentInLocker());
+				}
 			}
 		}
 	}
 
-	if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
-	        ECollisionChannel::ECC_Visibility, params))
+	bool isHit = false;
+	isHit = (GetWorld()->LineTraceSingleByChannel(hit, start, end,
+	    ECollisionChannel::ECC_Visibility, params));
+	if (isHit)
 	{
-		return;
+		if (0 < courses.Num())
+		{
+			end = courses[0];
+			isHit = (GetWorld()->LineTraceSingleByChannel(hit, start, end,
+			    ECollisionChannel::ECC_Visibility, params));
+		}
+		if (isHit)
+		{
+			return;
+		}
 	}
 
 	// ƒƒbƒJ[IN
@@ -752,7 +783,10 @@ bool AEnemy::IsEyeArea()
 				case EPlayerActionMode::GetOutOfLocker:
 				case EPlayerActionMode::GoingIntoLocker:
 
-					params.AddIgnoredActor(p->GetCurrentInLocker());
+					if (p->GetCurrentInLocker())
+					{
+						params.AddIgnoredActor(p->GetCurrentInLocker());
+					}
 				}
 			}
 		}
@@ -863,7 +897,7 @@ bool AEnemy::IsInLocker()
 			case EPlayerActionMode::GetOutOfLocker:
 			case EPlayerActionMode::GoingIntoLocker:
 				chaseTimer = 0.0f;
-				return (p->GetCurrentInLocker() != nullptr);
+				return true; //(p->GetCurrentInLocker() != nullptr);
 			}
 		}
 	}
@@ -991,5 +1025,5 @@ void AEnemy::ChangeStencilValueWhenWalkOnPuddle()
 		const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue & ~static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyWalkOnPuddle);
 		SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
 	},
-        VisibleTimeWhenEnemyWalkOnPuddle, false);
+	    VisibleTimeWhenEnemyWalkOnPuddle, false);
 }
