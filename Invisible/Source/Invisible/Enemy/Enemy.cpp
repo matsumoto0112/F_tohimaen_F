@@ -122,7 +122,7 @@ bool AEnemy::IsKill(float DeltaTime)
 		if (Cast<APlayerCharacter>(player)->GetCurrentInLocker())
 		{
 			auto locker = Cast<APlayerCharacter>(player)->GetCurrentInLocker();
-			pos = locker->GetActorLocation();
+			pos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
 		}
 		if (VectorXY(pos - GetActorLocation()).Size() < searchManager->GetRadius() * 2)
 		{
@@ -202,6 +202,20 @@ void AEnemy::Moving(float DeltaTime)
 		}
 	}
 
+	if (IsInLocker())
+	{
+		auto locker = Cast<APlayerCharacter>(player)->GetCurrentInLocker();
+		auto lockerPos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+		auto ePos = VectorXY(GetActorLocation());
+		auto vector = VectorXY(lockerPos - ePos);
+		if (vector.Size() < searchManager->GetRadius() * 2)
+		{
+			auto mov = ePos + vector.GetSafeNormal() * runSpeed * DeltaTime;
+			mov.Z = GetActorLocation().Z;
+			SetActorLocation(mov);
+		}
+	}
+
 	// åoòHçXêV
 	if ((VectorXY(courses[0] - GetActorLocation())).Size() <= searchManager->GetRadius())
 	{
@@ -256,7 +270,7 @@ void AEnemy::Moving(float DeltaTime)
 					pos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
 				}
 
-				courses = searchManager->Course(GetActorLocation(), pos);
+				courses = searchManager->ChaseCourse(GetActorLocation(), pos);
 			}
 			else
 			{
@@ -276,7 +290,7 @@ void AEnemy::Moving(float DeltaTime)
 				if (!GetWorld()->LineTraceSingleByChannel(hit, start, end,
 				        ECollisionChannel::ECC_Visibility, params))
 				{
-					courses = searchManager->Course(start, end);
+					courses = searchManager->ChaseCourse(start, end);
 					return;
 				}
 				else if (0 < chaseTimer)
@@ -449,6 +463,35 @@ void AEnemy::chasePlayer()
 	{
 		return;
 	}
+	//if (IsInLocker())
+	//{
+	//	auto start = VectorXY(GetActorLocation());
+	//	auto end = VectorXY(player->GetActorLocation());
+	//	auto p = Cast<APlayerCharacter>(player);
+
+	//	if (p->GetCurrentInLocker())
+	//	{
+	//		auto locker = p->GetCurrentInLocker();
+	//		end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+	//	}
+
+	//	if (0 < courses.Num())
+	//	{
+	//		if (VectorXY(courses[courses.Num() - 1]) != end)
+	//		{
+	//			courses.RemoveAll([](FVector) { return true; });
+	//			courses.Add(end);
+	//			//courses = searchManager->ChaseCourse(start, end);
+	//			chaseTimer = chaseTime;
+	//		}
+	//	}
+	//	else
+	//	{
+	//		courses.RemoveAll([](FVector) { return true; });
+	//		courses.Add(end);
+	//		//courses = searchManager->ChaseCourse(start, end);
+	//	}
+	//}
 	if (IsEyeArea())
 	{
 		if (moveType != EMoveType::PlayerChase)
@@ -530,7 +573,7 @@ void AEnemy::chasePlayer()
 
 				SetWait();
 			}
-			if (courses.Num() <= 1)
+			//if (courses.Num() <= 1)
 			{
 				FHitResult hit;
 				FCollisionQueryParams params;
@@ -673,6 +716,7 @@ void AEnemy::InLocker()
 
 	if (eyeLength < (end - start).Size())
 	{
+		playerActiveType = EPlayerActionMode::Default;
 		return;
 	}
 
@@ -700,18 +744,20 @@ void AEnemy::InLocker()
 		}
 	}
 
-	bool isHit = false;
-	isHit = (GetWorld()->LineTraceSingleByChannel(hit, start, end,
-	    ECollisionChannel::ECC_Visibility, params));
-	if (isHit)
+	if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
+	        ECollisionChannel::ECC_Visibility, params))
 	{
-		if (0 < courses.Num())
+		if ((moveType == EMoveType::PlayerChase) && (0 < courses.Num()))
 		{
-			end = courses[0];
-			isHit = (GetWorld()->LineTraceSingleByChannel(hit, start, end,
-			    ECollisionChannel::ECC_Visibility, params));
+			start = courses[0];
+			start.Z = Height();
+			if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
+			        ECollisionChannel::ECC_Visibility, params))
+			{
+				return;
+			}
 		}
-		if (isHit)
+		else
 		{
 			return;
 		}
@@ -777,16 +823,9 @@ bool AEnemy::IsEyeArea()
 			if (Cast<APlayerCharacter>(player))
 			{
 				auto p = Cast<APlayerCharacter>(player);
-				switch (p->GetCurrentActionMode())
+				if (p->GetCurrentInLocker())
 				{
-				case EPlayerActionMode::IsInLocker:
-				case EPlayerActionMode::GetOutOfLocker:
-				case EPlayerActionMode::GoingIntoLocker:
-
-					if (p->GetCurrentInLocker())
-					{
-						params.AddIgnoredActor(p->GetCurrentInLocker());
-					}
+					params.AddIgnoredActor(p->GetCurrentInLocker());
 				}
 			}
 		}
@@ -803,14 +842,6 @@ bool AEnemy::IsEyeArea()
 		if (GetWorld()->LineTraceSingleByChannel(hit, start, end,
 		        ECollisionChannel::ECC_Visibility, params))
 		{
-			if (Cast<ALocker>(hit.GetActor()))
-			{
-				if ((Cast<APlayerCharacter>(player)->GetCurrentActionMode() == EPlayerActionMode::IsInLocker) && (Cast<ALocker>(hit.GetActor()) == Cast<APlayerCharacter>(player)->GetCurrentInLocker()))
-				{
-					return IsInLocker();
-				}
-			}
-
 			return false;
 		}
 
@@ -896,7 +927,7 @@ bool AEnemy::IsInLocker()
 			case EPlayerActionMode::IsInLocker:
 			case EPlayerActionMode::GetOutOfLocker:
 			case EPlayerActionMode::GoingIntoLocker:
-				chaseTimer = 0.0f;
+				chaseTimer = chaseTime;
 				return true; //(p->GetCurrentInLocker() != nullptr);
 			}
 		}
