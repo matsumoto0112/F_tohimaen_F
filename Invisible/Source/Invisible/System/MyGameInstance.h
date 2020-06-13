@@ -46,12 +46,36 @@ public:
     * サウンドシステムを取得する
     */
 	UFUNCTION(BlueprintCallable, Category = "Singleton")
-	USoundSystem* getSoundSystem() const { return SoundSystem; }
+	USoundSystem* getSoundSystem() const
+	{
+		if (!SoundSystem)
+		{
+			UE_LOG(LogTemp, Error, TEXT("SoundSystem is nullptr"));
+			return nullptr;
+		}
+		return SoundSystem;
+	}
 
 	UFUNCTION(BlueprintCallable, Category = "Singleton")
-	UConfigParams* GetConfigParams() const { return ConfigParams; }
+	UConfigParams* GetConfigParams() const
+	{
+		if (!ConfigParams)
+		{
+			UE_LOG(LogTemp, Error, TEXT("ConfigParams is nullptr"));
+			return nullptr;
+		}
+		return ConfigParams;
+	}
 	UFUNCTION(BlueprintCallable, Category = "Singleton")
-	UControllerVibration* GetControllerVibration() const { return ControllerVibration; }
+	UControllerVibration* GetControllerVibration() const
+	{
+		if (!ControllerVibration)
+		{
+			UE_LOG(LogTemp, Error, TEXT("ControllerVibration is nullptr"));
+			return nullptr;
+		}
+		return ControllerVibration;
+	}
 
 	UFUNCTION(BluePrintCallable, Category = "Clear")
 	void setClear(bool clear) { isClear = clear; }
@@ -61,7 +85,7 @@ public:
 private:
 	//!< OnHandleSystemError デリゲート登録時のハンドル
 	FDelegateHandle OnSystemErrorDelegateHandle;
-
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
 	bool isClear = false;
 
 	/**
