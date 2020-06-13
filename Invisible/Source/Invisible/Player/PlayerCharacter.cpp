@@ -165,6 +165,9 @@ void APlayerCharacter::OnComponentBeginOverlap(UPrimitiveComponent* HitComp, AAc
 //‰¹‚ª•·‚±‚¦‚é”ÍˆÍ“à‚É“ü‚Á‚½
 void APlayerCharacter::HeardSound(ASoundObject* soundObject)
 {
+    if (!soundObject)
+        return;
+
 	//•·‚±‚¦‚½‰¹‚ÌŽí—Þ‚É‚æ‚Á‚Äê‡•ª‚¯
 	switch (soundObject->getSoundType())
 	{

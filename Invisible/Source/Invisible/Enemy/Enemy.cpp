@@ -942,6 +942,8 @@ bool AEnemy::IsInLocker()
 //‰¹‚ª•·‚±‚¦‚é”ÍˆÍ“à‚É“ü‚Á‚½
 void AEnemy::heardSound(ASoundObject* soundObject)
 {
+	if (!soundObject)
+		return;
 	switch (soundObject->getSoundType())
 	{
 		//ƒoƒ‹ƒu‚Ì‰¹‚ª•·‚±‚¦‚½
