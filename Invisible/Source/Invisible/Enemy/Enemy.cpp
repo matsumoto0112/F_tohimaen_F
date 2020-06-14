@@ -123,7 +123,7 @@ void AEnemy::Tick(float DeltaTime)
 
 bool AEnemy::IsKill(float DeltaTime)
 {
-	//if (IsInLocker())
+	if (IsInLocker())
 	{
 		auto pos = VectorXY(player->GetActorLocation());
 		if (Cast<APlayerCharacter>(player)->GetCurrentInLocker())
@@ -131,7 +131,7 @@ bool AEnemy::IsKill(float DeltaTime)
 			auto locker = Cast<APlayerCharacter>(player)->GetCurrentInLocker();
 			pos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
 		}
-		if (VectorXY(pos - VectorXY(GetActorLocation())).Size() < searchManager->GetRadius())
+		if (VectorXY(pos - VectorXY(GetActorLocation())).Size() <= searchManager->GetRadius())
 		{
 			if (moveType != EMoveType::Kill)
 			{
@@ -157,13 +157,12 @@ bool AEnemy::IsKill(float DeltaTime)
 				point = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
 				point.Z = p->GetActorLocation().Z;
 			}
-			SetActorLocation(point);
-			//auto vector = VectorXY(point - pos);
-			//if (10 < vector.Size())
-			//{
-			//	pos += vector.GetSafeNormal() * walkSpeed * DeltaTime;
-			//	SetActorLocation(pos);
-			//}
+			auto vector = VectorXY(point - pos);
+			if (10 < vector.Size())
+			{
+				pos += vector.GetSafeNormal() * walkSpeed * DeltaTime;
+				SetActorLocation(pos);
+			}
 		}
 
 		auto vector = VectorXY(player->GetActorLocation() - pos);
@@ -211,20 +210,20 @@ void AEnemy::Moving(float DeltaTime)
 		}
 	}
 
-	if (IsInLocker())
-	{
-		auto locker = Cast<APlayerCharacter>(player)->GetCurrentInLocker();
-		auto lockerPos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
-		auto vector = VectorXY(lockerPos - GetActorLocation());
-		if (vector.Size() < searchManager->GetRadius() * 2)
-		{
-			auto mov = GetActorLocation() + vector.GetSafeNormal() * runSpeed * DeltaTime;
-			mov.Z = GetActorLocation().Z;
-			lockerPos.Z = GetActorLocation().Z;
-			SetActorLocation(lockerPos);
-			return;
-		}
-	}
+	//if (IsInLocker())
+	//{
+	//	auto locker = Cast<APlayerCharacter>(player)->GetCurrentInLocker();
+	//	auto lockerPos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+	//	auto vector = VectorXY(lockerPos - GetActorLocation());
+	//	if (vector.Size() < searchManager->GetRadius() * 2)
+	//	{
+	//		auto mov = GetActorLocation() + vector.GetSafeNormal() * runSpeed * DeltaTime;
+	//		mov.Z = GetActorLocation().Z;
+	//		lockerPos.Z = GetActorLocation().Z;
+	//		SetActorLocation(lockerPos);
+	//		return;
+	//	}
+	//}
 
 	// åoòHçXêV
 	if ((VectorXY(courses[0] - GetActorLocation())).Size() <= searchManager->GetRadius())

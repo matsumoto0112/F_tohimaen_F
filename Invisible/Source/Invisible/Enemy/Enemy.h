@@ -7,6 +7,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Invisible/ActionableObject/Actionable.h"
+#include "Invisible/Player/PlayerActionMode.h"
 #include "SearchManager.h"
 
 #include "Enemy.generated.h"
@@ -35,10 +36,10 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-    /**
+	/**
     * ÉQÅ[ÉÄèIóπéûÇ…åƒÇŒÇÍÇÈ
     */
-    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
 	// Called every frame
@@ -177,6 +178,8 @@ protected:
 
 	AActor* player;
 	TArray<AActor*> enemys;
+
+	EPlayerActionMode playerActiveType = EPlayerActionMode::Default;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
