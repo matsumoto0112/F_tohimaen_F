@@ -131,7 +131,7 @@ bool AEnemy::IsKill(float DeltaTime)
 			auto locker = Cast<APlayerCharacter>(player)->GetCurrentInLocker();
 			pos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
 		}
-		if (VectorXY(pos - VectorXY(GetActorLocation())).Size() <= searchManager->GetRadius())
+		if (VectorXY(pos - VectorXY(GetActorLocation())).Size() <= searchManager->GetRadius()*2)
 		{
 			if (moveType != EMoveType::Kill)
 			{
@@ -314,7 +314,7 @@ void AEnemy::Moving(float DeltaTime)
 					{
 						auto locker = p->GetCurrentInLocker();
 						end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
-						courses = searchManager->Course(start, end);
+						courses = searchManager->ChaseCourse(start, end);
 						playerActiveType = EPlayerActionMode::GoingIntoLocker;
 						return;
 					}
@@ -382,9 +382,15 @@ void AEnemy::HitMoved()
 		}
 
 		auto point = VectorXY(hit.ImpactPoint);
-		auto normal = VectorXY(hit.Normal).GetSafeNormal();
 		auto vector = VectorXY(start - point);
-		auto near = VectorXY(point + normal * searchManager->GetRadius() / 2.0f);
+		auto normal = VectorXY(vector).GetSafeNormal();
+		auto near = VectorXY(point + normal * searchManager->GetRadius());
+		near.Z = GetActorLocation().Z;
+		if (vector.Size() <= searchManager->GetRadius())
+		{
+			SetActorLocation(near);
+			start = near;
+		}
 
 		courses.Insert(near, 0);
 	}
@@ -476,35 +482,7 @@ void AEnemy::chasePlayer()
 	{
 		return;
 	}
-	//if (IsInLocker())
-	//{
-	//	auto start = VectorXY(GetActorLocation());
-	//	auto end = VectorXY(player->GetActorLocation());
-	//	auto p = Cast<APlayerCharacter>(player);
 
-	//	if (p->GetCurrentInLocker())
-	//	{
-	//		auto locker = p->GetCurrentInLocker();
-	//		end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
-	//	}
-
-	//	if (0 < courses.Num())
-	//	{
-	//		if (VectorXY(courses[courses.Num() - 1]) != end)
-	//		{
-	//			courses.RemoveAll([](FVector) { return true; });
-	//			courses.Add(end);
-	//			//courses = searchManager->ChaseCourse(start, end);
-	//			chaseTimer = chaseTime;
-	//		}
-	//	}
-	//	else
-	//	{
-	//		courses.RemoveAll([](FVector) { return true; });
-	//		courses.Add(end);
-	//		//courses = searchManager->ChaseCourse(start, end);
-	//	}
-	//}
 	if (IsEyeArea())
 	{
 		if (moveType != EMoveType::PlayerChase)
