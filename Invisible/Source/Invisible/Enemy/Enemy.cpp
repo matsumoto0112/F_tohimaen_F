@@ -154,7 +154,7 @@ bool AEnemy::IsKill(float DeltaTime)
 			if (p->GetCurrentInLocker())
 			{
 				auto locker = p->GetCurrentInLocker();
-				point = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+				point = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius() * 2);
 				point.Z = p->GetActorLocation().Z;
 			}
 			auto vector = VectorXY(point - pos);
