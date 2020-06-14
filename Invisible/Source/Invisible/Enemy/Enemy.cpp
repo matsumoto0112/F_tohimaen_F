@@ -92,6 +92,13 @@ void AEnemy::BeginPlay()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemy::StaticClass(), enemys);
 }
 
+void AEnemy::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	FTimerManager& TimerManager = GetWorldTimerManager();
+	TimerManager.ClearTimer(ReturnStencilValueWhenPutOnWaterHandle);
+	TimerManager.ClearTimer(ReturnStencilValueWhenWalkOnPuddle);
+}
+
 // Called every frame
 void AEnemy::Tick(float DeltaTime)
 {
@@ -1021,39 +1028,36 @@ void AEnemy::overBathing()
 //水をかぶった時のステンシル値の変更
 void AEnemy::ChangeStencilValueWhenPutOnWater()
 {
-	//ステンシル値を水をかぶった時用の値で和をとる
-	USkeletalMeshComponent* SilhouetteSkeltal = GetSilhouetteSkeltal();
-	const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue | static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyPutOnWater);
-	SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
+	{
+		//ステンシル値を水をかぶった時用の値で和をとる
+		const int32 Value = GetSilhouetteSkeltal()->CustomDepthStencilValue | static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyPutOnWater);
+		GetSilhouetteSkeltal()->SetCustomDepthStencilValue(Value);
+	}
 
 	//最後に当たった時から有効にしたいので古いタイマーは破棄する
 	FTimerManager& TimerManager = GetWorldTimerManager();
 	TimerManager.ClearTimer(ReturnStencilValueWhenPutOnWaterHandle);
-	TimerManager.SetTimer(ReturnStencilValueWhenPutOnWaterHandle, [SilhouetteSkeltal]() {
-		//ゲームが終了するなどしてスケルタルが参照できない場合に備えてチェックする
-		if (!SilhouetteSkeltal)
-			return;
-		const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue & ~static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyPutOnWater);
-		SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
+	TimerManager.SetTimer(ReturnStencilValueWhenPutOnWaterHandle, [&]() {
+		const int32 Value = GetSilhouetteSkeltal()->CustomDepthStencilValue & ~static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyPutOnWater);
+		GetSilhouetteSkeltal()->SetCustomDepthStencilValue(Value);
 	},
 	    VisibleTimeWhenEnemyPutOnWater, false);
 }
 
 void AEnemy::ChangeStencilValueWhenWalkOnPuddle()
 {
-	USkeletalMeshComponent* SilhouetteSkeltal = GetSilhouetteSkeltal();
-	const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue | static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyWalkOnPuddle);
-	SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
+	{
+		const int32 Value = GetSilhouetteSkeltal()->CustomDepthStencilValue | static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyWalkOnPuddle);
+		GetSilhouetteSkeltal()->SetCustomDepthStencilValue(Value);
+	}
 
 	//最後に当たった時から有効にしたいので古いタイマーは破棄する
 	FTimerManager& TimerManager = GetWorldTimerManager();
 	TimerManager.ClearTimer(ReturnStencilValueWhenWalkOnPuddle);
-	TimerManager.SetTimer(ReturnStencilValueWhenWalkOnPuddle, [SilhouetteSkeltal]() {
+	TimerManager.SetTimer(ReturnStencilValueWhenWalkOnPuddle, [&]() {
 		//ゲームが終了するなどしてスケルタルが参照できない場合に備えてチェックする
-		if (!SilhouetteSkeltal)
-			return;
-		const int32 Value = SilhouetteSkeltal->CustomDepthStencilValue & ~static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyWalkOnPuddle);
-		SilhouetteSkeltal->SetCustomDepthStencilValue(Value);
+		const int32 Value = GetSilhouetteSkeltal()->CustomDepthStencilValue & ~static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyWalkOnPuddle);
+		GetSilhouetteSkeltal()->SetCustomDepthStencilValue(Value);
 	},
 	    VisibleTimeWhenEnemyWalkOnPuddle, false);
 }
