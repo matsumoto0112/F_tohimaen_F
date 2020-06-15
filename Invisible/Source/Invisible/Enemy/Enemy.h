@@ -22,6 +22,11 @@ enum class EMoveType : uint8
 	PlayerChase,
 	Kill,
 };
+enum class ERotateType : uint8
+{
+	Right,
+	Left,
+};
 
 UCLASS()
 class INVISIBLE_API AEnemy : public AActor, public IActionable
@@ -180,6 +185,7 @@ protected:
 	TArray<AActor*> enemys;
 
 	EPlayerActionMode playerActiveType = EPlayerActionMode::Default;
+	ERotateType rotateType = ERotateType::Right;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
