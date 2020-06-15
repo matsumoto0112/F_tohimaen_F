@@ -123,7 +123,7 @@ bool AEnemy::IsKill(float DeltaTime)
 			auto locker = Cast<APlayerCharacter>(player)->GetCurrentInLocker();
 			pos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
 		}
-		if (VectorXY(pos - VectorXY(GetActorLocation())).Size() <= searchManager->GetRadius()*2)
+		if (VectorXY(pos - VectorXY(GetActorLocation())).Size() <= searchManager->GetRadius() * 2)
 		{
 			if (moveType != EMoveType::Kill)
 			{
@@ -163,6 +163,11 @@ bool AEnemy::IsKill(float DeltaTime)
 		// ‰ñ“]
 		auto r = GetActorForwardVector() + nor * DeltaTime * rotateSpeed;
 		SetActorRotation(r.Rotation());
+		return true;
+	}
+
+	if (Cast<APlayerCharacter>(player)->GetCurrentActionMode() == EPlayerActionMode::IsDying)
+	{
 		return true;
 	}
 	return false;
