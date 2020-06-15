@@ -31,7 +31,7 @@ public:
     * ランダムに水たまりをスポーンさせる
     */
 	UFUNCTION()
-	void spawnRandomPuddle(const FVector& location);
+	AActor* spawnRandomPuddle(const FVector& location);
 
 protected:
 	//!< 水たまりの原器

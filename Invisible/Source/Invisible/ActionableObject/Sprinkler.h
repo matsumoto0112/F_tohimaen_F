@@ -70,6 +70,9 @@ protected:
 	//!< 再生する音の種類
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
 	ESoundType SoundType = ESoundType::Sprinkler_Ver0;
+	//! 水たまりを削除する時間
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameter")
+	float PuddleDestroyTime = 60.0f;
 
 public:
 	//!< スプリンクラーのメッシュ
@@ -92,5 +95,6 @@ private:
 	//!< スプリンクラーの稼働タイマーハンドル
 	FTimerHandle timerHandle;
 	//!< 水たまりがすでに生成されたかどうか
-	bool puddleSpawned;
+	TArray<AActor*> SpawnedPuddles;
+	FTimerHandle PuddleDestroyTimerHandle;
 };

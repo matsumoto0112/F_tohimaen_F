@@ -36,7 +36,6 @@ ASprinkler::ASprinkler()
 void ASprinkler::BeginPlay()
 {
 	Super::BeginPlay();
-	puddleSpawned = false;
 
 	//パーティクルをゲーム開始時に停止させる
 	if (particleComponent)
@@ -48,6 +47,7 @@ void ASprinkler::BeginPlay()
 void ASprinkler::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
+	GetWorldTimerManager().ClearTimer(PuddleDestroyTimerHandle);
 
 	//パーティクルの終了タイマーを消去する
 	if (timerHandle.IsValid())
@@ -76,8 +76,20 @@ void ASprinkler::action_Implementation()
 	UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(SoundType, GetActorLocation(), this);
 
 	//水たまりがすでにあるなら何もしない
-	if (puddleSpawned)
+	if (SpawnedPuddles.Num() > 0)
+	{
+		GetWorldTimerManager().ClearTimer(PuddleDestroyTimerHandle);
+		//一定時間後に水たまりを消す
+		GetWorldTimerManager().SetTimer(PuddleDestroyTimerHandle, [&]() {
+			for (auto& a : SpawnedPuddles)
+			{
+				a->Destroy();
+			}
+			SpawnedPuddles = TArray<AActor*>();
+		},
+		    PuddleDestroyTime, false);
 		return;
+	}
 
 	//レベルから水たまり生成器を取得する
 	AActor* aFactory = UGameplayStatics::GetActorOfClass(GetWorld(), APuddleFactory::StaticClass());
@@ -91,9 +103,18 @@ void ASprinkler::action_Implementation()
 	//水たまりの発生ポイントすべてに水たまりを配置する
 	for (auto& point : puddlePoints)
 	{
-		factory->spawnRandomPuddle(point->GetActorLocation());
+		SpawnedPuddles.Add(factory->spawnRandomPuddle(point->GetActorLocation()));
 	}
-	puddleSpawned = true;
+
+	//一定時間後に水たまりを消す
+	GetWorldTimerManager().SetTimer(PuddleDestroyTimerHandle, [&]() {
+		for (auto& a : SpawnedPuddles)
+		{
+			a->Destroy();
+		}
+		SpawnedPuddles = TArray<AActor*>();
+	},
+	    PuddleDestroyTime, false);
 }
 
 void ASprinkler::Tick(float DeltaTime)

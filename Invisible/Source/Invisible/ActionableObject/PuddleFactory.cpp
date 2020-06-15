@@ -25,9 +25,10 @@ void APuddleFactory::Tick(float DeltaTime)
 }
 
 //ランダムに水たまりをスポーンさせる
-void APuddleFactory::spawnRandomPuddle(const FVector& location)
+AActor* APuddleFactory::spawnRandomPuddle(const FVector& location)
 {
 	const int32 index = random.RandRange(0, originPuddles.Num() - 1);
 	AActor* a = GetWorld()->SpawnActor<AActor>(originPuddles[index]);
 	a->SetActorLocation(location);
+    return a;
 }
