@@ -23,6 +23,7 @@ public:
 	virtual void BeginPlay() override;
 
 	virtual void DoAction();
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	/**
     * コンポーネントが何かとオーバーラップした時のイベント
@@ -37,6 +38,9 @@ public:
 	UFUNCTION()
 	void EndOverlapEvent(UPrimitiveComponent* OverlappedComponent,
 	    AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+private:
+	void SortByDistance();
 
 private:
 	UPROPERTY()

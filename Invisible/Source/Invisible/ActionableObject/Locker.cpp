@@ -59,6 +59,10 @@ void ALocker::action_Implementation()
 
 EActionType ALocker::GetActionType_Implementation() const
 {
+	bool isDoorClosed = FMath::Abs(DummyDoor->GetRelativeRotation().Yaw) <= 1.0f;
+
+	if (!isDoorClosed)
+		return EActionType::None;
 	return bIsInPlayer ? EActionType::Locker_IsInPlayer : EActionType::Locker;
 }
 
@@ -110,8 +114,8 @@ void ALocker::PullOutPlayer()
 	{
 		APlayerCharacter* Player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 		Player->SetCurrentActionMode(EPlayerActionMode::GetOutOfLocker);
-        UMyGameInstance::GetInstance()->getSoundSystem()->SetHearingMode(EPlayerHearingMode::Normal);
-    }
+		UMyGameInstance::GetInstance()->getSoundSystem()->SetHearingMode(EPlayerHearingMode::Normal);
+	}
 
 	OpenDoor(0.1f);
 
