@@ -77,9 +77,6 @@ protected:
 	//!< 通常死亡時プレイヤーが敵のほうを向いてからの待機時間
 	UPROPERTY(EditAnywhere, Category = "Normal")
 	float WaitTime = 3.0f;
-	//!< ポストプロセスマテリアル
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Normal")
-	UMaterial* PostProcessMaterial;
 
 private:
 	//!< 死亡イベントが開始しているか

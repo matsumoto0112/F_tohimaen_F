@@ -32,9 +32,6 @@ void APlayerDieEvent::Tick(float DeltaTime)
 
 void APlayerDieEvent::InitPostProcess()
 {
-	APostProcessVolume* Post = Cast<APostProcessVolume>(UGameplayStatics::GetActorOfClass(GetWorld(), APostProcessVolume::StaticClass()));
-	Post->Settings.WeightedBlendables.Array.Emplace(1.0f, PostProcessMaterial);
-
 	SetPostProcessParametersWithDelay();
 }
 
