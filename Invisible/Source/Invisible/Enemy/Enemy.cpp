@@ -18,14 +18,6 @@ namespace
 	constexpr float WALKING_THRESHOLD = 0.5f; //!< •à‚¢‚Ä‚¢‚é‚Æ‚Ý‚È‚·è‡’l
 	constexpr float WALKING_SOUND_PLAY_INTERVAL = 0.5f; //!< •às‰¹‚ÌÄ¶ŠÔŠu
 
-	enum class ERotateType : uint8
-	{
-		Right,
-		Left,
-	};
-	ERotateType rotateType = ERotateType::Right;
-
-	EPlayerActionMode playerActiveType = EPlayerActionMode::Default;
 	float GetDeg_XY(FVector forward)
 	{
 		auto vector = forward;
