@@ -2,6 +2,7 @@
 
 #include "ItemManager.h"
 
+#include "Engine.h"
 #include "ExitDevice.h"
 #include "ExitItem.h"
 
@@ -18,12 +19,39 @@ AItemManager::AItemManager()
 void AItemManager::BeginPlay()
 {
 	Super::BeginPlay();
+	PopItem();
 }
 
 // Called every frame
 void AItemManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AItemManager::PopItem()
+{
+	if ((items.Num() <= 0) || (popArray.Num() <= 0))
+	{
+		return;
+	}
+
+	auto indexArray = TArray<int>();
+	for (int i = 0; i < popArray.Num(); i++)
+	{
+		indexArray.Add(i);
+	}
+	indexArray.Sort([](int a, int b) { return FMath::FRandRange(0.0f, 100.0f) <= FMath::FRandRange(0.0f, 100.0f); });
+
+	for (int i = 0; i < items.Num(); i++)
+	{
+		if (indexArray.Num() <= i)
+		{
+			break;
+		}
+		auto s = std::to_string(i) + " >> " + std::to_string(indexArray[i]);
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::FString(s.c_str()));
+		items[i]->SetActorLocation(popArray[indexArray[i]]);
+	}
 }
 
 int32 AItemManager::GetItemCount() const
