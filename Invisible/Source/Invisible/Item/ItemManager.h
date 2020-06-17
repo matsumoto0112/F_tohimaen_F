@@ -35,8 +35,13 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+private:
+	void PopItem();
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Items")
 	TArray<AExitItem*> items;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Items")
+	TArray<FVector> popArray;
 };
