@@ -207,21 +207,6 @@ void AEnemy::Moving(float DeltaTime)
 		}
 	}
 
-	//if (IsInLocker())
-	//{
-	//	auto locker = Cast<APlayerCharacter>(player)->GetCurrentInLocker();
-	//	auto lockerPos = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
-	//	auto vector = VectorXY(lockerPos - GetActorLocation());
-	//	if (vector.Size() < searchManager->GetRadius() * 2)
-	//	{
-	//		auto mov = GetActorLocation() + vector.GetSafeNormal() * runSpeed * DeltaTime;
-	//		mov.Z = GetActorLocation().Z;
-	//		lockerPos.Z = GetActorLocation().Z;
-	//		SetActorLocation(lockerPos);
-	//		return;
-	//	}
-	//}
-
 	// 経路更新
 	if ((VectorXY(courses[0] - GetActorLocation())).Size() <= searchManager->GetRadius())
 	{
@@ -302,11 +287,13 @@ void AEnemy::Moving(float DeltaTime)
 				else if (0 < chaseTimer)
 				{
 					auto p = Cast<APlayerCharacter>(player);
+					// ロッカーにいないときは普通に追跡
 					if (p->GetCurrentInLocker() == nullptr)
 					{
 						courses = searchManager->ChaseCourse(start, end);
 						return;
 					}
+					// ロッカーにいてロッカー時にも追跡してくる時間内なら開けに来る
 					else if ((chaseTime * (1.0f - FMath::Clamp(chaseSearchTime, 0.0f, 1.0f))) <= chaseTimer)
 					{
 						auto locker = p->GetCurrentInLocker();
@@ -314,6 +301,19 @@ void AEnemy::Moving(float DeltaTime)
 						courses = searchManager->ChaseCourse(start, end);
 						playerActiveType = EPlayerActionMode::GoingIntoLocker;
 						return;
+					}
+					// ロッカーにいて追跡してくる時間外なら目の前まで
+					else
+					{
+						auto locker = p->GetCurrentInLocker();
+						end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
+						if (searchManager->GetRadius() < (end - start).Size())
+						{
+							courses = searchManager->ChaseCourse(start, end);
+						}
+						else {
+							chaseTimer = 0.0f;
+						}
 					}
 				}
 
@@ -381,7 +381,12 @@ void AEnemy::HitMoved()
 		auto point = VectorXY(hit.ImpactPoint);
 		auto vector = VectorXY(start - point);
 		auto normal = VectorXY(vector).GetSafeNormal();
-		auto near = VectorXY(point + normal * searchManager->GetRadius());
+
+		auto n = hit.ImpactNormal;
+		auto h = FVector::DotProduct(vector, n);
+
+		auto near = VectorXY(point + vector.GetSafeNormal() + n * searchManager->GetRadius());
+		//auto near = VectorXY(point + normal * searchManager->GetRadius());
 		near.Z = GetActorLocation().Z;
 		if (vector.Size() <= searchManager->GetRadius())
 		{
@@ -389,6 +394,11 @@ void AEnemy::HitMoved()
 			start = near;
 		}
 
+		//auto chase = searchManager->ChaseCourse(near, courses[courses.Num() - 1]);
+		//for (int i = 0; i < chase.Num(); i++)
+		//{
+		//	courses.Insert(chase[i], i);
+		//}
 		courses.Insert(near, 0);
 	}
 }
