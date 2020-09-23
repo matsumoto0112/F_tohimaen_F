@@ -9,6 +9,7 @@
 #include "Invisible/ActionableObject/Actionable.h"
 #include "Invisible/Player/PlayerActionMode.h"
 #include "SearchManager.h"
+#include "Invisible/System/LimitTimer.h"
 
 #include "Enemy.generated.h"
 
@@ -72,6 +73,8 @@ public:
 	void AddReflection(float add);
 	// ロッカー処理
 	void InLocker();
+	// 制限時間を過ぎてなければ指定したモードに移行、過ぎてればプレイヤーの行動に変更
+	bool TimerCheck(EPlayerActionMode mode);
 
 	bool IsInLocker();
 	void DebugDraw();
@@ -183,6 +186,7 @@ protected:
 
 	AActor* player;
 	TArray<AActor*> enemys;
+	ALimitTimer* limitTimer;
 
 	EPlayerActionMode playerActiveType = EPlayerActionMode::Default;
 	ERotateType rotateType = ERotateType::Right;

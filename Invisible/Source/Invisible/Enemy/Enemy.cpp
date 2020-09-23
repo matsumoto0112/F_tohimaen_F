@@ -108,6 +108,7 @@ void AEnemy::Tick(float DeltaTime)
 		return;
 
 	chaseTimer = std::fmax(0.0f, chaseTimer - DeltaTime);
+	TimerCheck(playerActiveType);
 	SearchCourse(DeltaTime);
 	Moving(DeltaTime);
 	playWalkSound(DeltaTime);
@@ -299,7 +300,7 @@ void AEnemy::Moving(float DeltaTime)
 						auto locker = p->GetCurrentInLocker();
 						end = VectorXY(locker->GetActorLocation() + locker->GetActorForwardVector() * searchManager->GetRadius());
 						courses = searchManager->ChaseCourse(start, end);
-						playerActiveType = EPlayerActionMode::GoingIntoLocker;
+						TimerCheck(EPlayerActionMode::GoingIntoLocker);
 						return;
 					}
 					// ロッカーにいて追跡してくる時間外なら目の前まで
@@ -311,7 +312,8 @@ void AEnemy::Moving(float DeltaTime)
 						{
 							courses = searchManager->ChaseCourse(start, end);
 						}
-						else {
+						else
+						{
 							chaseTimer = 0.0f;
 						}
 					}
@@ -714,7 +716,7 @@ void AEnemy::InLocker()
 
 	if (eyeLength < (end - start).Size())
 	{
-		playerActiveType = EPlayerActionMode::Default;
+		TimerCheck(EPlayerActionMode::Default);
 		return;
 	}
 
@@ -763,7 +765,7 @@ void AEnemy::InLocker()
 			//{
 			//	courses = searchManager->ChaseCourse(GetActorLocation(), player->GetActorLocation());
 			//}
-			playerActiveType = p->GetCurrentActionMode();
+			TimerCheck(p->GetCurrentActionMode());
 			break;
 		}
 	}
@@ -774,7 +776,7 @@ bool AEnemy::IsEyeArea()
 {
 	if (player == nullptr)
 	{
-		playerActiveType = EPlayerActionMode::Default;
+		TimerCheck(EPlayerActionMode::Default);
 		return false;
 	}
 
@@ -787,7 +789,7 @@ bool AEnemy::IsEyeArea()
 	auto length = vector.Size();
 	if (eyeLength < length)
 	{
-		playerActiveType = EPlayerActionMode::Default;
+		TimerCheck(EPlayerActionMode::Default);
 		return false;
 	}
 
@@ -843,7 +845,7 @@ bool AEnemy::IsEyeArea()
 		return IsInLocker();
 		break;
 	default:
-		playerActiveType = EPlayerActionMode::Default;
+		TimerCheck(EPlayerActionMode::Default);
 		break;
 	}
 	return false;
@@ -923,12 +925,27 @@ bool AEnemy::IsInLocker()
 	return false;
 }
 
-//// 衝突開始時に呼ばれる
-//void AEnemy::onComponentHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
-//    UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& SweepResult)
-//{
-//	bathing(OtherActor);
-//}
+bool AEnemy::TimerCheck(EPlayerActionMode mode)
+{
+	// 時間設定がない、もしくは時間制限を迎えていなければそのまま代入
+	if (limitTimer == nullptr || !limitTimer->IsTimeOver())
+	{
+		playerActiveType = mode;
+		return false;
+	}
+	// 迎えていれば、プレイヤーを常に追跡させる
+	auto action = Cast<APlayerCharacter>(player)->GetCurrentActionMode();
+	switch(action){
+	case EPlayerActionMode::IsInLocker:
+		playerActiveType = EPlayerActionMode::GoingIntoLocker;
+		break;
+	default:
+		playerActiveType = action;
+	}
+	moveType = EMoveType::PlayerChase;
+	chaseTimer = chaseTime;
+	return true;
+}
 
 //音が聞こえる範囲内に入った
 void AEnemy::heardSound(ASoundObject* soundObject)
