@@ -81,6 +81,9 @@ void AEnemy::BeginPlay()
 	auto actor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
 	player = (actor == nullptr) ? nullptr : actor;
 
+	auto timer = UGameplayStatics::GetActorOfClass(GetWorld(), ALimitTimer::StaticClass());
+	limitTimer = (timer == nullptr) ? nullptr : Cast<ALimitTimer>(timer);
+
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemy::StaticClass(), enemys);
 }
 
@@ -935,15 +938,25 @@ bool AEnemy::TimerCheck(EPlayerActionMode mode)
 	}
 	// 迎えていれば、プレイヤーを常に追跡させる
 	auto action = Cast<APlayerCharacter>(player)->GetCurrentActionMode();
-	switch(action){
+	switch (action)
+	{
 	case EPlayerActionMode::IsInLocker:
 		playerActiveType = EPlayerActionMode::GoingIntoLocker;
 		break;
 	default:
 		playerActiveType = action;
 	}
+
+	bool chaseStart = (moveType != EMoveType::PlayerChase);
 	moveType = EMoveType::PlayerChase;
 	chaseTimer = chaseTime;
+	if (chaseStart)	
+	{
+		chasePlayer();
+		constexpr float VIBRATION_DURATION = 1.5f;
+		UMyGameInstance::GetInstance()->GetControllerVibration()->StartVibration(VIBRATION_DURATION, 1.0f);
+		UMyGameInstance::GetInstance()->getSoundSystem()->PlayBGM(ESoundType::Chase_BGM);
+	}
 	return true;
 }
 
