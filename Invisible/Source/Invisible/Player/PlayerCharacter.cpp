@@ -192,7 +192,7 @@ void APlayerCharacter::HeardSound(ASoundObject* soundObject)
 
 void APlayerCharacter::PlayWalkSound(float DeltaTime)
 {
-	auto PlayWalkingSound = [&](float Intarval) {
+	auto PlayWalkingSound = [&](float Intarval, ESoundType WalkSoundType) {
 		WalkingSecond += DeltaTime;
 
 		//•à‚¢‚Ä‚¢‚éŽžŠÔ‚ªˆê’è—Ê‚ð’´‚¦‚½‚çÄ¶‚·‚é
@@ -208,15 +208,15 @@ void APlayerCharacter::PlayWalkSound(float DeltaTime)
 			if (!GetWorld()->LineTraceSingleByChannel(hit, Start, End,
 			        ECollisionChannel::ECC_Visibility, DetectFootObjectLinetraceQueryParams))
 				return;
-			const ESoundType sound = [&hit]() {
+			const ESoundType sound = [&hit](ESoundType type) {
 				//TODO:GamePlayTag‚Åˆ—‚·‚é‚Ì‚ª–]‚Ü‚µ‚¢
 				//TODO:°‚ÆeƒNƒ‰ƒX‚ðˆê’v‚³‚¹‚È‚¢‚Æ“ï‚µ‚¢
 				if (hit.Actor->ActorHasTag(TEXT("Puddle")))
 				{
 					return ESoundType::Player_Walk_On_Puddle;
 				}
-				return ESoundType::Player_Walk;
-			}();
+				return type;
+			}(WalkSoundType);
 
 			const FVector SeLocation = [&]() {
 				FVector location = GetActorLocation();
@@ -235,10 +235,10 @@ void APlayerCharacter::PlayWalkSound(float DeltaTime)
 		SetSprintState(false);
 		break;
 	case EPlayerMoveState::WALKING:
-		PlayWalkingSound(WalkingSoundPlayInterval);
+		PlayWalkingSound(WalkingSoundPlayInterval, ESoundType::Player_Walk);
 		break;
 	case EPlayerMoveState::RUNNING:
-		PlayWalkingSound(RunningSoundPlayInterval);
+		PlayWalkingSound(RunningSoundPlayInterval, ESoundType::Player_Running);
 		break;
 	default:
 		break;
