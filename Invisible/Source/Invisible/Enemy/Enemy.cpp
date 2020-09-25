@@ -12,6 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 
 #include <string>
+#include <cmath>
 
 namespace
 {
