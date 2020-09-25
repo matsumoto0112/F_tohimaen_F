@@ -968,10 +968,11 @@ void AEnemy::heardSound(ASoundObject* soundObject)
 		return;
 	switch (soundObject->getSoundType())
 	{
-		//バルブの音が聞こえた
-	case ESoundType::Valve:
-		//case ESoundType::Item_Get:
-		//case ESoundType::Player_Walk_On_Puddle:
+		
+	case ESoundType::Valve: // バルブの音が聞こえた
+	case ESoundType::Item_Get: // アイテム入手
+	case ESoundType::Player_Walk_On_Puddle: // 水たまりの上の歩行音
+	case ESoundType::Player_Running: // プレイヤーの走行音
 		searchPlayer(soundObject);
 		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard valve sound"));
 		break;
