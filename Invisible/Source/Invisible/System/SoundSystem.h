@@ -52,6 +52,7 @@ enum class ESoundType : uint8
 	ConfigTest_SE, //!< コンフィグでのテスト再生用SE
 	Goal, //!< ゴール音
 	Alert, //! 警告音
+	Player_Running, //! プレイヤーダッシュ中
 };
 
 /**
