@@ -40,7 +40,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	CurrentActionMode = EPlayerActionMode::Move;
-	GetCharacterMovement()->MaxWalkSpeed = MaxMoveSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = WalkingMoveSpeed;
 
 	//足元に飛ばすレイの無視リスト
 	DetectFootObjectLinetraceQueryParams.AddIgnoredActor(this);
@@ -87,6 +87,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("Turn", this, &APlayerCharacter::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &APlayerCharacter::Lookup);
 	PlayerInputComponent->BindAction("PlayerAction", EInputEvent::IE_Pressed, this, &APlayerCharacter::InputedActionCommand);
+	PlayerInputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &APlayerCharacter::Sprint);
 }
 
 void APlayerCharacter::HeardEnemyWalkOnPuddleSound(AEnemy* enemy)
@@ -105,7 +106,7 @@ void APlayerCharacter::MoveForward(float Value)
 	//一定値以上の移動量があれば歩いているとみなす
 	if (std::abs(Value) > WalkingThreshold)
 	{
-		bIsWalking = true;
+		MoveState = bInputtedSprint ? EPlayerMoveState::RUNNING : EPlayerMoveState::WALKING;
 	}
 }
 
@@ -120,7 +121,7 @@ void APlayerCharacter::MoveRight(float Value)
 	//一定値以上の移動量があれば歩いているとみなす
 	if (std::abs(Value) > WalkingThreshold)
 	{
-		bIsWalking = true;
+		MoveState = bInputtedSprint ? EPlayerMoveState::RUNNING : EPlayerMoveState::WALKING;
 	}
 }
 
@@ -150,6 +151,11 @@ void APlayerCharacter::Lookup(float Amount)
 	AddControllerPitchInput(PitchValue);
 }
 
+void APlayerCharacter::Sprint()
+{
+	SetSprintState(!bInputtedSprint);
+}
+
 //衝突開始時に呼ばれる
 void APlayerCharacter::OnComponentBeginOverlap(UPrimitiveComponent* HitComp, AActor* OtherActor,
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -165,14 +171,13 @@ void APlayerCharacter::OnComponentBeginOverlap(UPrimitiveComponent* HitComp, AAc
 //音が聞こえる範囲内に入った
 void APlayerCharacter::HeardSound(ASoundObject* soundObject)
 {
-    if (!soundObject)
-        return;
+	if (!soundObject)
+		return;
 
 	//聞こえた音の種類によって場合分け
 	switch (soundObject->getSoundType())
 	{
-	case ESoundType::Enemy_Walk_On_Puddle:
-	{
+	case ESoundType::Enemy_Walk_On_Puddle: {
 		AEnemy* Enemy = Cast<AEnemy>(soundObject->getSoundGenerateSource());
 		if (Enemy)
 		{
@@ -187,18 +192,13 @@ void APlayerCharacter::HeardSound(ASoundObject* soundObject)
 
 void APlayerCharacter::PlayWalkSound(float DeltaTime)
 {
-	//歩いているときに一定時間ごとに歩行音再生
-	if (bIsWalking)
-	{
-		//次の移動の入力があるまで歩いていない状態として扱う
-		bIsWalking = false;
-
+	auto PlayWalkingSound = [&](float Intarval) {
 		WalkingSecond += DeltaTime;
 
 		//歩いている時間が一定量を超えたら再生する
-		if (WalkingSecond > WalkingSoundPlayInterval)
+		if (WalkingSecond > Intarval)
 		{
-			WalkingSecond -= WalkingSoundPlayInterval;
+			WalkingSecond -= Intarval;
 
 			//足元にレイを飛ばし、床がなんであるか判定する
 			FHitResult hit;
@@ -226,11 +226,25 @@ void APlayerCharacter::PlayWalkSound(float DeltaTime)
 
 			UMyGameInstance::GetInstance()->getSoundSystem()->play3DSound(sound, SeLocation, this);
 		}
-	}
-	else
+	};
+
+	switch (MoveState)
 	{
+	case EPlayerMoveState::NO_MOVE:
 		WalkingSecond = 0.0f;
+		SetSprintState(false);
+		break;
+	case EPlayerMoveState::WALKING:
+		PlayWalkingSound(WalkingSoundPlayInterval);
+		break;
+	case EPlayerMoveState::RUNNING:
+		PlayWalkingSound(RunningSoundPlayInterval);
+		break;
+	default:
+		break;
 	}
+
+	MoveState = EPlayerMoveState::NO_MOVE;
 }
 
 //プレイヤーカメラの上下方向の回転制限
@@ -359,6 +373,12 @@ void APlayerCharacter::FixedLocationIfInLocker()
 	{
 		this->SetActorLocation(FixedLocation);
 	}
+}
+
+void APlayerCharacter::SetSprintState(bool NextState)
+{
+	bInputtedSprint = NextState;
+	GetCharacterMovement()->MaxWalkSpeed = bInputtedSprint ? RunningMoveSpeed : WalkingMoveSpeed;
 }
 
 //ロッカーの中に入る準備をする

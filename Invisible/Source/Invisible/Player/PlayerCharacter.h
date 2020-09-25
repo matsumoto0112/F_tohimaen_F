@@ -15,6 +15,14 @@
 class ASoundObject;
 class ALocker;
 
+UENUM(BlueprintType)
+enum class EPlayerMoveState : uint8
+{
+	NO_MOVE,
+	WALKING,
+	RUNNING,
+};
+
 /**
 * プレイヤーキャラクター
 */
@@ -83,10 +91,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	void ToDie(AActor* Killer);
 	/**
-    * 歩行中か
-    */
+	* プレイヤーの移動状態を取得する
+	*/
 	UFUNCTION(BlueprintCallable, Category = "Player")
-	bool IsWalking() const { return bIsWalking; }
+	EPlayerMoveState GetPlayerMoveState() const { return MoveState; }
 	/**
     * 今入っているロッカーを取得する
     */
@@ -96,11 +104,11 @@ public:
 		return IsInLocker;
 	};
 
-    /**
+	/**
     * クリアフラグを立てる
     */
-    UFUNCTION(BlueprintCallable, Category = "Player")
-    void SetClearFlag() { CurrentActionMode = EPlayerActionMode::IsClear; }
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void SetClearFlag() { CurrentActionMode = EPlayerActionMode::IsClear; }
 
 private:
 	/**
@@ -123,6 +131,9 @@ private:
     */
 	UFUNCTION()
 	void Lookup(float Amount);
+
+	UFUNCTION()
+	void Sprint();
 	/**
     * 何かに衝突した時に呼ばれる
     */
@@ -159,14 +170,21 @@ private:
     * ロッカーに入っているときに座標を固定する
     */
 	void FixedLocationIfInLocker();
+	/**
+	* 次のスプリントの状態をセットする
+	*/
+	void SetSprintState(bool NextState);
 
 private:
-	//!< 最大移動速度
-	UPROPERTY(EditDefaultsOnly, Category = "Player")
-	float MaxMoveSpeed = 500.0f;
 	//!< ロッカーから出るときの座標のオフセット値
 	UPROPERTY(EditDefaultsOnly, Category = "Locker")
 	float OffsetLockerGetOutLength = 100.0f;
+	//! 歩行時の移動速度
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	float WalkingMoveSpeed = 250.0f;
+	//! ダッシュ時の移動速度
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	float RunningMoveSpeed = 500.0f;
 
 protected:
 	//!< カメラの上下方向の回転制限
@@ -179,6 +197,9 @@ protected:
 	//!< 歩行音の再生間隔
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	float WalkingSoundPlayInterval = 0.5f;
+	//!< 歩行音の再生間隔
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	float RunningSoundPlayInterval = 0.25f;
 	//!< 敵が水たまりを踏んだ時に見えている時間
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	float EnemyVisibleTimeWhenEnemyWalkOnPuddle = 1.0f;
@@ -204,8 +225,9 @@ public:
 	UPlayerActionArea* ActionArea;
 
 private:
-	//!< 今歩いているか
-	bool bIsWalking;
+	//! 現在のプレイヤーの移動状態
+	EPlayerMoveState MoveState;
+	bool bInputtedSprint;
 	//!< 歩いている時間(秒)
 	float WalkingSecond;
 	//!< レイトレース用クエリパラメータ
