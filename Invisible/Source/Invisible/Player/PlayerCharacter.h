@@ -134,6 +134,9 @@ private:
 
 	UFUNCTION()
 	void Sprint();
+
+	UFUNCTION()
+	void ReleaseSprint();
 	/**
     * ‰½‚©‚ÉÕ“Ë‚µ‚½‚ÉŒÄ‚Î‚ê‚é
     */

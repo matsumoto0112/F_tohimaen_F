@@ -88,6 +88,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("LookUp", this, &APlayerCharacter::Lookup);
 	PlayerInputComponent->BindAction("PlayerAction", EInputEvent::IE_Pressed, this, &APlayerCharacter::InputedActionCommand);
 	PlayerInputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &APlayerCharacter::Sprint);
+	PlayerInputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &APlayerCharacter::ReleaseSprint);
 }
 
 void APlayerCharacter::HeardEnemyWalkOnPuddleSound(AEnemy* enemy)
@@ -153,7 +154,14 @@ void APlayerCharacter::Lookup(float Amount)
 
 void APlayerCharacter::Sprint()
 {
-	SetSprintState(!bInputtedSprint);
+	SetSprintState(true);
+	bInputtedSprint = true;
+}
+
+void APlayerCharacter::ReleaseSprint()
+{
+	bInputtedSprint = false;
+	SetSprintState(false);
 }
 
 //è’ìÀäJénéûÇ…åƒÇŒÇÍÇÈ
@@ -232,7 +240,6 @@ void APlayerCharacter::PlayWalkSound(float DeltaTime)
 	{
 	case EPlayerMoveState::NO_MOVE:
 		WalkingSecond = 0.0f;
-		SetSprintState(false);
 		break;
 	case EPlayerMoveState::WALKING:
 		PlayWalkingSound(WalkingSoundPlayInterval, ESoundType::Player_Walk);
