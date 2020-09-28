@@ -155,12 +155,10 @@ void APlayerCharacter::Lookup(float Amount)
 void APlayerCharacter::Sprint()
 {
 	SetSprintState(true);
-	bInputtedSprint = true;
 }
 
 void APlayerCharacter::ReleaseSprint()
 {
-	bInputtedSprint = false;
 	SetSprintState(false);
 }
 
