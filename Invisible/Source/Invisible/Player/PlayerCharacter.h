@@ -23,6 +23,13 @@ enum class EPlayerMoveState : uint8
 	RUNNING,
 };
 
+UENUM(BlueprintType)
+enum class ECameraMode : uint8
+{
+	FRONT,
+	BACK,
+};
+
 /**
 * プレイヤーキャラクター
 */
@@ -137,6 +144,12 @@ private:
 
 	UFUNCTION()
 	void ReleaseSprint();
+
+	UFUNCTION()
+	void Flip();
+	UFUNCTION()
+	void ReleaseFlip();
+
 	/**
     * 何かに衝突した時に呼ばれる
     */
@@ -243,4 +256,5 @@ private:
 	float LockerYawRotation;
 	//!< 固定する座標
 	FVector FixedLocation;
+	ECameraMode CameraMode;
 };

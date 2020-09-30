@@ -22,7 +22,7 @@ APlayerCharacter::APlayerCharacter()
 	//カメラを追加する
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FPSCamera"));
 	CameraComponent->SetupAttachment(RootComponent);
-	CameraComponent->SetRelativeLocation(FVector(30.0f, 0.0f, 80.0f));
+	CameraComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 80.0f));
 	//ポーンがカメラの回転を制御できるように
 	CameraComponent->bUsePawnControlRotation = true;
 
@@ -89,6 +89,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("PlayerAction", EInputEvent::IE_Pressed, this, &APlayerCharacter::InputedActionCommand);
 	PlayerInputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &APlayerCharacter::Sprint);
 	PlayerInputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &APlayerCharacter::ReleaseSprint);
+	PlayerInputComponent->BindAction("Flip", EInputEvent::IE_Pressed, this, &APlayerCharacter::Flip);
+	PlayerInputComponent->BindAction("Flip", EInputEvent::IE_Released, this, &APlayerCharacter::ReleaseFlip);
 }
 
 void APlayerCharacter::HeardEnemyWalkOnPuddleSound(AEnemy* enemy)
@@ -102,7 +104,10 @@ void APlayerCharacter::MoveForward(float Value)
 	if (CurrentActionMode != EPlayerActionMode::Move)
 		return;
 	const FVector direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
-	AddMovementInput(direction, Value);
+
+	//カメラが正面向きでないなら移動方向を反転させる
+	const float Coef = CameraMode == ECameraMode::FRONT ? 1.0f : -1.0f;
+	AddMovementInput(direction, Value * Coef);
 
 	//一定値以上の移動量があれば歩いているとみなす
 	if (std::abs(Value) > WalkingThreshold)
@@ -117,7 +122,10 @@ void APlayerCharacter::MoveRight(float Value)
 	if (CurrentActionMode != EPlayerActionMode::Move)
 		return;
 	const FVector direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
-	AddMovementInput(direction, Value);
+
+	//カメラが正面向きでないなら移動方向を反転させる
+	const float Coef = CameraMode == ECameraMode::FRONT ? 1.0f : -1.0f;
+	AddMovementInput(direction, Value * Coef);
 
 	//一定値以上の移動量があれば歩いているとみなす
 	if (std::abs(Value) > WalkingThreshold)
@@ -160,6 +168,32 @@ void APlayerCharacter::Sprint()
 void APlayerCharacter::ReleaseSprint()
 {
 	SetSprintState(false);
+}
+
+void APlayerCharacter::Flip()
+{
+	//移動状態でないと入力を無効にする
+	if (CurrentActionMode != EPlayerActionMode::Move)
+		return;
+
+	//向きを反転する
+	FRotator rot = Controller->GetControlRotation();
+	rot.Yaw += 180.0;
+	Controller->SetControlRotation(rot);
+	CameraMode = ECameraMode::BACK;
+}
+
+void APlayerCharacter::ReleaseFlip()
+{
+	//移動状態でないと入力を無効にする
+	if (CurrentActionMode != EPlayerActionMode::Move)
+		return;
+
+	//向きを反転する
+	FRotator rot = Controller->GetControlRotation();
+	rot.Yaw += 180.0;
+	Controller->SetControlRotation(rot);
+	CameraMode = ECameraMode::FRONT;
 }
 
 //衝突開始時に呼ばれる
