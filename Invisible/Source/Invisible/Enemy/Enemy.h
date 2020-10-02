@@ -200,7 +200,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Collision")
 	USkeletalMeshComponent* skeltal;
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ActionArea")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "ActionArea")
 	USphereComponent* actionableArea;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Silhouette")

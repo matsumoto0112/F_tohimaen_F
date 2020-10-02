@@ -11,8 +11,8 @@
 #include "Invisible/System/StencilBitValue.h"
 #include "Kismet/GameplayStatics.h"
 
-#include <string>
 #include <cmath>
+#include <string>
 
 namespace
 {
@@ -54,7 +54,7 @@ AEnemy::AEnemy()
 	skeltal->SetupAttachment(RootComponent);
 
 	actionableArea = CreateDefaultSubobject<USphereComponent>(TEXT("ActionableArea"));
-	actionableArea->InitSphereRadius(2000.0f);
+	actionableArea->InitSphereRadius(100.0f);
 	actionableArea->SetCollisionProfileName("OverlapOnlyPawn");
 	actionableArea->SetSimulatePhysics(false);
 	actionableArea->SetupAttachment(RootComponent);
@@ -951,7 +951,7 @@ bool AEnemy::TimerCheck(EPlayerActionMode mode)
 	bool chaseStart = (moveType != EMoveType::PlayerChase);
 	moveType = EMoveType::PlayerChase;
 	chaseTimer = chaseTime;
-	if (chaseStart)	
+	if (chaseStart)
 	{
 		chasePlayer();
 		constexpr float VIBRATION_DURATION = 1.5f;
@@ -968,14 +968,16 @@ void AEnemy::heardSound(ASoundObject* soundObject)
 		return;
 	switch (soundObject->getSoundType())
 	{
-		
 	case ESoundType::Valve: // バルブの音が聞こえた
 	case ESoundType::Item_Get: // アイテム入手
 	case ESoundType::Player_Walk_On_Puddle: // 水たまりの上の歩行音
 	case ESoundType::Player_Running: // プレイヤーの走行音
+	{
 		searchPlayer(soundObject);
-		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("heard valve sound"));
-		break;
+		FString str = FString::Format(TEXT("heard valve sound {0}, distance: {1}"), {static_cast<uint8>(soundObject->getSoundType()), FVector::Dist(soundObject->GetActorLocation(), GetActorLocation())});
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, str);
+	}
+	break;
 	default:
 		break;
 	}
@@ -1053,10 +1055,11 @@ void AEnemy::ChangeStencilValueWhenPutOnWater()
 	//最後に当たった時から有効にしたいので古いタイマーは破棄する
 	FTimerManager& TimerManager = GetWorldTimerManager();
 	TimerManager.ClearTimer(ReturnStencilValueWhenPutOnWaterHandle);
-	TimerManager.SetTimer(ReturnStencilValueWhenPutOnWaterHandle, [&]() {
-		const int32 Value = GetSilhouetteSkeltal()->CustomDepthStencilValue & ~static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyPutOnWater);
-		GetSilhouetteSkeltal()->SetCustomDepthStencilValue(Value);
-	},
+	TimerManager.SetTimer(
+	    ReturnStencilValueWhenPutOnWaterHandle, [&]() {
+		    const int32 Value = GetSilhouetteSkeltal()->CustomDepthStencilValue & ~static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyPutOnWater);
+		    GetSilhouetteSkeltal()->SetCustomDepthStencilValue(Value);
+	    },
 	    VisibleTimeWhenEnemyPutOnWater, false);
 }
 
@@ -1070,10 +1073,11 @@ void AEnemy::ChangeStencilValueWhenWalkOnPuddle()
 	//最後に当たった時から有効にしたいので古いタイマーは破棄する
 	FTimerManager& TimerManager = GetWorldTimerManager();
 	TimerManager.ClearTimer(ReturnStencilValueWhenWalkOnPuddle);
-	TimerManager.SetTimer(ReturnStencilValueWhenWalkOnPuddle, [&]() {
-		//ゲームが終了するなどしてスケルタルが参照できない場合に備えてチェックする
-		const int32 Value = GetSilhouetteSkeltal()->CustomDepthStencilValue & ~static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyWalkOnPuddle);
-		GetSilhouetteSkeltal()->SetCustomDepthStencilValue(Value);
-	},
+	TimerManager.SetTimer(
+	    ReturnStencilValueWhenWalkOnPuddle, [&]() {
+		    //ゲームが終了するなどしてスケルタルが参照できない場合に備えてチェックする
+		    const int32 Value = GetSilhouetteSkeltal()->CustomDepthStencilValue & ~static_cast<int32>(EStencilBitValue::SilhouetteWhenEnemyWalkOnPuddle);
+		    GetSilhouetteSkeltal()->SetCustomDepthStencilValue(Value);
+	    },
 	    VisibleTimeWhenEnemyWalkOnPuddle, false);
 }
