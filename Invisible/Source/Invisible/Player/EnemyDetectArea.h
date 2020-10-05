@@ -4,6 +4,7 @@
 
 #include "Components/SphereComponent.h"
 #include "CoreMinimal.h"
+#include "GameFramework/PlayerController.h"
 #include "Invisible/Enemy/Enemy.h"
 
 #include "EnemyDetectArea.generated.h"

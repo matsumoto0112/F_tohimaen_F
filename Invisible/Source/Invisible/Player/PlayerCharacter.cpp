@@ -61,10 +61,40 @@ void APlayerCharacter::Tick(float DeltaTime)
 	if (CurrentActionMode == EPlayerActionMode::IsDying || CurrentActionMode == EPlayerActionMode::IsClear)
 		return;
 
+	//反転中のカメラの回転処理
+	auto FlipCameraRotation = [&](ECameraMode NextMode) {
+		const float DeltaRotate = FlipCameraRotateSpeed * DeltaTime;
+		//向きを反転する
+		FRotator rot = Controller->GetControlRotation();
+		rot.Yaw += DeltaRotate;
+		Controller->SetControlRotation(rot);
+		CurrentFlipRotate += DeltaRotate;
+		if (CurrentFlipRotate >= 180.0f)
+		{
+			//オーバーした分をもとに戻す
+			const float ReturnValue = CurrentFlipRotate - 180.0f;
+			CurrentFlipRotate = 180.0f;
+			rot.Yaw -= ReturnValue;
+			Controller->SetControlRotation(rot);
+
+			CameraMode = NextMode;
+		}
+	};
+
 	//移動中なら歩行音を再生する
 	if (CurrentActionMode == EPlayerActionMode::Move)
 	{
 		PlayWalkSound(DeltaTime);
+
+		//反転中の回転処理
+		if (CameraMode == ECameraMode::FRONT_TO_BACK)
+		{
+			FlipCameraRotation(ECameraMode::BACK);
+		}
+		else if (CameraMode == ECameraMode::BACK_TO_FRONT)
+		{
+			FlipCameraRotation(ECameraMode::FRONT);
+		}
 	}
 
 	//回転制限
@@ -103,10 +133,19 @@ void APlayerCharacter::MoveForward(float Value)
 {
 	if (CurrentActionMode != EPlayerActionMode::Move)
 		return;
-	const FVector direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
+
+	//向きを取得する
+	//カメラが反転中なら今向いている方向ではなく、回転前の方向にする
+	FRotator rot = Controller->GetControlRotation();
+	if (CameraMode == ECameraMode::FRONT_TO_BACK || CameraMode == ECameraMode::BACK_TO_FRONT)
+	{
+		rot.Yaw -= CurrentFlipRotate;
+	}
+
+	const FVector direction = FRotationMatrix(rot).GetScaledAxis(EAxis::X);
 
 	//カメラが正面向きでないなら移動方向を反転させる
-	const float Coef = CameraMode == ECameraMode::FRONT ? 1.0f : -1.0f;
+	const float Coef = CameraMode == ECameraMode::FRONT || CameraMode == ECameraMode::FRONT_TO_BACK ? 1.0f : -1.0f;
 	AddMovementInput(direction, Value * Coef);
 
 	//一定値以上の移動量があれば歩いているとみなす
@@ -121,10 +160,19 @@ void APlayerCharacter::MoveRight(float Value)
 {
 	if (CurrentActionMode != EPlayerActionMode::Move)
 		return;
-	const FVector direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
+
+	//向きを取得する
+	//カメラが反転中なら今向いている方向ではなく、回転前の方向にする
+	FRotator rot = Controller->GetControlRotation();
+	if (CameraMode == ECameraMode::FRONT_TO_BACK || CameraMode == ECameraMode::BACK_TO_FRONT)
+	{
+		rot.Yaw -= CurrentFlipRotate;
+	}
+
+	const FVector direction = FRotationMatrix(rot).GetScaledAxis(EAxis::Y);
 
 	//カメラが正面向きでないなら移動方向を反転させる
-	const float Coef = CameraMode == ECameraMode::FRONT ? 1.0f : -1.0f;
+	const float Coef = CameraMode == ECameraMode::FRONT || CameraMode == ECameraMode::FRONT_TO_BACK ? 1.0f : -1.0f;
 	AddMovementInput(direction, Value * Coef);
 
 	//一定値以上の移動量があれば歩いているとみなす
@@ -176,11 +224,12 @@ void APlayerCharacter::Flip()
 	if (CurrentActionMode != EPlayerActionMode::Move)
 		return;
 
-	//向きを反転する
+	const float RemainRotate = 180.0f - CurrentFlipRotate;
 	FRotator rot = Controller->GetControlRotation();
-	rot.Yaw += 180.0;
+	rot.Yaw += RemainRotate;
 	Controller->SetControlRotation(rot);
-	CameraMode = ECameraMode::BACK;
+	CurrentFlipRotate = 0.0f;
+	CameraMode = ECameraMode::FRONT_TO_BACK;
 }
 
 void APlayerCharacter::ReleaseFlip()
@@ -189,11 +238,12 @@ void APlayerCharacter::ReleaseFlip()
 	if (CurrentActionMode != EPlayerActionMode::Move)
 		return;
 
-	//向きを反転する
+	const float RemainRotate = 180.0f - CurrentFlipRotate;
 	FRotator rot = Controller->GetControlRotation();
-	rot.Yaw += 180.0;
+	rot.Yaw += RemainRotate;
 	Controller->SetControlRotation(rot);
-	CameraMode = ECameraMode::FRONT;
+	CurrentFlipRotate = 0.0f;
+	CameraMode = ECameraMode::BACK_TO_FRONT;
 }
 
 //衝突開始時に呼ばれる

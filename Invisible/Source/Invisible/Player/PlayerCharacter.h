@@ -27,7 +27,9 @@ UENUM(BlueprintType)
 enum class ECameraMode : uint8
 {
 	FRONT,
+	FRONT_TO_BACK,
 	BACK,
+	BACK_TO_FRONT,
 };
 
 /**
@@ -201,6 +203,9 @@ private:
 	//! ダッシュ時の移動速度
 	UPROPERTY(EditDefaultsOnly, Category = "Player")
 	float RunningMoveSpeed = 500.0f;
+	//! 反転カメラの回転速度
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	float FlipCameraRotateSpeed = 360.0f * 8.0f;
 
 protected:
 	//!< カメラの上下方向の回転制限
@@ -243,6 +248,7 @@ public:
 private:
 	//! 現在のプレイヤーの移動状態
 	EPlayerMoveState MoveState;
+	float CurrentFlipRotate;
 	bool bInputtedSprint;
 	//!< 歩いている時間(秒)
 	float WalkingSecond;
