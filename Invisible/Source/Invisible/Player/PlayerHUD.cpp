@@ -10,6 +10,8 @@ void APlayerHUD::BeginPlay()
 	CurrentType = EActionType::None;
 
 	check(crossHairTexture);
+
+	SpawnTextUI(ETextType::START);
 }
 
 //HUD‚Ì•`‰æ
@@ -25,17 +27,48 @@ void APlayerHUD::DrawHUD()
 	tileItem.BlendMode = SE_BLEND_Translucent;
 	Canvas->DrawItem(tileItem);
 
+	PrintActionTexture();
+	PrintTextUI();
+}
+
+void APlayerHUD::SetCurrentNearlyObject(EActionType Type)
+{
+	CurrentType = Type;
+}
+
+void APlayerHUD::PrintActionTexture()
+{
 	if (CurrentType == EActionType::None)
 		return;
 
 	UTexture2D* Texture = ActionTextures[CurrentType];
+	const FVector2D center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
 	const FVector2D TestTexturePosition = center - FVector2D(Texture->GetSurfaceWidth() * 0.5f, Texture->GetSurfaceHeight() * 0.5f) + TestTextureOffset;
 	FCanvasTileItem Item(TestTexturePosition, Texture->Resource, FLinearColor::White);
 	Item.BlendMode = SE_BLEND_Translucent;
 	Canvas->DrawItem(Item);
 }
 
-void APlayerHUD::SetCurrentNearlyObject(EActionType Type)
+void APlayerHUD::PrintTextUI()
 {
-	CurrentType = Type;
+	if (CurrentText.CurrentPrintTime <= 0.0f)
+	{
+		return;
+	}
+
+	const FVector2D center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
+	const FVector2D TestTexturePosition = center - FVector2D(CurrentText.CurrentTexture->GetSurfaceWidth() * 0.5f, CurrentText.CurrentTexture->GetSurfaceHeight() * 0.5f) + TextOffset;
+	FCanvasTileItem Item(TestTexturePosition, CurrentText.CurrentTexture->Resource, FLinearColor::White);
+	Item.BlendMode = SE_BLEND_Translucent;
+	Canvas->DrawItem(Item);
+
+	CurrentText.CurrentPrintTime -= GetWorld()->DeltaTimeSeconds;
+}
+
+void APlayerHUD::SpawnTextUI(ETextType TextType)
+{
+	check(TextTextures.Contains(TextType));
+
+	CurrentText.CurrentTexture = TextTextures[TextType];
+	CurrentText.CurrentPrintTime = PrintTextTime;
 }

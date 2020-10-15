@@ -3,6 +3,7 @@
 #include "ExitItem.h"
 
 #include "Engine.h"
+#include "Invisible/Player/PlayerHUD.h"
 #include "Invisible/System/MyGameInstance.h"
 #include "Invisible/System/SoundSystem.h"
 
@@ -47,6 +48,11 @@ void AExitItem::Get()
 	meshComponent->SetVisibility(false, true);
 	meshComponent->SetGenerateOverlapEvents(false);
 	meshComponent->UpdateOverlaps();
+
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	AHUD* HUD = PlayerController->GetHUD();
+	APlayerHUD* PlayerHUD = Cast<APlayerHUD>(HUD);
+	PlayerHUD->SpawnTextUI(ETextType::GET_KEYITEM);
 }
 
 void AExitItem::Use()

@@ -8,6 +8,14 @@
 
 #include "PlayerHUD.generated.h"
 
+UENUM()
+enum class ETextType : uint8
+{
+	START,
+	LIMIT_60,
+	GET_KEYITEM,
+};
+
 /**
  * プレイヤーのHUD
  */
@@ -25,6 +33,12 @@ public:
 
 	void SetCurrentNearlyObject(EActionType Type);
 
+	void PrintActionTexture();
+	void PrintTextUI();
+
+	UFUNCTION(BlueprintCallable, Category = "PlayerHUD")
+	void SpawnTextUI(ETextType TextType);
+
 private:
 	//!< クロスヘアの画像
 	UPROPERTY(EditDefaultsOnly, Category = "Texture")
@@ -35,4 +49,18 @@ private:
 	FVector2D TestTextureOffset;
 	UPROPERTY()
 	EActionType CurrentType;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Texture")
+	TMap<ETextType, UTexture2D*> TextTextures;
+	UPROPERTY(EditDefaultsOnly, Category = "Texture")
+	float PrintTextTime = 5.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "Texture")
+	FVector2D TextOffset;
+
+	struct TextTexture
+	{
+		UTexture2D* CurrentTexture;
+		float CurrentPrintTime;
+	};
+	TextTexture CurrentText;
 };
