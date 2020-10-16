@@ -41,6 +41,7 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	CurrentActionMode = EPlayerActionMode::Move;
 	GetCharacterMovement()->MaxWalkSpeed = WalkingMoveSpeed;
+	CurrentFlipRotate = 180.0f;
 
 	//‘«Œ³‚É”ò‚Î‚·ƒŒƒC‚Ì–³‹ƒŠƒXƒg
 	DetectFootObjectLinetraceQueryParams.AddIgnoredActor(this);
