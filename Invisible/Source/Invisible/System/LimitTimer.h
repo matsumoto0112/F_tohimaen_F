@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Invisible/Player/PlayerHUD.h"
 
 #include "LimitTimer.generated.h"
 
@@ -41,4 +42,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float limitTime = 120.0f;
 	float limitTimer = 0.0f;
+
+	UPROPERTY()
+	APlayerHUD* PlayerHUD;
+	UPROPERTY()
+	TArray<ETextType> ChangeHUDList;
 };
