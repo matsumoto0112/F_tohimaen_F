@@ -8,10 +8,15 @@
 
 #include "PlayerHUD.generated.h"
 
-UENUM()
+UENUM(BlueprintType)
 enum class ETextType : uint8
 {
-	START,
+	START_3M,
+	START_4M,
+	START_5M,
+	LIMIT_240,
+	LIMIT_180,
+	LIMIT_120,
 	LIMIT_60,
 	GET_KEYITEM,
 };

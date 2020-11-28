@@ -4,14 +4,14 @@
 
 #include "Engine/Canvas.h"
 
+#include <Kismet/GameplayStatics.h>
+
 void APlayerHUD::BeginPlay()
 {
 	Super::BeginPlay();
 	CurrentType = EActionType::None;
 
 	check(crossHairTexture);
-
-	SpawnTextUI(ETextType::START);
 }
 
 //HUD‚Ì•`‰æ

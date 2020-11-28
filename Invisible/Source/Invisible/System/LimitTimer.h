@@ -27,6 +27,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "LimitTimer")
 	void Init(float LimitTime);
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "LimitTimer")
+	void InitializeHUDText();
+
 	UFUNCTION(BluePrintCallable, Category = "LimitTimer")
 	virtual float GetLimitTimer() const { return limitTimer; };
 

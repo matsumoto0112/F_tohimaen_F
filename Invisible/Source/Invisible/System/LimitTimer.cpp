@@ -14,7 +14,7 @@ void ALimitTimer::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Init(limitTime);
+	//Init(limitTime);
 }
 
 // Called every frame
@@ -29,4 +29,5 @@ void ALimitTimer::Init(float LimitTime)
 {
 	this->limitTime = limitTimer;
 	this->limitTimer = LimitTime;
+	InitializeHUDText();
 }
