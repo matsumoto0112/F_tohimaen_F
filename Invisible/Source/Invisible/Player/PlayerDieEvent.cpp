@@ -5,6 +5,7 @@
 #include "Invisible/ActionableObject/Locker.h"
 #include "Invisible/Enemy/Enemy.h"
 #include "Invisible/Player/PlayerCharacter.h"
+#include "Invisible/System/MyGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -37,6 +38,9 @@ void APlayerDieEvent::InitPostProcess()
 
 void APlayerDieEvent::StartNormalDieEvent(APlayerCharacter* Player, AEnemy* Enemy)
 {
+	APlayerHUD* HUD = Cast<APlayerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+	HUD->HideRemainTime();
+
 	auto MakeTimer = [&](float Time) {
 		return [&, time = Time]() mutable {
 			time -= GetWorld()->GetDeltaSeconds();
@@ -86,6 +90,9 @@ void APlayerDieEvent::StartNormalDieEvent(APlayerCharacter* Player, AEnemy* Enem
 
 void APlayerDieEvent::StartLockerDieEvent(APlayerCharacter* Player, AEnemy* Enemy, ALocker* Locker)
 {
+	APlayerHUD* HUD = Cast<APlayerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+	HUD->HideRemainTime();
+
 	auto MakeTimer = [&](float Time) {
 		return [&, time = Time]() mutable {
 			time -= GetWorld()->GetDeltaSeconds();

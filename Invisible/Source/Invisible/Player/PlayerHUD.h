@@ -44,6 +44,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PlayerHUD")
 	void SpawnTextUI(ETextType TextType);
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "PlayerHUD")
+	void HideRemainTime();
+
 private:
 	//!< ƒNƒƒXƒwƒA‚Ì‰æ‘œ
 	UPROPERTY(EditDefaultsOnly, Category = "Texture")
